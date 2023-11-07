@@ -7,6 +7,6 @@ import (
 
 func Logger(e *echo.Echo) {
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "method=${method}, uri=${uri}, status=${status}, latency=${latency_human}\n",
+		Format: "time=${time_rfc3339_nano}, remote_ip=${remote_ip}, user_agent=${user_agent}, method=${method}, host=${host}, uri=${uri}, status=${status}, error=${error}, latency=${latency_human}\n",
 	}))
 }

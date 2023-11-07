@@ -3,6 +3,7 @@ package databases
 import (
 	"fmt"
 	"healthcare/configs"
+	"log"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -30,9 +31,9 @@ func ConnectDB() {
 
 	DB, err = gorm.Open(mysql.Open(connectionString), &gorm.Config{})
 	if err != nil {
-		panic("Failed to Connect Database")
+		log.Println("can't connect to DB!")
 	}
-	fmt.Println("Connected to Database")
+	log.Println("success connect to DB!")
 }
 
 func InitialMigration() {
