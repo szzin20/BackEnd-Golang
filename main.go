@@ -1,36 +1,29 @@
 package main
 
 import (
-	"healthcare/middlewares"
+	"healthcare/configs"
 	"healthcare/routes"
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalln("can't access .env files!")
-	}
 
-	e := echo.New()
+	_, err := os.Stat(".env")
+    if err == nil {
+        err := godotenv.Load()
+        if err != nil {
+            log.Fatal("Failed to Fetch .env File")
+        }
+    }
 
-	routes.SetupRoutes(e)
+	configs.Init()
+	e := routes.SetupRoutes()
 
-	// load middlewares
-	middlewares.CORS(e)
-	middlewares.Logger(e)
-	middlewares.RateLimiter(e)
-	middlewares.Recover(e)
-	middlewares.RemoveTrailingSlash(e)
-
-	port := os.Getenv("SERVER_PORT")
-	if port == "" {
-		port = "8080"
-	}
-	e.Logger.Fatal(e.Start(":" + port))
-
+	port := os.Getenv("PORT")
+	setPort := fmt.Sprintf(":%s", port)
+	e.Logger.Fatal(e.Start(setPort))
 }
