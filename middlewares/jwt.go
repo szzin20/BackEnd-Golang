@@ -1,22 +1,37 @@
 package middlewares
 
 import (
+	"log"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 )
 
-func GenerateToken(userID uint, email string, role string) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["id"] = userID
+func GenerateToken(id int, email string) (string, error) {
+	
+	claims := jwt.MapClaims{}
+	claims["authorized"] = true
+	claims["id"] = id
 	claims["email"] = email
-	claims["role"] = role
-	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	_, err := os.Stat(".env")
+	if err == nil {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Failed to Fetch .env File")
+		}
+	}
+
+	validToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return "", err
 	}
-	return tokenString, nil
+
+	return validToken, nil
 }
+
