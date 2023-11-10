@@ -39,6 +39,13 @@ func SetupRoutes() *echo.Echo {
 	gUsers.PUT("/:id", controllers.UpdateUserController, JWT)
 	gUsers.DELETE("/:id", controllers.DeleteUserController, JWT)
 
+	gDocter := e.Group("/doctors")
+	gDocter.POST("/register", controllers.)
+	gDocter.POST("/login", controllers.)
+	gDocter.GET("/:id", controllers., JWT)
+	gDocter.PUT("/:id", controllers., JWT)
+	gDocter.DELETE("/:id", controllers., JWT)
+
 	return e
 
 }

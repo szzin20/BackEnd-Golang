@@ -1,15 +1,15 @@
 package middlewares
 
 import (
-	"os"
 	"healthcare/models/web"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 func GenerateToken(userLoginResponse *web.UserLoginResponse, id int) (string, error) {
-	
+
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["id"] = id
