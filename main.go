@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"healthcare/configs"
 	"healthcare/middlewares"
+	"healthcare/routes"
 	"log"
 	"os"
 
@@ -27,6 +28,9 @@ func main() {
 	middlewares.RateLimiter(e)
 	middlewares.Recover(e)
 	middlewares.CORS(e)
+
+	// load router
+	routes.SetupRoutes(e)
 
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {

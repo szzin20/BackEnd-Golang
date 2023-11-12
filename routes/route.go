@@ -4,6 +4,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func SetupRoutes(*echo.Echo) {
+func SetupRoutes(e *echo.Echo) {
 
 }
