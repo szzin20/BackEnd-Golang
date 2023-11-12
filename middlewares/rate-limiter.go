@@ -6,5 +6,5 @@ import (
 )
 
 func RateLimiter(e *echo.Echo) {
-	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20)))
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(10)))
 }
