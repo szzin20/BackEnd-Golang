@@ -2,6 +2,7 @@ package configs
 
 import (
 	"fmt"
+	"healthcare/models/schema"
 	"log"
 
 	"gorm.io/driver/mysql"
@@ -36,5 +37,5 @@ func ConnectDB() {
 }
 
 func InitialMigration() {
-	DB.AutoMigrate()
+	DB.AutoMigrate(&schema.Doctor{})
 }
