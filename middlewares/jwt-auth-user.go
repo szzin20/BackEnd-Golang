@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"healthcare/utils/helper"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -26,14 +27,10 @@ func UserRoleAuth(next echo.HandlerFunc) echo.HandlerFunc {
 			if userRole == role {
 				return next(c)
 			} else {
-				return c.JSON(http.StatusForbidden, map[string]string{
-					"message": "You are not authorized to access this resource!",
-				})
+				return c.JSON(http.StatusForbidden, helper.ErrorResponse("You are not Authorized to Access this Resource"))
 			}
 		} else {
-			return c.JSON(http.StatusUnauthorized, map[string]string{
-				"message": "Invalid or expired token!",
-			})
+			return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Invalid or Expired Token"))
 		}
 	}
 }
@@ -56,14 +53,11 @@ func UserIDRoleAuth(next echo.HandlerFunc) echo.HandlerFunc {
 				c.Set("userID", userID)
 				return next(c)
 			} else {
-				return c.JSON(http.StatusForbidden, map[string]string{
-					"message": "You are not authorized to access this resource!",
-				})
+				return c.JSON(http.StatusForbidden, helper.ErrorResponse("You are not Authorized to Access this Resource"))
 			}
 		} else {
-			return c.JSON(http.StatusUnauthorized, map[string]string{
-				"message": "Invalid or expired token!",
-			})
+			return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Invalid or Expired Token"))
+			
 		}
 	}
 }

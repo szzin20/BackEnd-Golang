@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"healthcare/utils/helper"
 	"net/http"
 	"os"
 	"strings"
@@ -28,9 +29,7 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 func ExtractToken(c echo.Context) (*jwt.Token, error) {
 	tokenString := c.Request().Header.Get("Authorization")
 	if tokenString == "" {
-		return nil, c.JSON(http.StatusUnauthorized, map[string]string{
-			"message": "Missing token!",
-		})
+		return nil, c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Missing Token"))
 	}
 
 	tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
@@ -39,9 +38,7 @@ func ExtractToken(c echo.Context) (*jwt.Token, error) {
 	})
 
 	if err != nil {
-		return nil, c.JSON(http.StatusUnauthorized, map[string]string{
-			"message": "Invalid or expired token!",
-		})
+		return nil, c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Invalid or Expired Token"))
 	}
 
 	return token, nil
