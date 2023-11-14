@@ -7,10 +7,10 @@ import (
 )
 
 type Admin struct {
-	ID        uint   `gorm:"primaryKey"`
-	Name      string `json:"name"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
+	ID        uint `gorm:"primaryKey"`
+	Name      string
+	Email     string
+	Password  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`

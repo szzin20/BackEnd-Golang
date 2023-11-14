@@ -13,6 +13,6 @@ type AdminUpdateRequest struct {
 
 type AdminResetPasswordRequest struct {
 	Email              string `json:"email" form:"email" `
-	NewPassword        string `json:"newPassword" form:"password" `
-	ConfirmNewPassword string `json:"confirmNewPassword" form:"confirmNewPassword" `
+	NewPassword        string `json:"new_password" form:"new_password" `
+	ConfirmNewPassword string `json:"confirm_new_password" form:"confirm_new_password" `
 }
