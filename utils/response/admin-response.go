@@ -15,7 +15,6 @@ func ConvertToAdminUpdateResponse(admin *schema.Admin) web.AdminUpdateResponse {
 	return web.AdminUpdateResponse{
 		Name:  admin.Name,
 		Email: admin.Email,
-		Password: admin.Password,
 	}
 }
 
