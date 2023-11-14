@@ -145,3 +145,45 @@ func GetMedicineByNameAdminController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", medicineResponse))
 }
+
+// Get All Medicines (Patient)
+func GetAllMedicinesPatientController(c echo.Context) error {
+	var medicines []schema.Medicine
+
+	err := configs.DB.Find(&medicines).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Medicines Data"))
+	}
+
+	if len(medicines) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Empty Medicines Data"))
+	}
+
+	var medicinesResponse []web.MedicineResponse
+	for _, medicine := range medicines {
+		medicineResponse := response.ConvertToPatientMedicineResponse(&medicine)
+		medicinesResponse = append(medicinesResponse, medicineResponse)
+	}
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicines Data Successfully Retrieved", medicinesResponse))
+}
+
+// Get Medicine by Name (Patient)
+func GetMedicineByNamePatientController(c echo.Context) error {
+	name := c.QueryParam("name")
+
+	if name == "" {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Name parameter is required"))
+	}
+
+	var medicine schema.Medicine
+
+	result := configs.DB.Where("name = ?", name).First(&medicine)
+	if result.Error != nil {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Medicine not found"))
+	}
+
+	medicineResponse := response.ConvertToPatientMedicineResponse(&medicine)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", medicineResponse))
+}
