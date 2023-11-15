@@ -16,18 +16,23 @@ func SetupRoutes() *echo.Echo {
 	middlewares.Recover(e)
 	middlewares.CORS(e)
 
-	GroupDoctor := e.Group("/doctors")
-	e.POST("/doctors/register", controllers.RegisterDoctorController)
-	e.POST("/doctors/login", controllers.LoginDoctorController)
-	GroupDoctor.PUT("/:id", controllers.UpdateDoctorController, middlewares.DoctorIDRoleAuth)
-	GroupDoctor.DELETE("/:id", controllers.DeleteDoctorController, middlewares.DoctorIDRoleAuth)
-	GroupDoctor.GET("/profile", controllers.GetDoctorProfileController, middlewares.DoctorIDRoleAuth)
-	// patients
-	GroupDoctor.GET("/patients", controllers.GetDoctorPatientsController, middlewares.DoctorIDRoleAuth)
-	GroupDoctor.GET("/patients/:status", controllers.GetDoctorPatientsByStatus, middlewares.DoctorIDRoleAuth)
-	// complaints
-	GroupDoctor.GET("/complaints", controllers.GetAllDoctorComplaints, middlewares.DoctorIDRoleAuth)
-	GroupDoctor.GET("/complaints/:status", controllers.GetDoctorComplaintsByStatus, middlewares.DoctorIDRoleAuth)
-	GroupDoctor.PUT("/complaints/:status", controllers.UpdateDoctorComplaintStatus, middlewares.DoctorIDRoleAuth)
+	doctorGroup := e.Group("/doctors")
+	e.POST("/register/doctor", controllers.RegisterDoctorController)
+	e.POST("/login/doctor", controllers.LoginDoctorController)
+	// Doctor AUTH
+	doctorGroup.GET("/profile", controllers.GetDoctorProfileController, middlewares.DoctorIDRoleAuth)
+	doctorGroup.PUT("/update/profile", controllers.UpdateDoctorController, middlewares.DoctorIDRoleAuth)
+	doctorGroup.DELETE("/delete/profile", controllers.DeleteDoctorController, middlewares.DoctorIDRoleAuth)
+	doctorGroup.GET("/all", controllers.GetAllDoctorController, middlewares.DoctorIDRoleAuth)
+	// Doctor Complaint 
+	doctorGroup.GET("/complaints", controllers.GetAllDoctorComplaints, middlewares.DoctorIDRoleAuth)
+	doctorGroup.GET("/complaints/status", controllers.GetDoctorComplaintsByStatus, middlewares.DoctorIDRoleAuth)
+	doctorGroup.PUT("/complaints/:complaintID/status", controllers.UpdateDoctorComplaintStatus, middlewares.DoctorIDRoleAuth)
+	// Doctor Patient
+	doctorGroup.GET("/patients", controllers.GetDoctorPatientsController, middlewares.DoctorIDRoleAuth)
+	doctorGroup.GET("/patients/:status", controllers.GetDoctorPatientsByStatus, middlewares.DoctorIDRoleAuth)
+	doctorGroup.PUT("/patient-status", controllers.UpdatePatientStatusController)
+
+
 	return e
 }
