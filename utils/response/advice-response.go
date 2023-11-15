@@ -7,27 +7,9 @@ import (
 
 func ConvertToAdviceResponse(advice *schema.Advice) web.AdviceResponse {
 	return web.AdviceResponse{
-		ID:          advice.ID,
-		ComplaintID: advice.ComplaintID,
-		Title:       advice.Title,
-		Content:     advice.Content,
-		Status:      advice.Status,
+		Message:     advice.Message,
+		Image:       advice.Image,
+		Audio:       advice.Audio,
 		CreatedAt:   advice.CreatedAt,
 	}
-}
-
-func ConvertToGetAllAdvicesResponse(advices []schema.Advice) []web.AdviceResponse {
-	var results []web.AdviceResponse
-	for _, advice := range advices {
-		adviceResponse := web.AdviceResponse{
-			ID:          advice.ID,
-			ComplaintID: advice.ComplaintID,
-			Title:       advice.Title,
-			Content:     advice.Content,
-			Status:      advice.Status,
-			CreatedAt:   advice.CreatedAt,
-		}
-		results = append(results, adviceResponse)
-	}
-	return results
 }

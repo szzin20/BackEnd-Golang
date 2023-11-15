@@ -5,9 +5,10 @@ import (
 	"healthcare/models/web"
 )
 
-func ConvertToAdviceRequest(advice web.AdviceRequest, ComplaintID int) *schema.Advice {
+func ConvertToAdviceRequest(advice web.AdviceRequest, ComplaintID uint) *schema.Advice {
 	return &schema.Advice{
-		Title:   advice.Title,
-		Content: advice.Content,
+		Message:   advice.Message,
+		Image: advice.Image,
+		Audio: advice.Audio,
 	}
 }
