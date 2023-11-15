@@ -1,37 +1,48 @@
 package middlewares
 
 import (
-	"log"
+	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
+	"github.com/labstack/echo/v4"
 )
 
-func GenerateToken(id int, email string) (string, error) {
-	
-	claims := jwt.MapClaims{}
-	claims["authorized"] = true
-	claims["id"] = id
+// create token
+func GenerateToken(userID int, email string, role string) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["id"] = userID
 	claims["email"] = email
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	_, err := os.Stat(".env")
-	if err == nil {
-		err := godotenv.Load()
-		if err != nil {
-			log.Fatal("Failed to Fetch .env File")
-		}
-	}
-
-	validToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	claims["role"] = role
+	claims["exp"] = time.Now().Add(time.Hour * 72).Unix() // 3 hari
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return "", err
 	}
-
-	return validToken, nil
+	return tokenString, nil
 }
 
+func ExtractToken(c echo.Context) (*jwt.Token, error) {
+	tokenString := c.Request().Header.Get("Authorization")
+	if tokenString == "" {
+		return nil, c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": "Missing token!",
+		})
+	}
+
+	tokenString = strings.Replace(tokenString, "Bearer ", "", 1)
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET")), nil
+	})
+
+	if err != nil {
+		return nil, c.JSON(http.StatusUnauthorized, map[string]string{
+			"message": "Invalid or expired token!",
+		})
+	}
+
+	return token, nil
+}
