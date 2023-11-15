@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"healthcare/configs"
 	"healthcare/middlewares"
@@ -156,6 +157,9 @@ func DeleteDoctorController(c echo.Context) error {
 	var existingDoctor schema.Doctor
 	result := configs.DB.First(&existingDoctor, userID)
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("Dokter tidak ditemukan"))
+		}
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data dokter"))
 	}
 
