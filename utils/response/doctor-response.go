@@ -7,12 +7,11 @@ import (
 
 func ConvertToDoctorRegisterResponse(doctor *schema.Doctor) web.DoctorResgisterResponse {
 	return web.DoctorResgisterResponse{
-		Fullname:               doctor.Fullname,
+		Fullname:           doctor.Fullname,
 		Email:              doctor.Email,
-		Password:           doctor.Password,
 		Price:              doctor.Price,
 		Tag:                doctor.Tag,
-		ImageURL:           doctor.ImageURL,
+		ProfilePicture:     doctor.ProfilePicture,
 		RegistrationLetter: doctor.RegistrationLetter,
 	}
 }
@@ -26,25 +25,43 @@ func ConvertToDoctorLoginResponse(doctor *schema.Doctor) web.DoctorLoginResponse
 
 func ConvertToDoctorUpdateResponse(doctor *schema.Doctor) web.DoctorUpdateResponse {
 	return web.DoctorUpdateResponse{
-		Fullname:               doctor.Fullname,
+		Fullname:           doctor.Fullname,
 		Email:              doctor.Email,
-		Password:           doctor.Password,
 		Price:              doctor.Price,
 		Tag:                doctor.Tag,
-		ImageURL:           doctor.ImageURL,
+		ProfilePicture:     doctor.ProfilePicture,
 		RegistrationLetter: doctor.RegistrationLetter,
 	}
 }
 
 func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorResgisterResponse {
 	return web.DoctorResgisterResponse{
-		Fullname:               doctor.Fullname,
+		Fullname:           doctor.Fullname,
 		Email:              doctor.Email,
-		Password:           doctor.Password,
 		Price:              doctor.Price,
 		Tag:                doctor.Tag,
-		ImageURL:           doctor.ImageURL,
+		ProfilePicture:     doctor.ProfilePicture,
 		RegistrationLetter: doctor.RegistrationLetter,
 	}
 }
 
+func ConvertToGetAllDoctorResponse(doctors []schema.Doctor) []web.DoctorAllResponse {
+	var results []web.DoctorAllResponse
+
+	// Iterasi melalui setiap dokter dan konversi ke format respons
+	for _, doctor := range doctors {
+		doctorResponse := web.DoctorAllResponse{
+			Fullname:           doctor.Fullname,
+			Email:              doctor.Email,
+			Price:              doctor.Price,
+			Tag:                doctor.Tag,
+			Status:             doctor.Status,
+			ProfilePicture:     doctor.ProfilePicture,
+			RegistrationLetter: doctor.RegistrationLetter,
+		}
+
+		results = append(results, doctorResponse)
+	}
+
+	return results
+}
