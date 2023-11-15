@@ -7,12 +7,12 @@ import (
 
 func ConvertToDoctorRegisterRequest(doctor web.DoctorRegisterRequest) *schema.Doctor {
 	return &schema.Doctor{
-		Fullname:               doctor.Fullname,
+		Fullname:           doctor.Fullname,
 		Email:              doctor.Email,
 		Password:           doctor.Password,
 		Price:              doctor.Price,
 		Tag:                doctor.Tag,
-		ImageURL:           doctor.ImageURL,
+		ProfilePicture:     doctor.ProfilePicture,
 		RegistrationLetter: doctor.RegistrationLetter,
 	}
 }
