@@ -7,16 +7,17 @@ import (
 )
 
 type User struct {
-	ID        int `gorm:"primarykey"`
+	ID        uint `gorm:"primarykey"`
 	Fullname  string
-	Email     string
-	Password  string
+	Email     string `gorm:"not null;unique"`
+	Password  string `gorm:"not null"`
 	ImageURL  string
-	Gender    string `gorm:"type:enum('male', 'female')"`
+	Gender    string 
 	Birthdate string
-	BloodType string `gorm:"type:enum('A', 'B', 'O', 'AB')"`
+	BloodType string 
 	Height    int
 	Weight    int
+	Role      string `gorm:"type:enum('user');default:'user'"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`

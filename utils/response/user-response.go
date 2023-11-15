@@ -9,12 +9,6 @@ func ConvertToUserRegisterResponse(user *schema.User) web.UserRegisterResponse {
 	return web.UserRegisterResponse{
 		Fullname:  user.Fullname,
 		Email:     user.Email,
-		ImageURL:  user.ImageURL,
-		Gender:    user.Gender,
-		Birthdate: user.Birthdate,
-		BloodType: user.BloodType,
-		Height:    user.Height,
-		Weight:    user.Weight,
 	}
 }
 
@@ -29,7 +23,6 @@ func ConvertToUserUpdateResponse(user *schema.User) web.UserUpdateResponse {
 	return web.UserUpdateResponse{
 		Fullname:  user.Fullname,
 		Email:     user.Email,
-		Password:  user.Password,
 		ImageURL:  user.ImageURL,
 		Gender:    user.Gender,
 		Birthdate: user.Birthdate,
@@ -39,8 +32,8 @@ func ConvertToUserUpdateResponse(user *schema.User) web.UserUpdateResponse {
 	}
 }
 
-func ConvertToGetUserResponse(user *schema.User) web.UserRegisterResponse {
-	return web.UserRegisterResponse{
+func ConvertToGetUserResponse(user *schema.User) web.UserUpdateResponse {
+	return web.UserUpdateResponse{
 		Fullname:  user.Fullname,
 		Email:     user.Email,
 		ImageURL:  user.ImageURL,
@@ -52,10 +45,10 @@ func ConvertToGetUserResponse(user *schema.User) web.UserRegisterResponse {
 	}
 }
 
-func ConvertToGetAllUsersResponse(users []schema.User) []web.UserRegisterResponse {
-	var results []web.UserRegisterResponse
+func ConvertToGetAllUsersResponse(users []schema.User) []web.UserUpdateResponse {
+	var results []web.UserUpdateResponse
 	for _, user := range users {
-		userResponse := web.UserRegisterResponse{
+		userResponse := web.UserUpdateResponse{
 			Fullname:  user.Fullname,
 			Email:     user.Email,
 			ImageURL:  user.ImageURL,

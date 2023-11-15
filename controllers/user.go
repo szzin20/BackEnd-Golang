@@ -9,47 +9,9 @@ import (
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
-
-// Get All User
-func GetAllUsersController(c echo.Context) error {
-	var users []schema.User
-
-	err := configs.DB.Find(&users).Error
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Users Data"))
-	}
-
-	if len(users) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Empty Users Data"))
-	}
-
-	response := response.ConvertToGetAllUsersResponse(users)
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Users Data Successfully Retrieved", response))
-}
-
-// Get User by ID
-func GetUserController(c echo.Context) error {
-
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid User ID"))
-	}
-
-	var user schema.User
-
-	if err := configs.DB.First(&user, id).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve User Data"))
-	}
-
-	response := response.ConvertToGetUserResponse(&user)
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Users Data Successfully Retrieved", response))
-}
 
 // Register User
 func RegisterUserController(c echo.Context) error {
@@ -95,7 +57,7 @@ func LoginUserController(c echo.Context) error {
 
 	userLoginResponse := response.ConvertToUserLoginResponse(user)
 
-	token, err := middlewares.GenerateToken(&userLoginResponse, user.ID)
+	token, err := middlewares.GenerateToken(user.ID, user.Email, user.Role)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Generate JWT"))
 	}
@@ -105,23 +67,45 @@ func LoginUserController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", userLoginResponse))
 }
 
+// Get User Profile
+func GetUserController(c echo.Context) error {
 
-// Update User
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid User ID"))
+	}
+
+	var user schema.User
+
+	if err := configs.DB.First(&user, userID).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve User Data"))
+	}
+
+	response := response.ConvertToGetUserResponse(&user)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Users Data Successfully Retrieved", response))
+}
+
+// Update User Profile
 func UpdateUserController(c echo.Context) error {
 
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid user ID"))
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid User ID"))
 	}
 
 	var existingUser schema.User
 
-	result := configs.DB.First(&existingUser, id)
+	result := configs.DB.First(&existingUser, userID)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve User"))
 	}
 
 	var userUpdated web.UserUpdateRequest
+
+	if existingUser := configs.DB.Where("email = ?", userUpdated.Email).First(&userUpdated).Error; existingUser == nil {
+		return c.JSON(http.StatusConflict, helper.ErrorResponse("Email Already Exist"))
+	}
 
 	if err := c.Bind(&userUpdated); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Update Data"))
@@ -138,13 +122,14 @@ func UpdateUserController(c echo.Context) error {
 
 // Delete User
 func DeleteUserController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid User ID"))
+
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid User ID"))
 	}
 
 	var existingUser schema.User
-	result := configs.DB.First(&existingUser, id)
+	result := configs.DB.First(&existingUser, userID)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve User"))
 	}
@@ -153,5 +138,3 @@ func DeleteUserController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("User Deleted Data Successful", nil))
 }
-
-

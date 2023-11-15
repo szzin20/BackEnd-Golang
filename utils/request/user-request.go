@@ -10,12 +10,6 @@ func ConvertToUserRegisterRequest(user web.UserRegisterRequest) *schema.User {
 		Fullname:  user.Fullname,
 		Email:     user.Email,
 		Password:  user.Password,
-		ImageURL:  user.ImageURL,
-		Gender:    user.Gender,
-		Birthdate: user.Birthdate,
-		BloodType: user.BloodType,
-		Height:    user.Height,
-		Weight:    user.Weight,
 	}
 }
 
@@ -26,4 +20,17 @@ func ConvertToUserLoginRequest(user web.UserLoginRequest) *schema.User {
 	}
 }
 
+func ConvertToUserUpdateRequest(user web.UserUpdateRequest) *schema.User {
+	return &schema.User{
+		Fullname:  user.Fullname,
+		Email:     user.Email,
+		Password:  user.Password,
+		ImageURL:  user.ImageURL,
+		Gender:    user.Gender,
+		Birthdate: user.Birthdate,
+		BloodType: user.BloodType,
+		Height:    user.Height,
+		Weight:    user.Weight,
+	}
+}
 
