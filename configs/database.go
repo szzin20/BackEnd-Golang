@@ -37,5 +37,8 @@ func ConnectDB() {
 }
 
 func InitialMigration() {
-	DB.AutoMigrate(&schema.Doctor{})
+	DB.AutoMigrate(
+		&schema.Doctor{},
+		&schema.Complaint{},
+	)
 }
