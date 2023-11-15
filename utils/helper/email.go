@@ -86,7 +86,6 @@ func SendEmail(to, subject, content string) error {
 }
 
 // SendNotificationEmail mengirimkan email notifikasi
-// SendNotificationEmail sends a notification email based on the user type
 func SendNotificationEmail(to, fullname, notificationType, userType string) error {
 	go func() {
 		var subject, body string
