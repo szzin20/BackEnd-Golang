@@ -3,12 +3,11 @@ package schema
 import "time"
 
 type Complaint struct {
-	ID        int `gorm:"primaryKey"`
-	Title     string
-	Content   string
-	Status    string
-	CreatedAt time.Time
-	TransactionID int
-	Advice Advice `gorm:"ForeignKey:ComplaintID;references:ID"` // one to one
+	ID            uint `gorm:"primaryKey"`
+	Message       string
+	Image         string
+	Audio         string
+	CreatedAt     time.Time
+	TransactionID uint
+	Advice        Advice `gorm:"ForeignKey:ComplaintID;references:ID"` // one to one
 }
-

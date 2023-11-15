@@ -13,17 +13,17 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// Create Complaint
+// User Create Complaint
 func CreateComplaintController(c echo.Context) error {
 
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Transaction ID"))
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Transaction ID"))
 	}
 
 	var existingTransactionID schema.DoctorTransaction
 
-	result := configs.DB.First(&existingTransactionID, id)
+	result := configs.DB.First(&existingTransactionID, userID)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Transaction ID"))
 	}
@@ -45,36 +45,18 @@ func CreateComplaintController(c echo.Context) error {
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("Complaint Successful", response))
 }
 
-// Get All Complaint
-func GetAllComplaintsController(c echo.Context) error {
-	var complaints []schema.Complaint
 
-	err := configs.DB.Find(&complaints).Error
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Complaints Data"))
-	}
-
-	if len(complaints) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Empty Complaints Data"))
-	}
-
-	response := response.ConvertToGetAllComplaintsResponse(complaints)
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Complaints Data Successfully Retrieved", response))
-}
-
-
-// Get Complaint by ID
+// User Get Complaint by ID
 func GetComplaintController(c echo.Context) error {
 
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Complaint ID"))
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Complaint ID"))
 	}
 
 	var complaint schema.Complaint
 
-	if err := configs.DB.First(&complaint, id).Error; err != nil {
+	if err := configs.DB.First(&complaint, userID).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Complaint Data"))
 	}
 

@@ -5,10 +5,8 @@ import (
 )
 
 type ComplaintResponse struct {
-	ID            int       `json:"id" form:"id"`
-	TransactionID int       `json:"transaction_id" form:"transaction_id"`
-	Title         string    `json:"title" form:"title"`
-	Content       string    `json:"content" form:"content"`
-	Status        string    `json:"status" form:"status"`
+	Message       string    `json:"message" form:"message"`
+	Image         string    `json:"image" form:"image"`
+	Audio         string    `json:"audio" form:"audio"`
 	CreatedAt     time.Time `json:"created_at" form:"created_at"`
 }

@@ -1,6 +1,7 @@
 package web
 
 type ComplaintRequest struct {
-	Title   string `json:"title" form:"title"`
-	Content string `json:"content" form:"content"`
+	Message string `json:"message" form:"message"`
+	Image   string `json:"image" form:"image"`
+	Audio   string `json:"audio" form:"audio"`
 }
