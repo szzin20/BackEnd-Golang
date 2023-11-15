@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
 )
 
@@ -132,6 +133,9 @@ func GetDoctorProfileController(c echo.Context) error {
 
 	var doctor schema.Doctor
 	if err := configs.DB.First(&doctor, userID).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return c.JSON(http.StatusConflict, helper.ErrorResponse("Profil Dokter tidak ditemukan"))
+		}
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil Profil Dokter"))
 	}
 
@@ -281,4 +285,3 @@ func UpdatePatientStatusController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Status Pasien Diperbarui", nil))
 }
-
