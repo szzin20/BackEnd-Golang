@@ -6,7 +6,7 @@ type DoctorRegisterRequest struct {
 	Password           string `json:"password" form:"password"`
 	Price              int    `json:"price" form:"price"`
 	Tag                string `json:"tag" form:"tag"`
-	ImageURL           string `json:"image_url" form:"image_url"`
+	ProfilePicture     string `json:"profile_picture" form:"profile_picture"`
 	RegistrationLetter string `json:"registration_letter" form:"registration_letter"`
 }
 
@@ -21,6 +21,6 @@ type DoctorUpdateRequest struct {
 	Password           string `json:"password" form:"password"`
 	Price              int    `json:"price" form:"price"`
 	Tag                string `json:"tag" form:"tag"`
-	ImageURL           string `json:"image_url" form:"image_url"`
+	ProfilePicture     string `json:"profile_picture" form:"profile_picture"`
 	RegistrationLetter string `json:"registration_letter" form:"registration_letter"`
 }
