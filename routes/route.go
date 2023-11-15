@@ -31,7 +31,7 @@ func SetupRoutes() *echo.Echo {
 	// Doctor Patient
 	doctorGroup.GET("/patients", controllers.GetDoctorPatientsController, middlewares.DoctorIDRoleAuth)
 	doctorGroup.GET("/patients/:status", controllers.GetDoctorPatientsByStatus, middlewares.DoctorIDRoleAuth)
-	doctorGroup.PUT("/patient-status", controllers.UpdatePatientStatusController)
+	doctorGroup.PUT("/patient-status", controllers.UpdatePatientStatusController, middlewares.DoctorIDRoleAuth)
 
 
 	return e
