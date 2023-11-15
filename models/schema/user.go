@@ -11,10 +11,10 @@ type User struct {
 	Fullname  string
 	Email     string `gorm:"not null;unique"`
 	Password  string `gorm:"not null"`
-	ImageURL  string
-	Gender    string 
+	Image     string
+	Gender    string
 	Birthdate string
-	BloodType string 
+	BloodType string
 	Height    int
 	Weight    int
 	Role      string `gorm:"type:enum('user');default:'user'"`

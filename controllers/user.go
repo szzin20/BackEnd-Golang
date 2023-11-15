@@ -13,7 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// Register User
+// User Register 
 func RegisterUserController(c echo.Context) error {
 	var user web.UserRegisterRequest
 

@@ -1,9 +1,9 @@
 package web
 
 type UserRegisterRequest struct {
-	Fullname  string `json:"fullname" form:"fullname"`
-	Email     string `json:"email" form:"email"`
-	Password  string `json:"password" form:"password"`
+	Fullname string `json:"fullname" form:"fullname"`
+	Email    string `json:"email" form:"email"`
+	Password string `json:"password" form:"password"`
 }
 
 type UserLoginRequest struct {
@@ -15,7 +15,7 @@ type UserUpdateRequest struct {
 	Fullname  string `json:"fullname" form:"fullname"`
 	Email     string `json:"email" form:"email"`
 	Password  string `json:"password" form:"password"`
-	ImageURL  string `json:"image_url" form:"image_url"`
+	Image     string `json:"image" form:"image"`
 	Gender    string `json:"gender" form:"gender"`
 	Birthdate string `json:"birthdate" form:"birthdate"`
 	BloodType string `json:"blood_type" form:"blood_type"`

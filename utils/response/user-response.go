@@ -7,8 +7,8 @@ import (
 
 func ConvertToUserRegisterResponse(user *schema.User) web.UserRegisterResponse {
 	return web.UserRegisterResponse{
-		Fullname:  user.Fullname,
-		Email:     user.Email,
+		Fullname: user.Fullname,
+		Email:    user.Email,
 	}
 }
 
@@ -23,7 +23,7 @@ func ConvertToUserUpdateResponse(user *schema.User) web.UserUpdateResponse {
 	return web.UserUpdateResponse{
 		Fullname:  user.Fullname,
 		Email:     user.Email,
-		ImageURL:  user.ImageURL,
+		Image:     user.Image,
 		Gender:    user.Gender,
 		Birthdate: user.Birthdate,
 		BloodType: user.BloodType,
@@ -36,7 +36,7 @@ func ConvertToGetUserResponse(user *schema.User) web.UserUpdateResponse {
 	return web.UserUpdateResponse{
 		Fullname:  user.Fullname,
 		Email:     user.Email,
-		ImageURL:  user.ImageURL,
+		Image:     user.Image,
 		Gender:    user.Gender,
 		Birthdate: user.Birthdate,
 		BloodType: user.BloodType,
@@ -51,7 +51,7 @@ func ConvertToGetAllUsersResponse(users []schema.User) []web.UserUpdateResponse 
 		userResponse := web.UserUpdateResponse{
 			Fullname:  user.Fullname,
 			Email:     user.Email,
-			ImageURL:  user.ImageURL,
+			Image:     user.Image,
 			Gender:    user.Gender,
 			Birthdate: user.Birthdate,
 			BloodType: user.BloodType,

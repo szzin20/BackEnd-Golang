@@ -7,9 +7,9 @@ import (
 
 func ConvertToUserRegisterRequest(user web.UserRegisterRequest) *schema.User {
 	return &schema.User{
-		Fullname:  user.Fullname,
-		Email:     user.Email,
-		Password:  user.Password,
+		Fullname: user.Fullname,
+		Email:    user.Email,
+		Password: user.Password,
 	}
 }
 
@@ -25,7 +25,7 @@ func ConvertToUserUpdateRequest(user web.UserUpdateRequest) *schema.User {
 		Fullname:  user.Fullname,
 		Email:     user.Email,
 		Password:  user.Password,
-		ImageURL:  user.ImageURL,
+		Image:     user.Image,
 		Gender:    user.Gender,
 		Birthdate: user.Birthdate,
 		BloodType: user.BloodType,
@@ -33,4 +33,3 @@ func ConvertToUserUpdateRequest(user web.UserUpdateRequest) *schema.User {
 		Weight:    user.Weight,
 	}
 }
-
