@@ -1,134 +1,119 @@
 package controllers
 
-import (
-	"errors"
-	"healthcare/configs"
-	"healthcare/models/schema"
-	"healthcare/models/web"
-	"healthcare/utils/helper"
-	"healthcare/utils/response"
-	"net/http"
-	"strconv"
+// func GetAllDoctorComplaints(c echo.Context) error {
+// 	// Ekstrak DoctorID dari konteks
+// 	doctorID, ok := c.Get("DoctorID").(int)
+// 	if !ok {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil DoctorID"))
+// 	}
 
-	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
-)
+// 	// Ambil semua keluhan yang terkait dengan pasien-pasien yang ditangani oleh dokter tersebut
+// 	var doctorComplaint []schema.Complaint
+// 	if err := configs.DB.
+// 		Preload("DoctorTransaction").
+// 		Where("doctor_id = ?", doctorID).
+// 		Find(&doctorComplaint).Error; err != nil {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data keluhan: "+err.Error()))
+// 	}
 
-func GetAllDoctorComplaints(c echo.Context) error {
-	// Ekstrak DoctorID dari konteks
-	doctorID, ok := c.Get("DoctorID").(int)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil DoctorID"))
-	}
+// 	responseData := response.ConvertToGetAllComplaintsResponse(doctorComplaint)
 
-	// Ambil semua keluhan yang terkait dengan pasien-pasien yang ditangani oleh dokter tersebut
-	var doctorComplaint []schema.Complaint
-	if err := configs.DB.
-		Preload("DoctorTransaction").
-		Where("doctor_id = ?", doctorID).
-		Find(&doctorComplaint).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data keluhan: "+err.Error()))
-	}
+// 	return c.JSON(http.StatusOK, helper.SuccessResponse("Daftar Keluhan Dokter", responseData))
+// }
 
-	responseData := response.ConvertToGetAllComplaintsResponse(doctorComplaint)
+// func GetDoctorComplaintsByStatus(c echo.Context) error {
+// 	doctorID, ok := c.Get("DoctorID").(int)
+// 	if !ok {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil DoctorID"))
+// 	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Daftar Keluhan Dokter", responseData))
-}
+// 	// Ambil status dari parameter query
+// 	status := c.QueryParam("status")
 
-func GetDoctorComplaintsByStatus(c echo.Context) error {
-	doctorID, ok := c.Get("DoctorID").(int)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil DoctorID"))
-	}
+// 	var doctor schema.Doctor
+// 	if err := configs.DB.First(&doctor, doctorID).Error; err != nil {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil Profil Dokter"))
+// 	}
 
-	// Ambil status dari parameter query
-	status := c.QueryParam("status")
+// 	// Ambil semua pasien untuk dokter tersebut
+// 	var patients []schema.User
+// 	if err := configs.DB.Model(&doctor).Association("Patients").Find(&patients); err != nil {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data pasien"))
+// 	}
 
-	var doctor schema.Doctor
-	if err := configs.DB.First(&doctor, doctorID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil Profil Dokter"))
-	}
+// 	// Dapatkan parameter status dari URL sebagai boolean
+// 	bStatus, err := strconv.ParseBool(status)
+// 	if err != nil {
+// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Parameter status tidak valid"))
+// 	}
 
-	// Ambil semua pasien untuk dokter tersebut
-	var patients []schema.User
-	if err := configs.DB.Model(&doctor).Association("Patients").Find(&patients); err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data pasien"))
-	}
+// 	// Validasi status menggunakan fungsi bantuan
+// 	if err := helper.ValidateStruct(bStatus); err != nil {
+// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+// 	}
 
-	// Dapatkan parameter status dari URL sebagai boolean
-	bStatus, err := strconv.ParseBool(status)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Parameter status tidak valid"))
-	}
+// 	// Dapatkan semua keluhan terkait pasien-pasien tersebut berdasarkan status yang diberikan
+// 	var complaints []schema.Complaint
+// 	for _, patient := range patients {
+// 		var patientComplaints []schema.Complaint
+// 		if err := configs.DB.Where("patient_id = ? AND status = ?", patient.ID, bStatus).Find(&patientComplaints).Error; err != nil {
+// 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data keluhan"))
+// 		}
+// 		complaints = append(complaints, patientComplaints...)
+// 	}
 
-	// Validasi status menggunakan fungsi bantuan
-	if err := helper.ValidateStruct(bStatus); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
-	}
+// 	// Periksa jika tidak ada keluhan
+// 	if len(complaints) == 0 {
+// 		return c.JSON(http.StatusOK, helper.SuccessResponse("Tidak ada keluhan ditemukan berdasarkan status yang diberikan", nil))
+// 	}
 
-	// Dapatkan semua keluhan terkait pasien-pasien tersebut berdasarkan status yang diberikan
-	var complaints []schema.Complaint
-	for _, patient := range patients {
-		var patientComplaints []schema.Complaint
-		if err := configs.DB.Where("patient_id = ? AND status = ?", patient.ID, bStatus).Find(&patientComplaints).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data keluhan"))
-		}
-		complaints = append(complaints, patientComplaints...)
-	}
+// 	// Konversi data keluhan ke format respons yang diinginkan
+// 	var convertedData []web.ComplaintsUpdateResponse
+// 	for _, complaint := range complaints {
+// 		converted := response.ConvertToGetComplaintsResponse(&complaint)
+// 		convertedData = append(convertedData, converted)
+// 	}
 
-	// Periksa jika tidak ada keluhan
-	if len(complaints) == 0 {
-		return c.JSON(http.StatusOK, helper.SuccessResponse("Tidak ada keluhan ditemukan berdasarkan status yang diberikan", nil))
-	}
+// 	return c.JSON(http.StatusOK, helper.SuccessResponse("Daftar Keluhan Dokter Berdasarkan Status", convertedData))
+// }
 
-	// Konversi data keluhan ke format respons yang diinginkan
-	var convertedData []web.ComplaintsUpdateResponse
-	for _, complaint := range complaints {
-		converted := response.ConvertToGetComplaintsResponse(&complaint)
-		convertedData = append(convertedData, converted)
-	}
+// func UpdateDoctorComplaintStatus(c echo.Context) error {
+// 	// Ekstrak DoctorID dari konteks
+// 	doctorID, ok := c.Get("DoctorID").(int)
+// 	if !ok {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil DoctorID"))
+// 	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Daftar Keluhan Dokter Berdasarkan Status", convertedData))
-}
+// 	// Ambil complaintID dari parameter
+// 	complaintID := c.Param("complaintID")
 
-func UpdateDoctorComplaintStatus(c echo.Context) error {
-	// Ekstrak DoctorID dari konteks
-	doctorID, ok := c.Get("DoctorID").(int)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil DoctorID"))
-	}
+// 	// Bind data permintaan pembaruan dari body permintaan
+// 	var updateRequest web.ComplaintsUpdateRequest
+// 	if err := c.Bind(&updateRequest); err != nil {
+// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Gagal memproses permintaan"))
+// 	}
 
-	// Ambil complaintID dari parameter 
-	complaintID := c.Param("complaintID")
+// 	// Validasi data permintaan
+// 	if err := c.Validate(&updateRequest); err != nil {
+// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+// 	}
 
-	// Bind data permintaan pembaruan dari body permintaan
-	var updateRequest web.ComplaintsUpdateRequest
-	if err := c.Bind(&updateRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Gagal memproses permintaan"))
-	}
+// 	// Ambil keluhan dari database berdasarkan complaintID dan doctorID
+// 	var complaint schema.Complaint
+// 	if err := configs.DB.Preload("DoctorTransaction").Where("id = ? AND doctor_transaction.doctor_id = ?", complaintID, doctorID).First(&complaint).Error; err != nil {
+// 		if errors.Is(err, gorm.ErrRecordNotFound) {
+// 			return c.JSON(http.StatusNotFound, helper.ErrorResponse("Keluhan tidak ditemukan"))
+// 		}
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data keluhan"))
+// 	}
 
-	// Validasi data permintaan
-	if err := c.Validate(&updateRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
-	}
+// 	// Perbarui status keluhan
+// 	complaint.Status = updateRequest.Status
 
-	// Ambil keluhan dari database berdasarkan complaintID dan doctorID
-	var complaint schema.Complaint
-	if err := configs.DB.Preload("DoctorTransaction").Where("id = ? AND doctor_transaction.doctor_id = ?", complaintID, doctorID).First(&complaint).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return c.JSON(http.StatusNotFound, helper.ErrorResponse("Keluhan tidak ditemukan"))
-		}
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data keluhan"))
-	}
+// 	// Simpan keluhan yang diperbarui ke database
+// 	if err := configs.DB.Save(&complaint).Error; err != nil {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal memperbarui status keluhan"))
+// 	}
 
-	// Perbarui status keluhan
-	complaint.Status = updateRequest.Status
-
-	// Simpan keluhan yang diperbarui ke database
-	if err := configs.DB.Save(&complaint).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal memperbarui status keluhan"))
-	}
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Status Keluhan Diperbarui", map[string]interface{}{"keluhan": &complaint}))
-}
-
+// 	return c.JSON(http.StatusOK, helper.SuccessResponse("Status Keluhan Diperbarui", map[string]interface{}{"keluhan": &complaint}))
+// }

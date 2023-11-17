@@ -210,9 +210,6 @@ func DeleteDoctorController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Akun dokter berhasil dihapus", nil))
 }
 
-
-
-
 // patients
 // func GetDoctorPatientsController(c echo.Context) error {
 // 	// Mendapatkan ID dokter dari konteks
