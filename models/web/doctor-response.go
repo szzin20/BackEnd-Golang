@@ -1,15 +1,15 @@
 package web
 
-import "healthcare/models/schema"
-
-// type DoctorResgisterResponse struct {
-// 	Fullname           string `json:"fullname" form:"fullname"`
-// 	Email              string `json:"email" form:"email"`
-// 	Price              int    `json:"price" form:"price"`
-// 	Tag                string `json:"tag" form:"tag"`
-// 	ProfilePicture     string `json:"profile_picture" form:"profile_picture"`
-// 	RegistrationLetter int    `json:"registration_letter" form:"registration_letter"`
-// }
+type DoctorResgisterResponse struct {
+	Fullname       string `json:"fullname" form:"fullname" `
+	Email          string `json:"email" form:"email"`
+	Price          int    `json:"price" form:"price" `
+	Gender         string `json:"gender" form:"gender" `
+	Specialist     string `json:"specialist" form:"specialist" `
+	ProfilePicture string `json:"profile_picture" form:"profile_picture" `
+	NoSTR          int    `json:"no_str" form:"no_str" `
+	Experience     string `json:"experience" form:"experience" `
+}
 
 type DoctorLoginResponse struct {
 	Fullname string `json:"fullname" form:"fullname"`
@@ -17,29 +17,36 @@ type DoctorLoginResponse struct {
 	Token    string `json:"token" form:"token"`
 }
 
-type DoctorLogOutResponse struct {
-	Fullname string `json:"fullname" form:"fullname"`
-	Email    string `json:"email" form:"email"`
-	Tag      string `json:"tag" form:"tag"`
-}
-
 type DoctorUpdateResponse struct {
-	Fullname                string `json:"fullname" form:"fullname"`
-	Email                   string `json:"email" form:"email"`
-	Price                   int    `json:"price" form:"price"`
-	Tag                     string `json:"tag" form:"tag"`
-	ProfilePicture          string `json:"profile_picture" form:"profile_picture"`
-	RegistrationCertificate int    `json:"registration_certificate" form:"registration_certificate"`
+	Fullname       string `json:"fullname" form:"fullname" `
+	Email          string `json:"email" form:"email"`
+	Price          int    `json:"price" form:"price" `
+	Gender         string `json:"gender" form:"gender" `
+	Specialist     string `json:"tag" form:"tag" `
+	ProfilePicture string `json:"profile_picture" form:"profile_picture" `
+	NoSTR          int    `json:"registration_certificate" form:"registration_certificate" `
+	Experience     string `json:"experience" form:"experience" `
 }
 
 type DoctorAllResponse struct {
-	Fullname                string              `json:"fullname" form:"fullname"`
-	Email                   string              `json:"email" form:"email"`
-	Price                   int                 `json:"price" form:"price"`
-	Tag                     string              `json:"tag" form:"tag"`
-	Status                  schema.DoctorStatus `json:"status" form:"status"`
-	ProfilePicture          string              `json:"profile_picture" form:"profile_picture"`
-	RegistrationCertificate int                 `json:"registration_certificate" form:"registration_certificate"`
+	Fullname   string `json:"fullname" form:"fullname" `
+	Price      int    `json:"price" form:"price" `
+	Gender     string `json:"gender" form:"gender"`
+	Status     bool   `json:"status" form:"status"`
+	Specialist string `json:"tag" form:"tag" `
+	NoSTR      int    `json:"registration_certificate" form:"registration_certificate" `
+	Experience string `json:"experience" form:"experience" `
+}
+
+type DoctorResponse struct {
+	Fullname       string `json:"fullname" form:"fullname" `
+	Email          string `json:"email" form:"email"`
+	Password       string `json:"password" form:"password" `
+	Gender         string `json:"gender" form:"gender" `
+	Specialist     string `json:"specialist" form:"specialist" `
+	ProfilePicture string `json:"profile_picture" form:"profile_picture" `
+	NoSTR          int    `json:"no_str" form:"no_str" `
+	Experience     string `json:"experience" form:"experience" `
 }
 
 // type DoctorPatientsResponse struct {

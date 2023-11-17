@@ -5,16 +5,18 @@ import (
 	"healthcare/models/web"
 )
 
-// func ConvertToDoctorRegisterResponse(doctor *schema.Doctor) web.DoctorResgisterResponse {
-// 	return web.DoctorResgisterResponse{
-// 		Fullname:           doctor.Fullname,
-// 		Email:              doctor.Email,
-// 		Price:              doctor.Price,
-// 		Tag:                doctor.Tag,
-// 		ProfilePicture:     doctor.ProfilePicture,
-// 		RegistrationLetter: doctor.RegistrationLetter,
-// 	}
-// }
+func ConvertToDoctorRegisterResponse(doctor *schema.Doctor) web.DoctorResgisterResponse {
+	return web.DoctorResgisterResponse{
+		Fullname:       doctor.Fullname,
+		Email:          doctor.Email,
+		Price:          doctor.Price,
+		Gender:         doctor.Gender,
+		Specialist:     doctor.Specialist,
+		ProfilePicture: doctor.ProfilePicture,
+		NoSTR:          doctor.NoSTR,
+		Experience:     doctor.Experience,
+	}
+}
 
 func ConvertToDoctorLoginResponse(doctor *schema.Doctor) web.DoctorLoginResponse {
 	return web.DoctorLoginResponse{
@@ -25,23 +27,27 @@ func ConvertToDoctorLoginResponse(doctor *schema.Doctor) web.DoctorLoginResponse
 
 func ConvertToDoctorUpdateResponse(doctor *schema.Doctor) web.DoctorUpdateResponse {
 	return web.DoctorUpdateResponse{
-		Fullname:           doctor.Fullname,
-		Email:              doctor.Email,
-		Price:              doctor.Price,
-		Tag:                doctor.Tag,
-		ProfilePicture:     doctor.ProfilePicture,
-		RegistrationCertificate: doctor.RegistrationCertificate,
+		Fullname:       doctor.Fullname,
+		Email:          doctor.Email,
+		Price:          doctor.Price,
+		Gender:         doctor.Gender,
+		Specialist:     doctor.Specialist,
+		ProfilePicture: doctor.ProfilePicture,
+		NoSTR:          doctor.NoSTR,
+		Experience:     doctor.Experience,
 	}
 }
 
-func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorUpdateResponse {
-	return web.DoctorUpdateResponse{
-		Fullname:                doctor.Fullname,
-		Email:                   doctor.Email,
-		Price:                   doctor.Price,
-		Tag:                     doctor.Tag,
-		ProfilePicture:          doctor.ProfilePicture,
-		RegistrationCertificate: doctor.RegistrationCertificate,
+func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorResponse {
+	return web.DoctorResponse{
+		Fullname:       doctor.Fullname,
+		Email:          doctor.Email,
+		Password:       doctor.Password,
+		Gender:         doctor.Gender,
+		Specialist:     doctor.Specialist,
+		ProfilePicture: doctor.ProfilePicture,
+		NoSTR:          doctor.NoSTR,
+		Experience:     doctor.Experience,
 	}
 }
 
@@ -51,27 +57,18 @@ func ConvertToGetAllDoctorResponse(doctors []schema.Doctor) []web.DoctorAllRespo
 	// Iterasi melalui setiap dokter dan konversi ke format respons
 	for _, doctor := range doctors {
 		doctorResponse := web.DoctorAllResponse{
-			Fullname:           doctor.Fullname,
-			Email:              doctor.Email,
-			Price:              doctor.Price,
-			Tag:                doctor.Tag,
-			Status:             doctor.Status,
-			ProfilePicture:     doctor.ProfilePicture,
-			RegistrationCertificate: doctor.RegistrationCertificate,
+			Fullname:   doctor.Fullname,
+			Gender:     doctor.Gender,
+			Status:     doctor.Status,
+			Price:      doctor.Price,
+			Specialist: doctor.Specialist,
+			Experience: doctor.Experience,
 		}
 
 		results = append(results, doctorResponse)
 	}
 
 	return results
-}
-
-func ConvertToDoctorLogoutResponse(doctor *schema.Doctor) web.DoctorLogOutResponse {
-	return web.DoctorLogOutResponse{
-		Fullname: doctor.Fullname,
-		Email:    doctor.Email,
-		Tag:      doctor.Tag,
-	}
 }
 
 // patient
@@ -108,4 +105,3 @@ func ConvertToDoctorLogoutResponse(doctor *schema.Doctor) web.DoctorLogOutRespon
 
 // 	return response
 // }
-

@@ -6,46 +6,49 @@ import (
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
+	"healthcare/utils/request"
 	"healthcare/utils/response"
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
 
 // RegisterDoctorController
-// func RegisterDoctorController(c echo.Context) error {
-// 	var doctor web.DoctorRegisterRequest
+func RegisterDoctorController(c echo.Context) error {
+	var doctor web.DoctorRegisterRequest
 
-// 	if err := c.Bind(&doctor); err != nil {
-// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Input Data Registrasi Tidak Valid"))
-// 	}
+	if err := c.Bind(&doctor); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Input Data Registrasi Tidak Valid"))
+	}
+	if err := helper.ValidateStruct(doctor); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
 
-// 	doctorRequest := request.ConvertToDoctorRegisterRequest(doctor)
+	doctorRequest := request.ConvertToDoctorRegisterRequest(doctor)
 
-// 	// Periksa apakah email sudah ada
-// 	if existingDoctor := configs.DB.Where("email = ?", doctorRequest.Email).First(&doctorRequest).Error; existingDoctor == nil {
-// 		return c.JSON(http.StatusConflict, helper.ErrorResponse("Email Sudah Ada"))
-// 	}
+	// Periksa apakah email sudah ada
+	if existingDoctor := configs.DB.Where("email = ?", doctorRequest.Email).First(&doctorRequest).Error; existingDoctor == nil {
+		return c.JSON(http.StatusConflict, helper.ErrorResponse("Email Sudah Ada"))
+	}
 
-// 	// Hash kata sandi
-// 	doctorRequest.Password = helper.HashPassword(doctorRequest.Password)
+	// Hash kata sandi
+	doctorRequest.Password = helper.HashPassword(doctor.Password) // Updated this line to use the correct password field
 
-// 	// Simpan data dokter ke database
-// 	if err := configs.DB.Create(&doctorRequest).Error; err != nil {
-// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Registrasi"))
-// 	}
+	// Simpan data dokter ke database
+	if err := configs.DB.Create(&doctorRequest).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Registrasi"))
+	}
 
-// 	// Mengirim email pemberitahuan
-// 	err := helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "drg")
-// 	if err != nil {
-// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengirim email verifikasi"))
-// 	}
+	// Mengirim email pemberitahuan
+	err := helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "drg")
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengirim email verifikasi"))
+	}
 
-// 	response := response.ConvertToDoctorRegisterResponse(doctorRequest)
+	response := response.ConvertToDoctorRegisterResponse(doctorRequest)
 
-// 	return c.JSON(http.StatusCreated, helper.SuccessResponse("Selamat Pendaftaran sukses", response))
-// }
+	return c.JSON(http.StatusCreated, helper.SuccessResponse("Selamat Pendaftaran sukses", response))
+}
 
 // LoginDoctorController
 func LoginDoctorController(c echo.Context) error {
@@ -55,65 +58,39 @@ func LoginDoctorController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Login Data"))
 	}
 
+	if err := helper.ValidateStruct(loginRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
 	var doctor schema.Doctor
 	if err := configs.DB.Where("email = ?", loginRequest.Email).First(&doctor).Error; err != nil {
 		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Email Not Registered"))
 	}
 
 	if err := helper.ComparePassword(doctor.Password, loginRequest.Password); err != nil {
-		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Incorrect Password"))
-	}
+        return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Incorrect Password"))
+    }
 
-	// Set the status to "Online" when the doctor logs in
-	doctor.Status = "Online"
-	if err := configs.DB.Save(&doctor).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to update doctor status"))
-	}
+    // The rest of your code for generating a token and handling the successful login
+    token, err := middlewares.GenerateToken(doctor.ID, doctor.Email, doctor.Role)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Generate JWT: "+err.Error()))
+    }
 
-	doctorLoginResponse := response.ConvertToDoctorLoginResponse(&doctor)
+    doctorLoginResponse := response.ConvertToDoctorLoginResponse(&doctor)
+    doctorLoginResponse.Token = token
 
-	token, err := middlewares.GenerateToken(doctor.ID, doctor.Email, doctor.Role)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Generate JWT"))
-	}
+    // Send login notification email
+    if doctor.Email != "" {
+        notificationType := "login"
+        if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "drg"); err != nil {
+            return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to send notification email: "+err.Error()))
+        }
+    }
 
-	doctorLoginResponse.Token = token
-
-	// Send login notification email
-	if doctor.Email != "" {
-		notificationType := "login"
-		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "drg"); err != nil {
-			log.Println("Failed to send notification email:", err)
-		}
-	}
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", doctorLoginResponse))
+    return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", doctorLoginResponse))
 }
 
-// LogoutDoctorController mengatur status dokter menjadi "Offline" saat logout
-func LogoutDoctorController(c echo.Context) error {
-	userID, ok := c.Get("userID").(int)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mendapatkan ID Dokter"))
-	}
-
-	// Ambil dokter yang sudah ada dari database menggunakan userID
-	var existingDoctor schema.Doctor
-
-	result := configs.DB.First(&existingDoctor, userID)
-	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data dokter"))
-	}
-
-	// Update status menjadi "Offline"
-	existingDoctor.Status = "Offline"
-	if err := configs.DB.Save(&existingDoctor).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal memperbarui status dokter"))
-	}
-	ResponseLogout := response.ConvertToDoctorLogoutResponse(&existingDoctor)
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Logout berhasil", ResponseLogout))
-}
 
 // DoctorProfile
 func GetDoctorProfileController(c echo.Context) error {
@@ -171,6 +148,10 @@ func UpdateDoctorController(c echo.Context) error {
 	var doctorUpdated web.DoctorUpdateRequest
 	if err := c.Bind(&doctorUpdated); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Input tidak valid untuk pembaruan data dokter"))
+	}
+
+	if err := helper.ValidateStruct(doctorUpdated); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
 	// Enkripsi kata sandi hanya jika kata sandi baru disediakan

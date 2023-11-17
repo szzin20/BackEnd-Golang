@@ -6,27 +6,23 @@ import (
 	"gorm.io/gorm"
 )
 
-type DoctorStatus string
 
-const (
-	Online  DoctorStatus = "Online"
-	Offline DoctorStatus = "Offline"
-)
 
 type Doctor struct {
 	ID                      uint                `gorm:"primarykey"`
+	ProfilePicture          string              `gorm:"not null"`
 	Fullname                string              `gorm:"not null"`
+	Gender                  string              `gorm:"type:enum('male', 'female')"`
 	Email                   string              `gorm:"not null;unique"`
 	Password                string              `gorm:"not null"`
-	Status                  DoctorStatus        `gorm:"type:enum('Online', 'Offline')"`
+	Status                  bool                `gorm:"not null;default:false"`
 	Price                   int                 `gorm:"not null"`
-	Tag                     string              `gorm:"not null"`
-	ProfilePicture          string              `gorm:"not null"`
-	RegistrationCertificate int                 `gorm:"not null"`
+	Specialist              string              `gorm:"not null"`
+	Experience              string              `gorm:"not null"`
+	NoSTR                   int                 `gorm:"not null"`
 	Role                    string              `gorm:"type:enum('doctor');default:'doctor'"`
 	DoctorTransaction       []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
 	UpdatedAt               time.Time
 	CreatedAt               time.Time
 	DeletedAt               gorm.DeletedAt `gorm:"index"`
 }
-
