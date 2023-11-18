@@ -71,6 +71,7 @@ func ConvertToGetAllDoctorResponse(doctors []schema.Doctor) []web.DoctorAllRespo
 	return results
 }
 
+
 // patient
 
 // func ConvertToDoctorPatientsResponse(doctor schema.Doctor) web.DoctorPatientsResponse {
