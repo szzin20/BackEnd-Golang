@@ -25,4 +25,4 @@ type Doctor struct {
 	UpdatedAt               time.Time
 	CreatedAt               time.Time
 	DeletedAt               gorm.DeletedAt `gorm:"index"`
-}
+} 
