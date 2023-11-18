@@ -13,8 +13,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// Admin AUTH
-
 // Admin Login
 func LoginAdminController(c echo.Context) error {
 	var loginRequest web.AdminLoginRequest
@@ -40,6 +38,7 @@ func LoginAdminController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", adminLoginResponse))
 }
+
 // Update Admin
 func UpdateAdminController(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
