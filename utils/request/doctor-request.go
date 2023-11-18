@@ -24,3 +24,4 @@ func ConvertToDoctorLoginRequest(doctor web.DoctorLoginRequest) *schema.Doctor {
 		Password: doctor.Password,
 	}
 }
+
