@@ -5,7 +5,7 @@ import (
 	"healthcare/models/web"
 )
 
-func ConvertToAdminLoginResponse(admin *schema.Admin) web.AdminLoginResponse {
+func ConvertToAdminLoginResponse(admin schema.Admin) web.AdminLoginResponse {
 	return web.AdminLoginResponse{
 		Name:  admin.Name,
 		Email: admin.Email,

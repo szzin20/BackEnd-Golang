@@ -5,7 +5,6 @@ import (
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
-	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"strconv"
 
@@ -14,51 +13,55 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// LoginAdminController handles admin login requests.
+// Admin AUTH
+
+// Admin Login
 func LoginAdminController(c echo.Context) error {
-	// Bind the request body to the AdminLoginRequest struct
-	loginRequest := new(web.AdminLoginRequest)
-	if err := c.Bind(loginRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("request gagal"))
+	var loginRequest web.AdminLoginRequest
+
+	if err := c.Bind(&loginRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Login Data"))
 	}
 
-	// Use the conversion function to convert AdminLoginRequest to Admin
-	admin := request.ConvertToAdminLoginRequest(*loginRequest)
+	if err := helper.ValidateStruct(loginRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
 
-	// Find the admin by email
+	var admin schema.Admin
+	if err := configs.DB.Where("email = ?", loginRequest.Email).First(&admin).Error; err != nil {
+		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Email Not Registered"))
+	}
+
 	if err := configs.DB.Where("email = ? AND password = ?", loginRequest.Email, loginRequest.Password).First(&admin).Error; err != nil {
-		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("email atau password salah"))
+		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Incorrect Email or Password"))
 	}
 
-	// Convert the admin to login response
-	loginResponse := response.ConvertToAdminLoginResponse(admin)
+	adminLoginResponse := response.ConvertToAdminLoginResponse(admin)
 
-	// Return the success response with JWT token
-	return c.JSON(http.StatusOK, helper.SuccessResponse("login sukses", loginResponse))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", adminLoginResponse))
 }
-
-// UpdateAdminController handles admin update requests.
+// Update Admin
 func UpdateAdminController(c echo.Context) error {
-    id, err := strconv.Atoi(c.Param("id"))
-    if err != nil {
-        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("id salah"))
-    }
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Admin ID"))
+	}
 
-    var updatedAdmin web.AdminUpdateRequest
+	var updatedAdmin web.AdminUpdateRequest
 
-    if err := c.Bind(&updatedAdmin); err != nil {
-        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("gagal request body"))
-    }
+	if err := c.Bind(&updatedAdmin); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Update Data"))
+	}
 
-    var existingAdmin schema.Admin
-    result := configs.DB.First(&existingAdmin, id)
-    if result.Error != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("gagal untuk mengambil data admin"))
-    }
+	var existingAdmin schema.Admin
+	result := configs.DB.First(&existingAdmin, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Admin"))
+	}
 
 	configs.DB.Model(&existingAdmin).Updates(updatedAdmin)
 
 	response := response.ConvertToAdminUpdateResponse(&existingAdmin)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("sukses update data admin", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Admin Updated Data Successful", response))
 }

@@ -1,18 +1,12 @@
 package web
 
 type AdminLoginRequest struct {
-	Email    string `json:"email" form:"email" `
-	Password string `json:"password" form:"password" `
+	Email    string `json:"email" form:"email" validate:"required,email"`
+	Password string `json:"password" form:"password" validate:"required,min=10,max=15"`
 }
 
 type AdminUpdateRequest struct {
-	Name     string `json:"name" form:"name" `
-	Email    string `json:"email" form:"email"`
-	Password string `json:"password" form:"password" `
-}
-
-type AdminResetPasswordRequest struct {
-	Email              string `json:"email" form:"email" `
-	NewPassword        string `json:"new_password" form:"new_password" `
-	ConfirmNewPassword string `json:"confirm_new_password" form:"confirm_new_password" `
+	Name     string `json:"name" form:"name" validate:"omitempty"`
+	Email    string `json:"email" form:"email" validate:"omitempty,email"`
+	Password string `json:"password" form:"password" validate:"omitempty,min=10,max=15"`
 }
