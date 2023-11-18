@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"healthcare/configs"
 	"healthcare/middlewares"
 	"healthcare/models/schema"
@@ -11,7 +10,6 @@ import (
 	"healthcare/utils/response"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -118,13 +116,6 @@ func UpdateUserController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Update Data"))
 	}
 
-	g := strings.ToLower(userUpdated.Gender)
-	bt := strings.ToUpper(userUpdated.BloodType)
-
-	if !helper.GenderAndBloodTypeIsValid(g, bt) {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Update Data"))
-	}
-
 	if existingUser := configs.DB.Where("email = ?", userUpdated.Email).First(&userUpdated).Error; existingUser == nil {
 		return c.JSON(http.StatusConflict, helper.ErrorResponse("Email Already Exist"))
 	}
@@ -134,18 +125,32 @@ func UpdateUserController(c echo.Context) error {
 	}
 
 	userUpdated.Password = helper.HashPassword(userUpdated.Password)
+	gender := strings.ToLower(userUpdated.Gender)
+	bloodType := strings.ToUpper(userUpdated.BloodType)
+	birthdate := userUpdated.Birthdate
 
-	if userUpdated.Birthdate != "" {
-		_, parseErr := time.Parse("2006-01-02", userUpdated.Birthdate)
-		if parseErr != nil {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Birthdate Data, example : YYYY-MM-DD"))
-		}
+	if !helper.GenderIsValid(gender) {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Gender Data ('male', 'female')"))
 	}
+
+	if !helper.BloodTypeIsValid(bloodType) {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Blood Type Data,('A', 'B', 'O', 'AB')"))
+	}
+
+	if !helper.BirthdateIsValid(birthdate) {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Birthdate Data (YYYY-MM-DD)"))
+	}
+
+	// if userUpdated.Birthdate != "" {
+	// 	_, parseErr := time.Parse("2006-01-02", userUpdated.Birthdate)
+	// 	if parseErr != nil {
+	// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Birthdate Data (YYYY-MM-DD)"))
+	// 	}
+	// }
 
 	configs.DB.Model(&existingUser).Updates(userUpdated)
 
 	userResponse := response.ConvertToUserUpdateResponse(&existingUser)
-	fmt.Println(userResponse.Birthdate)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("User Updated Data Successful", userResponse))
 }
