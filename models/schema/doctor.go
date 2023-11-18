@@ -20,7 +20,7 @@ type Doctor struct {
 	NoSTR             int                 `gorm:"not null"`
 	Role              string              `gorm:"type:enum('doctor');default:'doctor'"`
 	Alumnus           string              `gorm:"not null"`
-	DoctorTransaction []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
+	// DoctorTransaction []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
 	UpdatedAt         time.Time
 	CreatedAt         time.Time
 	DeletedAt         gorm.DeletedAt `gorm:"index"`

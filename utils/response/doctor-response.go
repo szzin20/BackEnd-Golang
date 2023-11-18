@@ -5,7 +5,6 @@ import (
 	"healthcare/models/web"
 )
 
-
 func ConvertToDoctorLoginResponse(doctor *schema.Doctor) web.DoctorLoginResponse {
 	return web.DoctorLoginResponse{
 		Fullname: doctor.Fullname,
@@ -27,11 +26,10 @@ func ConvertToDoctorUpdateResponse(doctor *schema.Doctor) web.DoctorUpdateRespon
 	}
 }
 
-func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorResponse {
-	return web.DoctorResponse{
+func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorUpdateResponse {
+	return web.DoctorUpdateResponse{
 		Fullname:       doctor.Fullname,
 		Email:          doctor.Email,
-		Password:       doctor.Password,
 		Gender:         doctor.Gender,
 		Specialist:     doctor.Specialist,
 		ProfilePicture: doctor.ProfilePicture,
@@ -44,16 +42,17 @@ func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorResponse {
 func ConvertToGetAllDoctorResponse(doctors []schema.Doctor) []web.DoctorAllResponse {
 	var results []web.DoctorAllResponse
 
-	// Iterasi melalui setiap dokter dan konversi ke format respons
 	for _, doctor := range doctors {
 		doctorResponse := web.DoctorAllResponse{
-			Fullname:   doctor.Fullname,
-			Gender:     doctor.Gender,
-			Status:     doctor.Status,
-			Price:      doctor.Price,
-			Specialist: doctor.Specialist,
-			Experience: doctor.Experience,
-			Alumnus:    doctor.Alumnus,
+			ProfilePicture: doctor.ProfilePicture,
+			Fullname:       doctor.Fullname,
+			NoSTR:          doctor.NoSTR,
+			Gender:         doctor.Gender,
+			Status:         doctor.Status,
+			Price:          doctor.Price,
+			Specialist:     doctor.Specialist,
+			Experience:     doctor.Experience,
+			Alumnus:        doctor.Alumnus,
 		}
 
 		results = append(results, doctorResponse)

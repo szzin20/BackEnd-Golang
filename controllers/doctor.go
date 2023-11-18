@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// LoginDoctorController
+// Login Doctor
 func LoginDoctorController(c echo.Context) error {
 	var loginRequest web.DoctorLoginRequest
 
@@ -30,32 +30,32 @@ func LoginDoctorController(c echo.Context) error {
 	}
 
 	if err := helper.ComparePassword(doctor.Password, loginRequest.Password); err != nil {
-        return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Incorrect Password"))
-    }
+		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Incorrect Password"))
+	}
 
-    // The rest of your code for generating a token and handling the successful login
-    token, err := middlewares.GenerateToken(doctor.ID, doctor.Email, doctor.Role)
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Generate JWT: "+err.Error()))
-    }
+	// The rest of your code for generating a token and handling the successful login
+	token, err := middlewares.GenerateToken(doctor.ID, doctor.Email, doctor.Role)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Generate JWT: "+err.Error()))
+	}
 
-    doctorLoginResponse := response.ConvertToDoctorLoginResponse(&doctor)
-    doctorLoginResponse.Token = token
+	doctorLoginResponse := response.ConvertToDoctorLoginResponse(&doctor)
+	doctorLoginResponse.Token = token
 
-    // Send login notification email
-    if doctor.Email != "" {
-        notificationType := "login"
-        if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "drg"); err != nil {
-            return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to send notification email: "+err.Error()))
-        }
-    }
+	// Send login notification email
+	if doctor.Email != "" {
+		notificationType := "login"
+		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "drg"); err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to send notification email: "+err.Error()))
+		}
+	}
 
-    return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", doctorLoginResponse))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", doctorLoginResponse))
 }
 
-// DoctorProfile
+// Get Doctor Profile
 func GetDoctorProfileController(c echo.Context) error {
-	// Ekstrak ID dokter dari token
+
 	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil ID Dokter"))
@@ -70,7 +70,8 @@ func GetDoctorProfileController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Profil Dokter berhasil diambil", response))
 }
-// GetAllDoctorsController retrieves a list of all doctors
+
+// Get All Doctors
 func GetAllDoctorController(c echo.Context) error {
 	var Doctor []schema.Doctor
 
@@ -87,9 +88,10 @@ func GetAllDoctorController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Data Pengguna Berhasil Diambil", response))
 }
-// UpdateDoctorController updates a doctor's information
+
+// Update Doctor
 func UpdateDoctorController(c echo.Context) error {
-	// Ekstrak ID dokter dari token
+
 	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mendapatkan ID Dokter"))
@@ -102,7 +104,6 @@ func UpdateDoctorController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data dokter"))
 	}
 
-	// Bind data permintaan pembaruan
 	var doctorUpdated web.DoctorUpdateRequest
 	if err := c.Bind(&doctorUpdated); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Input tidak valid untuk pembaruan data dokter"))
@@ -112,22 +113,24 @@ func UpdateDoctorController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	// Enkripsi kata sandi hanya jika kata sandi baru disediakan
 	if doctorUpdated.Password != "" {
 		doctorUpdated.Password = helper.HashPassword(doctorUpdated.Password)
 	}
 
-	// Perbarui data dokter dan periksa kesalahan selama pembaruan
+	existingDoctor.Status = doctorUpdated.Status
 	if err := configs.DB.Model(&existingDoctor).Updates(doctorUpdated).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal memperbarui data dokter"))
 	}
+	configs.DB.Save(&existingDoctor)
+
 	response := response.ConvertToDoctorUpdateResponse(&existingDoctor)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Data dokter berhasil diperbarui", response))
 }
-// DeleteDoctor
+
+// Delete Doctor
 func DeleteDoctorController(c echo.Context) error {
-	// Ekstrak ID dokter dari token
+
 	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mendapatkan ID Dokter"))
@@ -139,7 +142,6 @@ func DeleteDoctorController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data dokter"))
 	}
 
-	// Hapus data dokter
 	if err := configs.DB.Delete(&existingDoctor).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal menghapus dokter"))
 	}
