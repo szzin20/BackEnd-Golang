@@ -30,34 +30,29 @@ func LoginDoctorController(c echo.Context) error {
 	}
 
 	if err := helper.ComparePassword(doctor.Password, loginRequest.Password); err != nil {
-		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Incorrect Password"))
-	}
+        return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Incorrect Password"))
+    }
 
-	// The rest of your code for generating a token and handling the successful login
-	token, err := middlewares.GenerateToken(doctor.ID, doctor.Email, doctor.Role)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Generate JWT: "+err.Error()))
-	}
+    // The rest of your code for generating a token and handling the successful login
+    token, err := middlewares.GenerateToken(doctor.ID, doctor.Email, doctor.Role)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Generate JWT: "+err.Error()))
+    }
 
-	doctorLoginResponse := response.ConvertToDoctorLoginResponse(&doctor)
+    doctorLoginResponse := response.ConvertToDoctorLoginResponse(&doctor)
+    doctorLoginResponse.Token = token
 
-	token, err := middlewares.GenerateToken(uint(doctor.ID), doctor.Email, doctor.Role)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Menghasilkan JWT"))
-	}
+    // Send login notification email
+    if doctor.Email != "" {
+        notificationType := "login"
+        if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "drg"); err != nil {
+            return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to send notification email: "+err.Error()))
+        }
+    }
 
-	doctorLoginResponse.Token = token
-
-	// Send login notification email
-	if doctor.Email != "" {
-		notificationType := "login"
-		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "drg"); err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to send notification email: "+err.Error()))
-		}
-	}
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", doctorLoginResponse))
+    return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", doctorLoginResponse))
 }
+
 // DoctorProfile
 func GetDoctorProfileController(c echo.Context) error {
 	// Ekstrak ID dokter dari token
