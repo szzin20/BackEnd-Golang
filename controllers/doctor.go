@@ -40,6 +40,12 @@ func LoginDoctorController(c echo.Context) error {
 	}
 
 	doctorLoginResponse := response.ConvertToDoctorLoginResponse(&doctor)
+
+	token, err := middlewares.GenerateToken(uint(doctor.ID), doctor.Email, doctor.Role)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Menghasilkan JWT"))
+	}
+
 	doctorLoginResponse.Token = token
 
 	// Send login notification email
