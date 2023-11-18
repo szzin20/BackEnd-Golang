@@ -49,6 +49,8 @@ type DoctorResponse struct {
 	Experience     string `json:"experience" form:"experience" `
 }
 
+
+
 // type DoctorPatientsResponse struct {
 // 	DoctorID       uint                  `json:"doctor_id"`
 // 	TransactionID  uint                  `json:"transaction_id"`

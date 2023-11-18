@@ -27,3 +27,4 @@ type DoctorUpdateRequest struct {
 	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
 	Experience     string `json:"experience" form:"experience" validate:"required"`
 }
+
