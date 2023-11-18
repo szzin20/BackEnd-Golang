@@ -4,7 +4,7 @@ type DoctorRegisterRequest struct {
 	ProfilePicture string `json:"profile_picture" form:"profile_picture" `
 	Fullname       string `json:"fullname" form:"fullname" validate:"required"`
 	Email          string `json:"email" form:"email" validate:"required,email"`
-	Password       string `json:"password" form:"password" validate:"min=8",max15"`
+	Password       string `json:"password" form:"password" validate:"min=8,max=15"`
 	Price          int    `json:"price" form:"price" validate:"min=0"`
 	Gender         string `json:"gender" form:"gender" validate:"required"`
 	Specialist     string `json:"specialist" form:"specialist" validate:"required"`
