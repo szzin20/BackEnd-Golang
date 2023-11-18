@@ -17,6 +17,7 @@ func SetupRoutes(e *echo.Echo) {
 	doctorGroup.PUT("/update/profile", controllers.UpdateDoctorController, middlewares.DoctorIDRoleAuth)
 	doctorGroup.DELETE("/delete/profile", controllers.DeleteDoctorController, middlewares.DoctorIDRoleAuth)
 	doctorGroup.GET("", controllers.GetAllDoctorController, middlewares.DoctorIDRoleAuth)
+	
 	// Doctor Complaint
 	// doctorGroup.GET("/complaints", controllers.GetAllDoctorComplaints, middlewares.DoctorIDRoleAuth)
 	// doctorGroup.GET("/complaints/status", controllers.GetDoctorComplaintsByStatus, middlewares.DoctorIDRoleAuth)
