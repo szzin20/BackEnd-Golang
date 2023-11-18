@@ -1,6 +1,8 @@
 package schema
 
-import "time"
+import (
+	"time"
+)
 
 type DoctorTransaction struct {
 	ID            uint   `gorm:"primaryKey"`

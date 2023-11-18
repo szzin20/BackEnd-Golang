@@ -8,6 +8,6 @@ import (
 
 func SetupRoutes(e *echo.Echo) {
 
-	e.POST("/users/create/doctor-transaction", controllers.CreateDoctorTransaction)
+	e.POST("/users/create/doctortransaction", controllers.CreateDoctorTransaction)
 
 }

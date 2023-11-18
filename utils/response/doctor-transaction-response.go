@@ -21,8 +21,8 @@ func ConvertToGetAllDTResponse(doctorTransactions []schema.DoctorTransaction) []
 	var results []web.CreateDoctorTransactionResponse
 	for _, dt := range doctorTransactions {
 		dtResponse := web.CreateDoctorTransactionResponse{
-			DoctorID:      dt.DoctorID,
-			UserID:        dt.UserID,
+			// DoctorID:      dt.DoctorID,
+			// UserID:        dt.UserID,
 			HealthDetails: dt.HealthDetails,
 			PaymentMethod: dt.PaymentMethod,
 			Price:         dt.Price,
