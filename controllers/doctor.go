@@ -32,7 +32,7 @@ func RegisterDoctorController(c echo.Context) error {
 	}
 
 	// Hash kata sandi
-	doctorRequest.Password = helper.HashPassword(doctor.Password) // Updated this line to use the correct password field
+	doctorRequest.Password = helper.HashPassword(doctor.Password) 
 
 	// Simpan data dokter ke database
 	if err := configs.DB.Create(&doctorRequest).Error; err != nil {
@@ -190,6 +190,9 @@ func DeleteDoctorController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Akun dokter berhasil dihapus", nil))
 }
+
+
+
 
 // patients
 // func GetDoctorPatientsController(c echo.Context) error {
