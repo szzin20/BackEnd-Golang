@@ -9,14 +9,21 @@ import (
 
 func SetupRoutes(e *echo.Echo) {
 
-	doctorGroup := e.Group("/doctors")
-	e.POST("/login/doctor", controllers.LoginDoctorController)
-	// Doctor AUTH
-	doctorGroup.GET("/profile", controllers.GetDoctorProfileController, middlewares.DoctorIDRoleAuth)
-	doctorGroup.PUT("/update/profile", controllers.UpdateDoctorController, middlewares.DoctorIDRoleAuth)
-	doctorGroup.DELETE("/delete/profile", controllers.DeleteDoctorController, middlewares.DoctorIDRoleAuth)
-	doctorGroup.GET("", controllers.GetAllDoctorController, middlewares.DoctorIDRoleAuth)
+	UserJWT := middlewares.UserIDRoleAuth
+	DoctorJWT := middlewares.DoctorIDRoleAuth
 
+	gUsers := e.Group("/users")
+	gUsers.POST("/register", controllers.RegisterUserController)
+	gUsers.POST("/login", controllers.LoginUserController)
+	gUsers.GET("/profile", controllers.GetUserController, UserJWT)
+	gUsers.PUT("/profile", controllers.UpdateUserController, UserJWT)
+	gUsers.DELETE("", controllers.DeleteUserController, UserJWT)
+
+	gDoctors := e.Group("/doctors")
+	gDoctors.POST("/login", controllers.LoginDoctorController)
+	gDoctors.GET("/profile", controllers.GetDoctorProfileController, DoctorJWT)
+	gDoctors.PUT("/profile", controllers.UpdateDoctorController, DoctorJWT)
+	gDoctors.DELETE("", controllers.DeleteDoctorController, DoctorJWT)
+	gDoctors.GET("", controllers.GetAllDoctorController, DoctorJWT)
 	return
 }
-
