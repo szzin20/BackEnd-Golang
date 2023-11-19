@@ -117,13 +117,9 @@ func GetAllMedicinesAdminController(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Empty Medicines Data"))
 	}
 
-	var medicinesResponse []web.MedicineResponse
-	for _, medicine := range medicines {
-		medicineResponse := response.ConvertToAdminMedicineResponse(&medicine)
-		medicinesResponse = append(medicinesResponse, medicineResponse)
-	}
+	response := response.ConvertToAdminGetAllMedicinesResponse(medicines)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicines Data Successfully Retrieved", medicinesResponse))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicines Data Successfully Retrieved", response))
 }
 
 // Get Medicine by Name (Admin)
@@ -159,13 +155,9 @@ func GetAllMedicinesPatientController(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Empty Medicines Data"))
 	}
 
-	var medicinesResponse []web.MedicineResponse
-	for _, medicine := range medicines {
-		medicineResponse := response.ConvertToPatientMedicineResponse(&medicine)
-		medicinesResponse = append(medicinesResponse, medicineResponse)
-	}
+	response := response.ConvertToPatientGetAllMedicinesResponse(medicines)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicines Data Successfully Retrieved", medicinesResponse))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicines Data Successfully Retrieved", response))
 }
 
 // Get Medicine by Name (Patient)
