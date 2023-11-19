@@ -128,6 +128,24 @@ func GetAllDoctorController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Data Pengguna Berhasil Diambil", response))
 }
 
+// Get All Doctors by Admin
+func GetAllDoctorByAdminController(c echo.Context) error {
+	var Doctor []schema.Doctor
+
+	err := configs.DB.Find(&Doctor).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Pengguna"))
+	}
+
+	if len(Doctor) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data Pengguna Kosong"))
+	}
+
+	response := response.ConvertToGetAllDoctorByAdminResponse(Doctor)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Data Pengguna Berhasil Diambil", response))
+}
+
 // Update Doctor
 func UpdateDoctorController(c echo.Context) error {
 

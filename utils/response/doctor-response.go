@@ -75,3 +75,30 @@ func ConvertToGetAllDoctorResponse(doctors []schema.Doctor) []web.DoctorAllRespo
 
 	return results
 }
+
+func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorAllResponseByAdmin {
+	var results []web.DoctorAllResponseByAdmin
+
+	// Iterasi melalui setiap dokter dan konversi ke format respons
+	for _, doctor := range doctors {
+		doctorResponse := web.DoctorAllResponseByAdmin{
+
+			ID:             doctor.ID,
+			ProfilePicture: doctor.ProfilePicture,
+			Fullname:       doctor.Fullname,
+			Gender:         doctor.Gender,
+			Email:          doctor.Email,
+			Status:         doctor.Status,
+			Price:          doctor.Price,
+			Specialist:     doctor.Specialist,
+			NoSTR:          doctor.NoSTR,
+			Role:           doctor.Role,
+			Experience:     doctor.Experience,
+			Alumnus:        doctor.Alumnus,
+		}
+
+		results = append(results, doctorResponse)
+	}
+
+	return results
+}

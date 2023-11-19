@@ -16,8 +16,9 @@ func SetupRoutes(e *echo.Echo) {
 	gAdmins.POST("/login", controllers.LoginAdminController)
 	gAdmins.POST("/register/doctor", controllers.RegisterDoctorByAdminController) 
 	gAdmins.PUT("/:id", controllers.UpdateAdminController)
-	gAdmins.PUT("/:id", controllers.UpdateDoctorByAdminController)
-	gAdmins.DELETE("/:id", controllers.DeleteDoctorByAdminController)
+	gAdmins.PUT("update/doctor/:id", controllers.UpdateDoctorByAdminController)
+	gAdmins.PUT("update/payment/:id", controllers.UpdatePaymentStatusByAdminController)
+	gAdmins.DELETE("delete/doctor/:id", controllers.DeleteDoctorByAdminController)
 
 	gUsers := e.Group("/users")
 	gUsers.POST("/register", controllers.RegisterUserController)
