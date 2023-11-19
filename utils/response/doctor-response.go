@@ -5,6 +5,21 @@ import (
 	"healthcare/models/web"
 )
 
+func ConvertToDoctorRegisterResponse(doctor *schema.Doctor) web.DoctorRegisterResponse {
+	return web.DoctorRegisterResponse{
+		Fullname:       doctor.Fullname,
+		Email:          doctor.Email,
+		Price:          doctor.Price,
+		Gender:         doctor.Gender,
+		Specialist:     doctor.Specialist,
+		ProfilePicture: doctor.ProfilePicture,
+		NoSTR:          doctor.NoSTR,
+		Experience:     doctor.Experience,
+		Alumnus:        doctor.Alumnus,
+		Status:         doctor.Status,
+	}
+}
+
 func ConvertToDoctorLoginResponse(doctor *schema.Doctor) web.DoctorLoginResponse {
 	return web.DoctorLoginResponse{
 		Fullname: doctor.Fullname,

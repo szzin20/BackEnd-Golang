@@ -1,5 +1,19 @@
 package web
 
+type DoctorRegisterRequest struct {
+	ProfilePicture string `json:"profile_picture" form:"profile_picture" `
+	Fullname       string `json:"fullname" form:"fullname" validate:"max=30"`
+	Email          string `json:"email" form:"email" validate:"required,email"`
+	Password       string `json:"password" form:"password" validate:"min=10,max=15"`
+	Status         bool   `json:"status" form:"status" validate:"eq=true|eq=false"`
+	Price          int    `json:"price" form:"price" validate:"min=0"`
+	Gender         string `json:"gender" form:"gender" validate:"required"`
+	Specialist     string `json:"specialist" form:"specialist" validate:"required"`
+	NoSTR          int    `json:"no_str" form:"no_str" validate:"required"`
+	Experience     string `json:"experience" form:"experience" validate:"required"`
+	Alumnus        string `json:"alumnus" form:"alumnus" validate:"required"`
+}
+
 type DoctorLoginRequest struct {
 	Email    string `json:"email" form:"email" validate:"required,email"`
 	Password string `json:"password" form:"password" validate:"required,min=10,max=15"`

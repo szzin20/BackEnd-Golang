@@ -1,5 +1,17 @@
 package web
 
+type DoctorRegisterResponse struct {
+	Fullname       string `json:"fullname" form:"fullname" `
+	Email          string `json:"email" form:"email"`
+	Status         bool   `json:"status" form:"status"`
+	Price          int    `json:"price" form:"price"`
+	Gender         string `json:"gender" form:"gender"`
+	Specialist     string `json:"specialist" form:"specialist"`
+	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
+	NoSTR          int    `json:"no_str" form:"no_str"`
+	Experience     string `json:"experience" form:"experience"`
+	Alumnus        string `json:"alumnus" form:"alumnus"`
+}
 type DoctorLoginResponse struct {
 	Fullname string `json:"fullname" form:"fullname"`
 	Email    string `json:"email" form:"email"`
