@@ -7,6 +7,7 @@ import (
 
 func ConvertToAdminMedicineResponse(medicine *schema.Medicine) web.MedicineResponse {
 	return web.MedicineResponse{
+		ID:       medicine.ID,
 		Code:     medicine.Code,
 		Name:     medicine.Name,
 		Merk:     medicine.Merk,
@@ -16,6 +17,7 @@ func ConvertToAdminMedicineResponse(medicine *schema.Medicine) web.MedicineRespo
 		Price:    medicine.Price,
 		Details:  medicine.Details,
 		Image:    medicine.Image,
+		CreatedAt: medicine.CreatedAt,
 	}
 }
 
@@ -23,6 +25,7 @@ func ConvertToAdminGetAllMedicinesResponse(medicines []schema.Medicine) []web.Me
 	var results []web.MedicineResponse
 	for _, medicine := range medicines {
 		medicineResponse := web.MedicineResponse{
+			ID:       medicine.ID,
 			Code:     medicine.Code,
 			Name:     medicine.Name,
 			Merk:     medicine.Merk,
@@ -32,15 +35,17 @@ func ConvertToAdminGetAllMedicinesResponse(medicines []schema.Medicine) []web.Me
 			Price:    medicine.Price,
 			Details:  medicine.Details,
 			Image:    medicine.Image,
+			CreatedAt: medicine.CreatedAt,
 		}
 		results = append(results, medicineResponse)
 	}
 	return results
 }
 
-func ConvertToPatientMedicineResponse(medicine *schema.Medicine) web.MedicineResponse {
+func ConvertToUserMedicineResponse(medicine *schema.Medicine) web.MedicineResponse {
 	return web.MedicineResponse{
 		Name:     medicine.Name,
+		Code:     medicine.Code,
 		Merk:     medicine.Merk,
 		Category: medicine.Category,
 		Type:     medicine.Type,
@@ -51,10 +56,11 @@ func ConvertToPatientMedicineResponse(medicine *schema.Medicine) web.MedicineRes
 	}
 }
 
-func ConvertToPatientGetAllMedicinesResponse(medicines []schema.Medicine) []web.MedicineResponse {
+func ConvertToUserGetAllMedicinesResponse(medicines []schema.Medicine) []web.MedicineResponse {
 	var results []web.MedicineResponse
 	for _, medicine := range medicines {
 		medicineResponse := web.MedicineResponse{
+			Code:     medicine.Code,
 			Name:     medicine.Name,
 			Merk:     medicine.Merk,
 			Category: medicine.Category,

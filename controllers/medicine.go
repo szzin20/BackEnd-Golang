@@ -140,7 +140,7 @@ func GetMedicineController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", response))
 }
 
-// Get All Medicines (Admin)
+// Admin Get All Medicines 
 func GetAllMedicinesAdminController(c echo.Context) error {
 	var medicines []schema.Medicine
 
@@ -158,7 +158,7 @@ func GetAllMedicinesAdminController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicines Data Successfully Retrieved", response))
 }
 
-// Get Medicine by Name (Admin)
+// Admin Get Medicine by Name 
 func GetMedicineByNameAdminController(c echo.Context) error {
 	name := c.QueryParam("name")
 
@@ -178,8 +178,8 @@ func GetMedicineByNameAdminController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", response))
 }
 
-// Get All Medicines (Patient)
-func GetAllMedicinesPatientController(c echo.Context) error {
+// User Get All Medicines 
+func GetAllMedicinesUserController(c echo.Context) error {
 	var medicines []schema.Medicine
 
 	err := configs.DB.Find(&medicines).Error
@@ -191,13 +191,13 @@ func GetAllMedicinesPatientController(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Empty Medicines Data"))
 	}
 
-	response := response.ConvertToPatientGetAllMedicinesResponse(medicines)
+	response := response.ConvertToUserGetAllMedicinesResponse(medicines)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicines Data Successfully Retrieved", response))
 }
 
-// Get Medicine by Name (Patient)
-func GetMedicineByNamePatientController(c echo.Context) error {
+// User Get Medicine by Name 
+func GetMedicineByNameUserController(c echo.Context) error {
 	name := c.QueryParam("name")
 
 	if name == "" {
@@ -211,7 +211,7 @@ func GetMedicineByNamePatientController(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Medicine not found"))
 	}
 
-	response := response.ConvertToPatientMedicineResponse(&medicine)
+	response := response.ConvertToUserMedicineResponse(&medicine)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", response))
 }

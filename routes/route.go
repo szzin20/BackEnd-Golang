@@ -6,28 +6,35 @@ import (
 	"healthcare/middlewares"
 )
 
-func SetupRoutes() *echo.Echo {
+func SetupRoutes(e *echo.Echo) {
 
-	e := echo.New()
+	UserJWT := middlewares.UserIDRoleAuth
+	DoctorJWT := middlewares.DoctorIDRoleAuth
 
-	middlewares.RemoveTrailingSlash(e)
-	middlewares.Logger(e)
-	middlewares.RateLimiter(e)
-	middlewares.Recover(e)
-	middlewares.CORS(e)
+	gAdmins := e.Group("/admins")
+	gAdmins.POST("/login", controllers.LoginAdminController)
+	gAdmins.PUT("/:id", controllers.UpdateAdminController)
+	gAdmins.POST("/medicines", controllers.CreateMedicineController)
+	gAdmins.GET("/medicines", controllers.GetAllMedicinesAdminController)
+	gAdmins.GET("/medicines/:id", controllers.GetMedicineController)
+	gAdmins.GET("/medicines/?name=", controllers.GetMedicineByNameAdminController)
+	gAdmins.PUT("/medicines/:id", controllers.UpdateMedicineController)
+	gAdmins.DELETE("/medicines/:id", controllers.DeleteMedicineController)
 
-	GroupAdmin := e.Group("/admins")
-	GroupAdmin.POST("/medicines", controllers.CreateMedicineController)
-	GroupAdmin.GET("/medicines", controllers.GetAllMedicinesAdminController)
-	GroupAdmin.GET("/medicines/:id", controllers.GetMedicineController)
-	GroupAdmin.GET("/medicines/?name=", controllers.GetMedicineByNameAdminController)
-	GroupAdmin.PUT("/medicines/:id", controllers.UpdateMedicineController)
-	GroupAdmin.DELETE("/medicines/:id", controllers.DeleteMedicineController)
+	gUsers := e.Group("/users")
+	gUsers.POST("/register", controllers.RegisterUserController)
+	gUsers.POST("/login", controllers.LoginUserController)
+	gUsers.GET("/profile", controllers.GetUserController, UserJWT)
+	gUsers.PUT("/profile", controllers.UpdateUserController, UserJWT)
+	gUsers.DELETE("", controllers.DeleteUserController, UserJWT)
+	gUsers.GET("/medicines", controllers.GetAllMedicinesUserController, UserJWT)
+	gUsers.GET("/medicines/?name=", controllers.GetMedicineByNameUserController, UserJWT)
 
-	GroupPatient := e.Group("/Patients")
-	GroupPatient.GET("/medicines", controllers.GetAllMedicinesPatientController, middlewares.UserIDRoleAuth)
-	GroupPatient.GET("/medicines/?name=", controllers.GetMedicineByNamePatientController, middlewares.UserIDRoleAuth)
-
-	return e
-
+	gDoctors := e.Group("/doctors")
+	gDoctors.POST("/login", controllers.LoginDoctorController)
+	gDoctors.GET("/profile", controllers.GetDoctorProfileController, DoctorJWT)
+	gDoctors.PUT("/profile", controllers.UpdateDoctorController, DoctorJWT)
+	gDoctors.DELETE("", controllers.DeleteDoctorController, DoctorJWT)
+	gDoctors.GET("", controllers.GetAllDoctorController, DoctorJWT)
+	return
 }

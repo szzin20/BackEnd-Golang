@@ -6,8 +6,8 @@ type MedicineRequest struct {
 	Merk     string `json:"merk" form:"merk" validate:"required"`
 	Category string `json:"category" form:"category" validate:"required"`
 	Type     string `json:"type" form:"type" validate:"required"`
-	Stock    int    `json:"stock" form:"stock" validate:"min=0"`
-	Price    int    `json:"price" form:"price" validate:"min=0"`
+	Stock    int    `json:"stock" form:"stock" validate:"required,min=0"`
+	Price    int    `json:"price" form:"price" validate:"required,min=0"`
 	Details  string `json:"details" form:"details" validate:"required"`
-	Image    string `json:"image" form:"image"`
+	Image    string `json:"image" form:"image" validate:"required"`
 }

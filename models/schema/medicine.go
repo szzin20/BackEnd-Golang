@@ -18,6 +18,6 @@ type Medicine struct {
 	Details   string `gorm:"not null"`
 	Image     string `gorm:"not null"`
 	UpdatedAt time.Time
-	CareateAt time.Time
+	CreatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
