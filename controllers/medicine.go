@@ -8,6 +8,7 @@ import (
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
+	"path"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -24,6 +25,14 @@ func CreateMedicineController(c echo.Context) error {
 	if err := helper.ValidateStruct(medicine); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
+
+	// Upload files
+	files, err := helper.UploadFilesToGCS(c, c.Request().MultipartForm.File["file"][0])
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to upload file"))
+	}
+
+	medicine.Image = files
 
 	medicineRequest := request.ConvertToMedicineRequest(medicine)
 
@@ -50,6 +59,8 @@ func UpdateMedicineController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Medicine ID"))
 	}
 
+	previousFiles := existingMedicine.Image
+
 	var updatedMedicineRequest web.MedicineRequest
 
 	if err := c.Bind(&updatedMedicineRequest); err != nil {
@@ -60,9 +71,26 @@ func UpdateMedicineController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	updatedMedicine := request.ConvertToMedicineRequest(updatedMedicineRequest)
+	// Check Files
+	if c.Request().MultipartForm != nil && c.Request().MultipartForm.File["file"] != nil {
+		files, err := helper.UploadFilesToGCS(c, c.Request().MultipartForm.File["file"][0])
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to upload file"))
+		}
 
-	result = configs.DB.Model(&existingMedicine).Updates(updatedMedicine)
+		existingMedicine.Image = files
+
+		if previousFiles != "" {
+			filename := path.Base(previousFiles)
+			if err := helper.DeleteFilesFromGCS(filename); err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to delete old file from GCS"))
+			}
+		}
+	} else {
+		existingMedicine.Image = previousFiles
+	}
+
+	result = configs.DB.Save(&existingMedicine)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Update Medicine"))
 	}
