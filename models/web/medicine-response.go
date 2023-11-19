@@ -1,5 +1,7 @@
 package web
 
+import "time"
+
 type MedicineResponse struct {
 	ID        uint      `json:"id" form:"id"`
 	Code      string    `json:"code" form:"code"`
