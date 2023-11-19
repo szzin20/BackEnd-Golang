@@ -15,21 +15,25 @@ import (
 
 // Create Medicine
 func CreateMedicineController(c echo.Context) error {
-	var medicineRequest web.MedicineRequest
+	var medicine web.MedicineRequest
 
-	if err := c.Bind(&medicineRequest); err != nil {
+	if err := c.Bind(&medicine); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Medicine Data"))
 	}
 
-	medicine := request.ConvertToMedicineRequest(medicineRequest)
+	if err := helper.ValidateStruct(medicine); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
 
-	if err := configs.DB.Create(&medicine).Error; err != nil {
+	medicineRequest := request.ConvertToMedicineRequest(medicine)
+
+	if err := configs.DB.Create(&medicineRequest).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Create Medicine"))
 	}
 
-	medicineResponse := response.ConvertToAdminMedicineResponse(medicine)
+	response := response.ConvertToAdminMedicineResponse(medicineRequest)
 
-	return c.JSON(http.StatusCreated, helper.SuccessResponse("Medicine Created Successfully", medicineResponse))
+	return c.JSON(http.StatusCreated, helper.SuccessResponse("Medicine Created Successfully", response))
 }
 
 // Update Medicine by ID
@@ -52,6 +56,10 @@ func UpdateMedicineController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Medicine Data"))
 	}
 
+	if err := helper.ValidateStruct(updatedMedicineRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
 	updatedMedicine := request.ConvertToMedicineRequest(updatedMedicineRequest)
 
 	result = configs.DB.Model(&existingMedicine).Updates(updatedMedicine)
@@ -59,9 +67,9 @@ func UpdateMedicineController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Update Medicine"))
 	}
 
-	updatedMedicineResponse := response.ConvertToAdminMedicineResponse(&existingMedicine)
+	response := response.ConvertToAdminMedicineResponse(&existingMedicine)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Updated Successfully", updatedMedicineResponse))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Updated Successfully", response))
 }
 
 // Delete Medicine by ID
@@ -99,9 +107,9 @@ func GetMedicineController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Medicine Data"))
 	}
 
-	medicineResponse := response.ConvertToAdminMedicineResponse(&medicine)
+	response := response.ConvertToAdminMedicineResponse(&medicine)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", medicineResponse))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", response))
 }
 
 // Get All Medicines (Admin)
@@ -137,9 +145,9 @@ func GetMedicineByNameAdminController(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Medicine not found"))
 	}
 
-	medicineResponse := response.ConvertToAdminMedicineResponse(&medicine)
+	response := response.ConvertToAdminMedicineResponse(&medicine)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", medicineResponse))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", response))
 }
 
 // Get All Medicines (Patient)
@@ -175,7 +183,7 @@ func GetMedicineByNamePatientController(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Medicine not found"))
 	}
 
-	medicineResponse := response.ConvertToPatientMedicineResponse(&medicine)
+	response := response.ConvertToPatientMedicineResponse(&medicine)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", medicineResponse))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", response))
 }
