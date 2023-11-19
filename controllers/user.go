@@ -141,13 +141,6 @@ func UpdateUserController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Birthdate Data (YYYY-MM-DD)"))
 	}
 
-	// if userUpdated.Birthdate != "" {
-	// 	_, parseErr := time.Parse("2006-01-02", userUpdated.Birthdate)
-	// 	if parseErr != nil {
-	// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Birthdate Data (YYYY-MM-DD)"))
-	// 	}
-	// }
-
 	configs.DB.Model(&existingUser).Updates(userUpdated)
 
 	userResponse := response.ConvertToUserUpdateResponse(&existingUser)
