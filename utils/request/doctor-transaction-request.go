@@ -5,13 +5,11 @@ import (
 	"healthcare/models/web"
 )
 
-func ConvertToCreateDTRequest(DoctorTransaction web.CreateDoctorTransactionRequest) *schema.DoctorTransaction {
+func ConvertToCreateDTRequest(DoctorTransaction web.CreateDoctorTransactionRequest, userID, doctorID uint, fullname string, specialist string, price int) *schema.DoctorTransaction {
 	return &schema.DoctorTransaction{
-		DoctorID:      DoctorTransaction.DoctorID,
-		UserID:        DoctorTransaction.UserID,
-		HealthDetails: DoctorTransaction.HealthDetails,
-		PaymentMethod: DoctorTransaction.PaymentMethod,
-		Price:         DoctorTransaction.Price,
-		ImageURL:      DoctorTransaction.ImageURL,
+		UserID: userID,
+		DoctorID: doctorID,
+		PaymentMethod:       DoctorTransaction.PaymentMethod,
+		PaymentConfirmation: DoctorTransaction.PaymentConfirmation,
 	}
 }

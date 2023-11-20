@@ -5,31 +5,24 @@ import (
 	"healthcare/models/web"
 )
 
-func ConvertToCreateDTResponse(DoctorTransaction *schema.DoctorTransaction) web.CreateDoctorTransactionResponse {
+func ConvertToCreateDTResponse(doctorTransaction *schema.DoctorTransaction, doctor schema.Doctor) web.CreateDoctorTransactionResponse {
 	return web.CreateDoctorTransactionResponse{
-		DoctorID:      DoctorTransaction.DoctorID,
-		UserID:        DoctorTransaction.UserID,
-		HealthDetails: DoctorTransaction.HealthDetails,
-		PaymentMethod: DoctorTransaction.PaymentMethod,
-		Price:         DoctorTransaction.Price,
-		ImageURL:      DoctorTransaction.ImageURL,
-		PaymentStatus: DoctorTransaction.PaymentStatus,
+		Fullname:            doctor.Fullname,
+		Specialist:          doctor.Specialist,
+		Price:               doctor.Price,
+		PaymentMethod:       doctorTransaction.PaymentMethod,
+		PaymentConfirmation: doctorTransaction.PaymentConfirmation,
+		PaymentStatus:       doctorTransaction.PaymentStatus,
 	}
 }
 
-func ConvertToGetAllDTResponse(doctorTransactions []schema.DoctorTransaction) []web.CreateDoctorTransactionResponse {
-	var results []web.CreateDoctorTransactionResponse
-	for _, dt := range doctorTransactions {
-		dtResponse := web.CreateDoctorTransactionResponse{
-			// DoctorID:      dt.DoctorID,
-			// UserID:        dt.UserID,
-			HealthDetails: dt.HealthDetails,
-			PaymentMethod: dt.PaymentMethod,
-			Price:         dt.Price,
-			ImageURL:      dt.ImageURL,
-			PaymentStatus: dt.PaymentStatus,
-		}
-		results = append(results, dtResponse)
+func ConvertToGetAllDTResponse(doctorTransaction schema.DoctorTransaction, doctor schema.Doctor ) web.CreateDoctorTransactionResponse {
+	return web.CreateDoctorTransactionResponse{
+		Fullname:            doctor.Fullname,
+		Specialist:          doctor.Specialist,
+		Price:               doctor.Price,
+		PaymentMethod:       doctorTransaction.PaymentMethod,
+		PaymentConfirmation: doctorTransaction.PaymentConfirmation,
+		PaymentStatus:       doctorTransaction.PaymentStatus,
 	}
-	return results
 }
