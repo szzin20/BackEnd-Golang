@@ -28,6 +28,36 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 
 	doctorRequest := request.ConvertToDoctorRegisterRequest(doctor)
 
+	err := c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+    }
+
+    file, fileHeader, err := c.Request().FormFile("image")
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
+    }
+    defer file.Close()
+
+    allowedExtensions := []string{".jpg", ".jpeg", ".png"}
+    ext := filepath.Ext(fileHeader.Filename)
+    allowed := false
+    for _, validExt := range allowedExtensions {
+        if ext == validExt {
+            allowed = true
+            break
+        }
+    }
+    if !allowed {
+        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
+    }
+
+    imageURL, err := helper.UploadFilesToGCS(c,fileHeader)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to Cloud Storage"))
+    }
+
+    doctorRequest.ProfilePicture = imageURL
 	// Periksa apakah email sudah ada
 	if existingDoctor := configs.DB.Where("email = ?", doctorRequest.Email).First(&doctorRequest).Error; existingDoctor == nil {
 		return c.JSON(http.StatusConflict, helper.ErrorResponse("Email Sudah Ada"))
@@ -42,7 +72,7 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 	}
 
 	// Mengirim email pemberitahuan
-	err := helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "drg")
+	err = helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "drg")
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengirim email verifikasi"))
 	}
