@@ -12,6 +12,7 @@ func ConvertToDoctorRegisterRequest(doctor web.DoctorRegisterRequest) *schema.Do
 		Price:          doctor.Price,
 		Specialist:     doctor.Specialist,
 		ProfilePicture: doctor.ProfilePicture,
+		Password:       doctor.Password,
 		Gender:         doctor.Gender,
 		NoSTR:          doctor.NoSTR,
 		Experience:     doctor.Experience,
