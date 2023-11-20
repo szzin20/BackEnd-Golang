@@ -33,6 +33,7 @@ func ConvertToDoctorUpdateRequest(doctor web.DoctorUpdateRequest) *schema.Doctor
 		Specialist:     doctor.Specialist,
 		ProfilePicture: doctor.ProfilePicture,
 		Gender:         doctor.Gender,
+		Password:       doctor.Password,
 		Status:         doctor.Status,
 		Experience:     doctor.Experience,
 		Alumnus:        doctor.Alumnus,
