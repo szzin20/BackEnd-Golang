@@ -9,6 +9,7 @@ import (
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -148,40 +149,78 @@ func GetAllDoctorByAdminController(c echo.Context) error {
 
 // Update Doctor
 func UpdateDoctorController(c echo.Context) error {
-
+	// Get userID from the context
 	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mendapatkan ID Dokter"))
 	}
 
+	// Fetch the existing doctor based on userID
 	var existingDoctor schema.Doctor
-
 	result := configs.DB.First(&existingDoctor, userID)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data dokter"))
 	}
 
+	// Parse the request body into the DoctorUpdateRequest struct
 	var doctorUpdated web.DoctorUpdateRequest
 	if err := c.Bind(&doctorUpdated); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Input tidak valid untuk pembaruan data dokter"))
 	}
 
+	// Validate the request payload
 	if err := helper.ValidateStruct(doctorUpdated); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
+	// Hash the password if provided
 	if doctorUpdated.Password != "" {
 		doctorUpdated.Password = helper.HashPassword(doctorUpdated.Password)
 	}
 
+	// Parse multipart form for file upload
+	err := c.Request().ParseMultipartForm(10 << 20) 
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	// Extract the image file from the form
+	file, fileHeader, err := c.Request().FormFile("image")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
+	}
+	defer file.Close()
+
+	// Check if the file format is allowed
+	allowedExtensions := []string{".jpg", ".jpeg", ".png"}
+	ext := filepath.Ext(fileHeader.Filename)
+	allowed := false
+	for _, validExt := range allowedExtensions {
+		if ext == validExt {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
+	}
+
+	// Upload the image to Cloud Storage
+	ProfilePicture, err := helper.UploadFilesToGCS(c, fileHeader)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to Cloud Storage"))
+	}
+
+	// Update the doctor details
+	existingDoctor.ProfilePicture = ProfilePicture
 	existingDoctor.Status = doctorUpdated.Status
-	if err := configs.DB.Model(&existingDoctor).Updates(doctorUpdated).Error; err != nil {
+	if err := configs.DB.Model(&existingDoctor).Updates(existingDoctor).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal memperbarui data dokter"))
 	}
+
 	configs.DB.Save(&existingDoctor)
 
 	response := response.ConvertToDoctorUpdateResponse(&existingDoctor)
-
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Data dokter berhasil diperbarui", response))
 }
 
