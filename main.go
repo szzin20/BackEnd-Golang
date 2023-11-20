@@ -5,19 +5,17 @@ import (
 	"healthcare/configs"
 	"healthcare/middlewares"
 	"healthcare/routes"
-	"log"
 	"os"
 
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 )
 
 func main() {
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Can't access .env files!")
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Println("Can't access .env files!")
+	// }
 
 	configs.Init()
 	e := echo.New()
