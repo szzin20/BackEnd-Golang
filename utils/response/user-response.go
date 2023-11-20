@@ -66,3 +66,26 @@ func ConvertToGetAllUsersResponse(users []schema.User) []web.UserUpdateResponse 
 	return results
 }
 
+func ConvertToGetAllUserByAdminResponse(users []schema.User) []web.UserAllResponseByAdmin {
+	var results []web.UserAllResponseByAdmin
+
+	// Iterasi melalui setiap dokter dan konversi ke format respons
+	for _, user := range users {
+		userResponse := web.UserAllResponseByAdmin{
+			ID:        user.ID,
+			Fullname:  user.Fullname,
+			Email:     user.Email,
+			Image:     user.Image,
+			Gender:    user.Gender,
+			Birthdate: user.Birthdate,
+			BloodType: user.BloodType,
+			Height:    user.Height,
+			Weight:    user.Weight,
+			Role:      user.Role,
+		}
+
+		results = append(results, userResponse)
+	}
+
+	return results
+}

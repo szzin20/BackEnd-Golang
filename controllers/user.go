@@ -76,6 +76,24 @@ func LoginUserController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", userLoginResponse))
 }
 
+// Get All Doctors by Admin
+func GetAllUserByAdminController(c echo.Context) error {
+	var User []schema.User
+
+	err := configs.DB.Find(&User).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Pengguna"))
+	}
+
+	if len(User) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data Pengguna Kosong"))
+	}
+
+	response := response.ConvertToGetAllUserByAdminResponse(User)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Data Pengguna Berhasil Diambil", response))
+}
+
 // Get User Profile
 func GetUserController(c echo.Context) error {
 
