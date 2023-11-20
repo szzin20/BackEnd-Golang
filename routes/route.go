@@ -1,9 +1,10 @@
 package routes
 
 import (
-	"github.com/labstack/echo/v4"
 	"healthcare/controllers"
 	"healthcare/middlewares"
+
+	"github.com/labstack/echo/v4"
 )
 
 func SetupRoutes(e *echo.Echo) {
@@ -13,8 +14,8 @@ func SetupRoutes(e *echo.Echo) {
 
 	gAdmins := e.Group("/admins")
 	gAdmins.POST("/login", controllers.LoginAdminController)
-	gAdmins.POST("/register/doctor", controllers.RegisterDoctorByAdminController) 
-	gAdmins.GET("/list/doctors", controllers.GetAllDoctorByAdminController) 
+	gAdmins.POST("/register/doctor", controllers.RegisterDoctorByAdminController)
+	gAdmins.GET("/list/doctors", controllers.GetAllDoctorByAdminController)
 	gAdmins.PUT("update/doctor/:id", controllers.UpdateDoctorByAdminController)
 	gAdmins.PUT("update/payment/:id", controllers.UpdatePaymentStatusByAdminController)
 	gAdmins.DELETE("delete/doctor/:id", controllers.DeleteDoctorByAdminController)
@@ -34,6 +35,8 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.DELETE("", controllers.DeleteUserController, UserJWT)
 	gUsers.GET("/medicines", controllers.GetAllMedicinesUserController, UserJWT)
 	gUsers.GET("/medicines/?name=", controllers.GetMedicineByNameUserController, UserJWT)
+	gUsers.GET("/doctors/available", controllers.GetAvailableDoctor)
+	gUsers.GET("/doctors", controllers.GetSpecializeDoctor)
 
 	gDoctors := e.Group("/doctors")
 	gDoctors.POST("/login", controllers.LoginDoctorController)
