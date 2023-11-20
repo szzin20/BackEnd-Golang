@@ -1,5 +1,17 @@
 package web
 
+type DoctorRegisterResponse struct {
+	Fullname       string `json:"fullname" form:"fullname" `
+	Email          string `json:"email" form:"email"`
+	Status         bool   `json:"status" form:"status"`
+	Price          int    `json:"price" form:"price"`
+	Gender         string `json:"gender" form:"gender"`
+	Specialist     string `json:"specialist" form:"specialist"`
+	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
+	NoSTR          int    `json:"no_str" form:"no_str"`
+	Experience     string `json:"experience" form:"experience"`
+	Alumnus        string `json:"alumnus" form:"alumnus"`
+}
 type DoctorLoginResponse struct {
 	Fullname string `json:"fullname" form:"fullname"`
 	Email    string `json:"email" form:"email"`
@@ -28,4 +40,20 @@ type DoctorAllResponse struct {
 	Specialist     string `json:"specialist" form:"specialist"`
 	Experience     string `json:"experience" form:"experience"`
 	Alumnus        string `json:"alumnus" form:"alumnus"`
+}
+
+type DoctorAllResponseByAdmin struct {
+	ID             uint   `json:"id" form:"id"`
+	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
+	Fullname       string `json:"fullname" form:"fullname"`
+	Gender         string `json:"gender" form:"gender"`
+	Email          string `json:"email" form:"email"`
+	Status         bool   `json:"status" form:"status"`
+	Price          int    `json:"price" form:"price"`
+	Specialist     string `json:"specialist" form:"specialist"`
+	Experience     string `json:"experience" form:"experience"`
+	NoSTR          int    `json:"no_str" form:"no_str"`
+	Role           string `json:"role" form:"role"`
+	Alumnus        string `json:"alumnus" form:"alumnus"`
+	// DoctorTransaction []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
 }
