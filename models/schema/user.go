@@ -12,9 +12,9 @@ type User struct {
 	Email     string `gorm:"not null;unique"`
 	Password  string `gorm:"not null"`
 	Image     string
-	Gender    string `gorm:"type:enum('male', 'female', '')"`
+	Gender    string `gorm:"type:enum('male', 'female');default:null"`
 	Birthdate string 
-	BloodType string `gorm:"type:enum('A', 'B', 'O', 'AB', '')"`
+	BloodType string `gorm:"type:enum('A', 'B', 'O', 'AB');default:null"`
 	Height    int
 	Weight    int
 	Role      string `gorm:"type:enum('user');default:'user'"`
