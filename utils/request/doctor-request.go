@@ -31,7 +31,6 @@ func ConvertToDoctorUpdateRequest(doctor web.DoctorUpdateRequest) *schema.Doctor
 	return &schema.Doctor{
 		Fullname:       doctor.Fullname,
 		Email:          doctor.Email,
-		Password:       doctor.Password,
 		Specialist:     doctor.Specialist,
 		ProfilePicture: doctor.ProfilePicture,
 		Gender:         doctor.Gender,

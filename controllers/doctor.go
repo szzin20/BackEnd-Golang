@@ -72,7 +72,7 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 	}
 
 	// Mengirim email pemberitahuan
-	err = helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "drg")
+	err = helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "")
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengirim email verifikasi"))
 	}
