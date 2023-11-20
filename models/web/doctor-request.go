@@ -5,7 +5,6 @@ type DoctorRegisterRequest struct {
 	Fullname       string `json:"fullname" form:"fullname" validate:"max=30"`
 	Email          string `json:"email" form:"email" validate:"required,email"`
 	Password       string `json:"password" form:"password" validate:"min=10,max=15"`
-	Status         bool   `json:"status" form:"status" validate:"eq=true|eq=false"`
 	Price          int    `json:"price" form:"price" validate:"min=0"`
 	Gender         string `json:"gender" form:"gender" validate:"required"`
 	Specialist     string `json:"specialist" form:"specialist" validate:"required"`

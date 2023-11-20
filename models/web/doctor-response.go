@@ -1,11 +1,5 @@
 package web
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
-
 type DoctorRegisterResponse struct {
 	Fullname       string `json:"fullname" form:"fullname" `
 	Email          string `json:"email" form:"email"`
@@ -62,7 +56,4 @@ type DoctorAllResponseByAdmin struct {
 	Role           string `json:"role" form:"role"`
 	Alumnus        string `json:"alumnus" form:"alumnus"`
 	// DoctorTransaction []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
-	UpdatedAt time.Time
-	CreatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
