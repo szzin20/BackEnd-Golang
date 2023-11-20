@@ -5,6 +5,21 @@ import (
 	"healthcare/models/web"
 )
 
+func ConvertToDoctorRegisterResponse(doctor *schema.Doctor) web.DoctorRegisterResponse {
+	return web.DoctorRegisterResponse{
+		Fullname:       doctor.Fullname,
+		Email:          doctor.Email,
+		Price:          doctor.Price,
+		Gender:         doctor.Gender,
+		Specialist:     doctor.Specialist,
+		ProfilePicture: doctor.ProfilePicture,
+		NoSTR:          doctor.NoSTR,
+		Experience:     doctor.Experience,
+		Alumnus:        doctor.Alumnus,
+		Status:         doctor.Status,
+	}
+}
+
 func ConvertToDoctorLoginResponse(doctor *schema.Doctor) web.DoctorLoginResponse {
 	return web.DoctorLoginResponse{
 		Fullname: doctor.Fullname,
@@ -51,6 +66,33 @@ func ConvertToGetAllDoctorResponse(doctors []schema.Doctor) []web.DoctorAllRespo
 			Status:         doctor.Status,
 			Price:          doctor.Price,
 			Specialist:     doctor.Specialist,
+			Experience:     doctor.Experience,
+			Alumnus:        doctor.Alumnus,
+		}
+
+		results = append(results, doctorResponse)
+	}
+
+	return results
+}
+
+func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorAllResponseByAdmin {
+	var results []web.DoctorAllResponseByAdmin
+
+	// Iterasi melalui setiap dokter dan konversi ke format respons
+	for _, doctor := range doctors {
+		doctorResponse := web.DoctorAllResponseByAdmin{
+
+			ID:             doctor.ID,
+			ProfilePicture: doctor.ProfilePicture,
+			Fullname:       doctor.Fullname,
+			Gender:         doctor.Gender,
+			Email:          doctor.Email,
+			Status:         doctor.Status,
+			Price:          doctor.Price,
+			Specialist:     doctor.Specialist,
+			NoSTR:          doctor.NoSTR,
+			Role:           doctor.Role,
 			Experience:     doctor.Experience,
 			Alumnus:        doctor.Alumnus,
 		}
