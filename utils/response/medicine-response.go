@@ -7,16 +7,32 @@ import (
 
 func ConvertToAdminMedicineResponse(medicine *schema.Medicine) web.MedicineResponse {
 	return web.MedicineResponse{
-		ID:       medicine.ID,
-		Code:     medicine.Code,
-		Name:     medicine.Name,
-		Merk:     medicine.Merk,
-		Category: medicine.Category,
-		Type:     medicine.Type,
-		Stock:    medicine.Stock,
-		Price:    medicine.Price,
-		Details:  medicine.Details,
-		Image:    medicine.Image,
+		ID:        medicine.ID,
+		Code:      medicine.Code,
+		Name:      medicine.Name,
+		Merk:      medicine.Merk,
+		Category:  medicine.Category,
+		Type:      medicine.Type,
+		Stock:     medicine.Stock,
+		Price:     medicine.Price,
+		Details:   medicine.Details,
+		Image:     medicine.Image,
+		CreatedAt: medicine.CreatedAt,
+	}
+}
+
+func ConvertToAdminMedicineUpdateResponse(medicine *schema.Medicine) web.MedicineUpdateResponse {
+	return web.MedicineUpdateResponse{
+		ID:        medicine.ID,
+		Code:      medicine.Code,
+		Name:      medicine.Name,
+		Merk:      medicine.Merk,
+		Category:  medicine.Category,
+		Type:      medicine.Type,
+		Stock:     medicine.Stock,
+		Price:     medicine.Price,
+		Details:   medicine.Details,
+		Image:     medicine.Image,
 		CreatedAt: medicine.CreatedAt,
 	}
 }
@@ -25,16 +41,16 @@ func ConvertToAdminGetAllMedicinesResponse(medicines []schema.Medicine) []web.Me
 	var results []web.MedicineResponse
 	for _, medicine := range medicines {
 		medicineResponse := web.MedicineResponse{
-			ID:       medicine.ID,
-			Code:     medicine.Code,
-			Name:     medicine.Name,
-			Merk:     medicine.Merk,
-			Category: medicine.Category,
-			Type:     medicine.Type,
-			Stock:    medicine.Stock,
-			Price:    medicine.Price,
-			Details:  medicine.Details,
-			Image:    medicine.Image,
+			ID:        medicine.ID,
+			Code:      medicine.Code,
+			Name:      medicine.Name,
+			Merk:      medicine.Merk,
+			Category:  medicine.Category,
+			Type:      medicine.Type,
+			Stock:     medicine.Stock,
+			Price:     medicine.Price,
+			Details:   medicine.Details,
+			Image:     medicine.Image,
 			CreatedAt: medicine.CreatedAt,
 		}
 		results = append(results, medicineResponse)

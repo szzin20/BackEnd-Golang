@@ -11,3 +11,15 @@ type MedicineRequest struct {
 	Details  string `json:"details" form:"details" validate:"required"`
 	Image    string `json:"image" form:"image" validate:"required"`
 }
+
+type MedicineUpdateRequest struct {
+	Code     string `json:"code" form:"code" validate:"omitempty"`
+	Name     string `json:"name" form:"name" validate:"omitempty"`
+	Merk     string `json:"merk" form:"merk" validate:"omitempty"`
+	Category string `json:"category" form:"category" validate:"omitempty"`
+	Type     string `json:"type" form:"type" validate:"omitempty"`
+	Stock    int    `json:"stock" form:"stock" validate:"omitempty,min=0"`
+	Price    int    `json:"price" form:"price" validate:"omitempty,min=0"`
+	Details  string `json:"details" form:"details" validate:"omitempty"`
+	Image    string `json:"image" form:"image" validate:"omitempty"`
+}
