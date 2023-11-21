@@ -92,21 +92,52 @@ func GetDoctorTransactionController(c echo.Context) error {
 	}
 
 	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
+	status := c.QueryParam("payment_status")
 
-	var doctorTransaction schema.DoctorTransaction
+	if status == "" {
+		var doctorTransaction schema.DoctorTransaction
+		if err := configs.DB.First(&doctorTransaction, userID, "id = ?", transactionID).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Doctor Transaction Data"))
+		}
 
-	if err := configs.DB.First(&doctorTransaction, userID, "id = ?", transactionID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Doctor Transaction Data"))
+		var doctor schema.Doctor
+		if err := configs.DB.First(&doctor, "id = ?", doctorTransaction.DoctorID).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Dokter"))
+		}
+
+		response := response.ConvertToCreateDTResponse(&doctorTransaction, doctor)
+
+		return c.JSON(http.StatusOK, helper.SuccessResponse("Doctor Transaction Data Successfully Retrieved", response))
 	}
-	
-	var doctor schema.Doctor
-	if err := configs.DB.First(&doctor, "id = ?", doctorTransaction.DoctorID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Dokter"))
+
+	if transactionID == 0 {
+		var doctorTransaction []schema.DoctorTransaction
+		if err := configs.DB.Find(&doctorTransaction, "user_id = ? AND payment_status = ?", userID, status).Error; err != nil {
+			fmt.Println(err)
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Doctor Transaction Data"))
+		}
+		var count int
+		var responses []web.CreateDoctorTransactionResponse
+		for i, doctor_id := range doctorTransaction {
+			count++
+			var doctor schema.Doctor
+			err := configs.DB.Find(&doctor, "id=?", doctor_id.DoctorID).Error
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Dokter"))
+			}
+
+			if len(doctorTransaction) == 0 {
+				return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data Transaksi Dokter Kosong"))
+			}
+
+			responses = append(responses, response.ConvertToGetAllDTResponse(doctorTransaction[i], doctor))
+		}
+		fmt.Println(count)
+		return c.JSON(http.StatusOK, helper.SuccessResponse("Data Transaksi Dokter Berhasil Diambil", responses))
+
 	}
 
-	response := response.ConvertToCreateDTResponse(&doctorTransaction, doctor)
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Doctor Transaction Data Successfully Retrieved", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Doctor Transaction Data Successfully Retrieved", ""))
 
 }
 
@@ -121,17 +152,17 @@ func GetAllDoctorTransactionsController(c echo.Context) error {
 
 	var doctorTransaction []schema.DoctorTransaction
 
-	err := configs.DB.Where("deleted_at IS NULL").Find(&doctorTransaction, "user_id=?",userID).Error
+	err := configs.DB.Where("deleted_at IS NULL").Find(&doctorTransaction, "user_id=?", userID).Error
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Transaksi Dokter"))
 	}
 
-	var responses []web.CreateDoctorTransactionResponse 
-	for i, doctor_id := range doctorTransaction{
+	var responses []web.CreateDoctorTransactionResponse
+	for i, doctor_id := range doctorTransaction {
 		fmt.Println(i)
 		var doctor schema.Doctor
-		err := configs.DB.Find(&doctor,"id=?" ,doctor_id.DoctorID).Error
-		if err != nil{
+		err := configs.DB.Find(&doctor, "id=?", doctor_id.DoctorID).Error
+		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Dokter"))
 		}
 
@@ -139,9 +170,8 @@ func GetAllDoctorTransactionsController(c echo.Context) error {
 			return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data Transaksi Dokter Kosong"))
 		}
 
-		responses = append(responses,response.ConvertToGetAllDTResponse(doctorTransaction[i], doctor))
+		responses = append(responses, response.ConvertToGetAllDTResponse(doctorTransaction[i], doctor))
 	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Data Transaksi Dokter Berhasil Diambil", responses))
 }
-

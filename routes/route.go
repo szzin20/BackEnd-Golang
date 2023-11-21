@@ -18,7 +18,6 @@ func SetupRoutes(e *echo.Echo) {
 	gAdmins.PUT("/:id", controllers.UpdateAdminController)
 
 	gUsers := e.Group("/users")
-	// gUsers.Use(echojwt.JWT([]byte(os.Getenv("JWT_SECRET"))))
 	gUsers.POST("/register", controllers.RegisterUserController)
 	gUsers.POST("/login", controllers.LoginUserController)
 	gUsers.GET("/profile", controllers.GetUserController, UserJWT)
@@ -26,7 +25,7 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.DELETE("", controllers.DeleteUserController, UserJWT)
 	gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsController, UserJWT)
 	gUsers.POST("/doctor-payments", controllers.CreateDoctorTransaction, UserJWT)
-	gUsers.GET("/doctor-payments", controllers.GetDoctorTransactionController, UserJWT)
+	gUsers.GET("/doctor-payment", controllers.GetDoctorTransactionController, UserJWT)
 	// gUsers.GET("/doctor-payments", controllers.GetDoctorTransactionByStatusController, UserJWT)
 	
 	gDoctors := e.Group("/doctors")

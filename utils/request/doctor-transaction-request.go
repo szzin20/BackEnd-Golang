@@ -9,6 +9,7 @@ func ConvertToCreateDTRequest(DoctorTransaction web.CreateDoctorTransactionReque
 	return &schema.DoctorTransaction{
 		UserID: userID,
 		DoctorID: doctorID,
+		Price: price,
 		PaymentMethod:       DoctorTransaction.PaymentMethod,
 		PaymentConfirmation: DoctorTransaction.PaymentConfirmation,
 	}
