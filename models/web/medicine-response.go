@@ -26,6 +26,9 @@ type MedicineUpdateResponse struct {
 	Price     int       `json:"price" form:"price"`
 	Stock     int       `json:"stock" form:"stock"`
 	Details   string    `json:"details" form:"details"`
-	Image     string    `json:"image" form:"image"`
 	CreatedAt time.Time `json:"created_at" form:"created_at"`
+}
+
+type MedicineImageResponse struct {
+	Image string `json:"image" form:"image"`
 }

@@ -21,5 +21,8 @@ type MedicineUpdateRequest struct {
 	Stock    int    `json:"stock" form:"stock" validate:"omitempty,min=0"`
 	Price    int    `json:"price" form:"price" validate:"omitempty,min=0"`
 	Details  string `json:"details" form:"details" validate:"omitempty"`
-	Image    string `json:"image" form:"image" validate:"omitempty"`
+}
+
+type MedicineImageRequest struct {
+	Image string `json:"image" form:"image" validate:"required"`
 }

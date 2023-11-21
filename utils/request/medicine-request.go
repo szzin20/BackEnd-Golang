@@ -19,16 +19,8 @@ func ConvertToMedicineRequest(medicine web.MedicineRequest) *schema.Medicine {
 	}
 }
 
-func ConvertToMedicineUpdateRequest(medicine web.MedicineUpdateRequest) *schema.Medicine {
+func ConvertToMedicineImageRequest(medicine web.MedicineImageRequest) *schema.Medicine {
 	return &schema.Medicine{
-		Code:     medicine.Code,
-		Name:     medicine.Name,
-		Merk:     medicine.Merk,
-		Category: medicine.Category,
-		Type:     medicine.Type,
-		Stock:    medicine.Stock,
-		Price:    medicine.Price,
-		Details:  medicine.Details,
-		Image:    medicine.Image,
+		Image: medicine.Image,
 	}
 }

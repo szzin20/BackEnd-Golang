@@ -32,7 +32,6 @@ func ConvertToAdminMedicineUpdateResponse(medicine *schema.Medicine) web.Medicin
 		Stock:     medicine.Stock,
 		Price:     medicine.Price,
 		Details:   medicine.Details,
-		Image:     medicine.Image,
 		CreatedAt: medicine.CreatedAt,
 	}
 }
@@ -56,6 +55,12 @@ func ConvertToAdminGetAllMedicinesResponse(medicines []schema.Medicine) []web.Me
 		results = append(results, medicineResponse)
 	}
 	return results
+}
+
+func ConvertToAdminMedicineImageResponse(medicine *schema.Medicine) web.MedicineImageResponse {
+	return web.MedicineImageResponse{
+		Image: medicine.Image,
+	}
 }
 
 func ConvertToUserMedicineResponse(medicine *schema.Medicine) web.MedicineResponse {
