@@ -12,6 +12,7 @@ func ConvertToDoctorRegisterRequest(doctor web.DoctorRegisterRequest) *schema.Do
 		Price:          doctor.Price,
 		Specialist:     doctor.Specialist,
 		ProfilePicture: doctor.ProfilePicture,
+		Password:       doctor.Password,
 		Gender:         doctor.Gender,
 		NoSTR:          doctor.NoSTR,
 		Experience:     doctor.Experience,
@@ -28,15 +29,17 @@ func ConvertToDoctorLoginRequest(doctor web.DoctorLoginRequest) *schema.Doctor {
 
 func ConvertToDoctorUpdateRequest(doctor web.DoctorUpdateRequest) *schema.Doctor {
 	return &schema.Doctor{
-		Fullname:       doctor.Fullname,
-		Email:          doctor.Email,
-		Specialist:     doctor.Specialist,
-		ProfilePicture: doctor.ProfilePicture,
-		Gender:         doctor.Gender,
-		Password:       doctor.Password,
-		Status:         doctor.Status,
-		Experience:     doctor.Experience,
-		Alumnus:        doctor.Alumnus,
+		Fullname:         doctor.Fullname,
+		Email:            doctor.Email,
+		Specialist:       doctor.Specialist,
+		ProfilePicture:   doctor.ProfilePicture,
+		AboutDoctor:      doctor.AboutDoctor,
+		LocationPractice: doctor.LocationPractice,
+		Gender:           doctor.Gender,
+		Password:         doctor.Password,
+		Status:           doctor.Status,
+		Experience:       doctor.Experience,
+		Alumnus:          doctor.Alumnus,
 	}
 }
 

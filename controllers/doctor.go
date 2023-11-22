@@ -251,7 +251,7 @@ func UpdateDoctorController(c echo.Context) error {
 	// Update the doctor details
 	existingDoctor.ProfilePicture = ProfilePicture
 	existingDoctor.Status = doctorUpdated.Status
-	if err := configs.DB.Model(&existingDoctor).Updates(existingDoctor).Error; err != nil {
+	if err := configs.DB.Model(&existingDoctor).Updates(doctorUpdated).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal memperbarui data dokter"))
 	}
 
@@ -339,6 +339,23 @@ func DeleteDoctorByAdminController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Akun dokter berhasil dihapus oleh admin  ", nil))
 }
+
+// Get Doctor by ID
+func GetDoctorByIDController(c echo.Context) error {
+    id, err := strconv.Atoi(c.Param("id"))
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Gagal mendapatkan ID Dokter"))
+    }
+    var doctor schema.Doctor
+    result := configs.DB.First(&doctor, id)
+    if result.Error != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data dokter"))
+    }
+    response := response.ConvertToGetIDDoctorResponse(&doctor)
+
+    return c.JSON(http.StatusOK, helper.SuccessResponse("Detail Dokter berhasil diambil", response))
+}
+
 
 // Manage patient
 
@@ -447,12 +464,6 @@ func UpdatePatientController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Data transaksi dokter berhasil diperbarui", response))
 }
-
-
-
-
-
-
 
 
 

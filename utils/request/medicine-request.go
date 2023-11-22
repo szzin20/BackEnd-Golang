@@ -18,3 +18,9 @@ func ConvertToMedicineRequest(medicine web.MedicineRequest) *schema.Medicine {
 		Image:    medicine.Image,
 	}
 }
+
+func ConvertToMedicineImageRequest(medicine web.MedicineImageRequest) *schema.Medicine {
+	return &schema.Medicine{
+		Image: medicine.Image,
+	}
+}
