@@ -1,7 +1,6 @@
 package configs
 
 import (
-	"log"
 	"os"
 )
 
@@ -22,8 +21,6 @@ func GetConfig() Configuration {
 		DB_HOST:     os.Getenv("DB_HOST"),
 		DB_NAME:     os.Getenv("DB_NAME"),
 	}
-
-	log.Print(configuration)
 
 	return configuration
 }
