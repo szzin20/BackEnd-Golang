@@ -13,7 +13,6 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
 // RegisterDoctorController
@@ -94,18 +93,23 @@ func LoginDoctorController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", doctorLoginResponse))
 }
 
-var db = configs.DB
-
 func GetAvailableDoctor(c echo.Context) error {
 
-	var doctors []schema.Doctor
-	if err := db.Where("status = ?", true).Find(&doctors).Error; err != nil {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data tidak ditemukan!"))
+	var Doctor []schema.Doctor
+
+	err := configs.DB.Where("status = ?", "1").Find(&Doctor).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Dokter"))
 	}
 
-	result := response.ConvertToGetAllDoctorResponse(doctors)
+	if len(Doctor) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data Dokter Kosong"))
+	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("success", result))
+	response := response.ConvertToGetAllDoctorResponse(Doctor)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Data Dokter Berhasil Diambil", response))
+
 }
 
 func GetSpecializeDoctor(c echo.Context) error {
@@ -116,16 +120,19 @@ func GetSpecializeDoctor(c echo.Context) error {
 	}
 
 	var doctors []schema.Doctor
-	if err := db.Where("specialist = ?", specialist).Find(&doctors).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data tidak ditemukan!"))
-		}
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Internal server error"))
+	err := configs.DB.Where("specialist LIKE ?", "%"+specialist+"%").Find(&doctors).Error
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Dokter"))
 	}
 
-	result := response.ConvertToGetAllDoctorResponse(doctors)
+	if len(doctors) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data Dokter Kosong"))
+	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("success", result))
+	response := response.ConvertToGetAllDoctorResponse(doctors)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Data Dokter Berhasil Diambil", response))
 
 }
 
@@ -338,18 +345,19 @@ func DeleteDoctorByAdminController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Akun dokter berhasil dihapus oleh admin  ", nil))
 }
+
 // Get Doctor by ID
 func GetDoctorByIDController(c echo.Context) error {
-    id, err := strconv.Atoi(c.Param("id"))
-    if err != nil {
-        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Gagal mendapatkan ID Dokter"))
-    }
-    var doctor schema.Doctor
-    result := configs.DB.First(&doctor, id)
-    if result.Error != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data dokter"))
-    }
-    response := response.ConvertToGetIDDoctorResponse(&doctor)
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Gagal mendapatkan ID Dokter"))
+	}
+	var doctor schema.Doctor
+	result := configs.DB.First(&doctor, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data dokter"))
+	}
+	response := response.ConvertToGetIDDoctorResponse(&doctor)
 
-    return c.JSON(http.StatusOK, helper.SuccessResponse("Detail Dokter berhasil diambil", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Detail Dokter berhasil diambil", response))
 }

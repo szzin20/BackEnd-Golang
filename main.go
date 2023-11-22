@@ -11,10 +11,33 @@ import (
 )
 
 func main() {
+	// requiredEnvVars := []string{
+	// 	"DB_USERNAME",
+	// 	"DB_PASSWORD",
+	// 	"DB_HOST",
+	// 	"DB_PORT",
+	// 	"DB_NAME",
+	// 	"JWT_SECRET",
+	// 	"SERVER_PORT",
+	// 	"BUCKET_NAME",
+	// 	"BUCKET_SA",
+	// }
 
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	log.Println("Can't access .env files!")
+	// allVarsExist := true
+
+	// for _, envVar := range requiredEnvVars {
+	// 	_, exists := os.LookupEnv(envVar)
+	// 	if !exists {
+	// 		log.Printf("Missing environment variable: %s\n", envVar)
+	// 		allVarsExist = false
+	// 	}
+	// }
+
+	// if !allVarsExist {
+	// 	err := godotenv.Load()
+	// 	if err != nil {
+	// 		log.Println("Can't access .env files!")
+	// 	}
 	// }
 
 	configs.Init()
