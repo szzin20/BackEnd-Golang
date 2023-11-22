@@ -1,6 +1,7 @@
 package response
 
 import (
+	"healthcare/configs"
 	"healthcare/models/schema"
 	"healthcare/models/web"
 )
@@ -61,6 +62,7 @@ func ConvertToGetAllDoctorResponse(doctors []schema.Doctor) []web.DoctorAllRespo
 
 	for _, doctor := range doctors {
 		doctorResponse := web.DoctorAllResponse{
+			ID:             doctor.ID,
 			ProfilePicture: doctor.ProfilePicture,
 			Fullname:       doctor.Fullname,
 			Status:         doctor.Status,
@@ -101,6 +103,7 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 	return results
 }
 
+
 func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 	return web.DoctorIDResponse{
 		ProfilePicture:   doctor.ProfilePicture,
@@ -115,3 +118,49 @@ func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 		Alumnus:          doctor.Alumnus,
 	}
 }
+// ConvertToDoctorPatientResponses mengonversi daftar data pasien ke format respons kustom.
+func ConvertToDoctorPatientResponses(transactions []schema.DoctorTransaction) []web.DoctorPatientResponse {
+	var patientResponses []web.DoctorPatientResponse
+
+	for _, transaction := range transactions {
+		var patient schema.User
+		err := configs.DB.First(&patient, transaction.UserID).Error
+		if err != nil {
+			continue
+		}
+
+		// Gunakan data pasien langsung untuk membuat objek respons kustom
+		patientResponse := web.DoctorPatientResponse{
+			UserID:              patient.ID,
+			Fullname:            patient.Fullname,
+			DoctorTransactionID: transaction.ID,
+			CreatedAt:           transaction.CreatedAt,
+			HealthDetails:       transaction.HealthDetails,
+			PatientStatus:       transaction.PatientStatus,
+		}
+
+		// Tambahkan ke daftar respons
+		patientResponses = append(patientResponses, patientResponse)
+	}
+
+	return patientResponses
+}
+
+func ConvertTopatientDoctorTransaksiResponse(patient schema.User, transaction schema.DoctorTransaction) web.DoctorPatientResponse {
+	return web.DoctorPatientResponse{
+		UserID:              patient.ID,
+		Fullname:            patient.Fullname,
+		DoctorTransactionID: transaction.ID,
+		CreatedAt:           transaction.CreatedAt,
+		HealthDetails:       transaction.HealthDetails,
+		PatientStatus:       transaction.PatientStatus,
+		// UpdatedAt:           transaction.UpdatedAt,
+	}
+}
+
+
+
+
+
+
+
