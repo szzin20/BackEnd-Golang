@@ -23,7 +23,7 @@ func SetupRoutes(e *echo.Echo) {
 	gAdmins.POST("/medicines", controllers.CreateMedicineController)
 	gAdmins.GET("/medicines", controllers.GetAllMedicinesAdminController)
 	gAdmins.GET("/medicines/:id", controllers.GetMedicineController)
-	gAdmins.GET("/medicines/?name=", controllers.GetMedicineByNameAdminController)
+	gAdmins.GET("/medicines/name", controllers.GetMedicineByNameAdminController)
 	gAdmins.PUT("/medicines/:id", controllers.UpdateMedicineController)
 	gAdmins.DELETE("/medicines/:id", controllers.DeleteMedicineController)
 	gAdmins.GET("/medicines/:id/image", controllers.GetImageMedicineController)
@@ -37,7 +37,8 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.PUT("/profile", controllers.UpdateUserController, UserJWT)
 	gUsers.DELETE("", controllers.DeleteUserController, UserJWT)
 	gUsers.GET("/medicines", controllers.GetAllMedicinesUserController)
-	gUsers.GET("/medicines/?name=", controllers.GetMedicineByNameUserController)
+	gUsers.GET("/medicines/:id", controllers.GetMedicineUserController)
+	gUsers.GET("/medicines/name", controllers.GetMedicineByNameUserController)
 	gUsers.GET("/doctors/available", controllers.GetAvailableDoctor)
 	gUsers.GET("/doctors", controllers.GetSpecializeDoctor)
 

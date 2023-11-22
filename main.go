@@ -12,10 +12,10 @@ import (
 
 func main() {
 
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	log.Println("Can't access .env files!")
-	// }
+	//err := godotenv.Load()
+	//if err != nil {
+	//	log.Println("Can't access .env files!")
+	//}
 
 	configs.Init()
 	e := echo.New()
@@ -32,7 +32,7 @@ func main() {
 
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {
-		port = "8080"
+		port = "8000"
 	}
 
 	setPort := fmt.Sprintf(":%s", port)
