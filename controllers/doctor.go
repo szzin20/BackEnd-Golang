@@ -250,7 +250,7 @@ func UpdateDoctorController(c echo.Context) error {
 	// Update the doctor details
 	existingDoctor.ProfilePicture = ProfilePicture
 	existingDoctor.Status = doctorUpdated.Status
-	if err := configs.DB.Model(&existingDoctor).Updates(existingDoctor).Error; err != nil {
+	if err := configs.DB.Model(&existingDoctor).Updates(doctorUpdated).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal memperbarui data dokter"))
 	}
 
