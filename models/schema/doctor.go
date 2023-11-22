@@ -13,7 +13,7 @@ type Doctor struct {
 	Gender           string `gorm:"type:enum('male', 'female')"`
 	Email            string `gorm:"not null;unique"`
 	Password         string `gorm:"not null"`
-	Status           string `gorm:"null"`
+	Status           bool   `gorm:"not null;default:false"`
 	Price            int    `gorm:"not null"`
 	Specialist       string `gorm:"not null"`
 	Experience       string `gorm:"not null"`

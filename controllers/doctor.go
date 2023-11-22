@@ -97,13 +97,13 @@ func GetAvailableDoctor(c echo.Context) error {
 
 	var Doctor []schema.Doctor
 
-	err := configs.DB.Where("status = ?", "1").Find(&Doctor).Error
+	err := configs.DB.Where("status = ?", true).Find(&Doctor).Error
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Dokter"))
 	}
 
 	if len(Doctor) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data Dokter Kosong"))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data tidak ditemukan"))
 	}
 
 	response := response.ConvertToGetAllDoctorResponse(Doctor)
@@ -127,7 +127,7 @@ func GetSpecializeDoctor(c echo.Context) error {
 	}
 
 	if len(doctors) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data Dokter Kosong"))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data tidak ditemukan"))
 	}
 
 	response := response.ConvertToGetAllDoctorResponse(doctors)

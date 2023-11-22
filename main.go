@@ -7,38 +7,13 @@ import (
 	"healthcare/routes"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 )
 
 func main() {
-	// requiredEnvVars := []string{
-	// 	"DB_USERNAME",
-	// 	"DB_PASSWORD",
-	// 	"DB_HOST",
-	// 	"DB_PORT",
-	// 	"DB_NAME",
-	// 	"JWT_SECRET",
-	// 	"SERVER_PORT",
-	// 	"BUCKET_NAME",
-	// 	"BUCKET_SA",
-	// }
 
-	// allVarsExist := true
-
-	// for _, envVar := range requiredEnvVars {
-	// 	_, exists := os.LookupEnv(envVar)
-	// 	if !exists {
-	// 		log.Printf("Missing environment variable: %s\n", envVar)
-	// 		allVarsExist = false
-	// 	}
-	// }
-
-	// if !allVarsExist {
-	// 	err := godotenv.Load()
-	// 	if err != nil {
-	// 		log.Println("Can't access .env files!")
-	// 	}
-	// }
+	_ = godotenv.Load() // ignore error to anticipate server not run
 
 	configs.Init()
 	e := echo.New()

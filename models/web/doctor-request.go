@@ -25,7 +25,7 @@ type DoctorUpdateRequest struct {
 	Gender           string `json:"gender" form:"gender" validate:"omitempty"`
 	Specialist       string `json:"specialist" form:"specialist" validate:"omitempty"`
 	ProfilePicture   string `json:"profile_picture" form:"profile_picture" validate:"omitempty"`
-	Status           string `json:"status" form:"status" validate:"omitempty,eq=true|eq=false"`
+	Status           bool   `json:"status" form:"status" validate:"omitempty,eq=true|eq=false"`
 	Experience       string `json:"experience" form:"experience" validate:"omitempty"`
 	Alumnus          string `json:"alumnus" form:"alumnus" validate:"omitempty"`
 	AboutDoctor      string `json:"about_doctor" form:"about_doctor" validate:"omitempty"`

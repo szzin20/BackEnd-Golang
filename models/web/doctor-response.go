@@ -3,7 +3,7 @@ package web
 type DoctorRegisterResponse struct {
 	Fullname       string `json:"fullname" form:"fullname" `
 	Email          string `json:"email" form:"email"`
-	Status         string `json:"status" form:"status"`
+	Status         bool   `json:"status" form:"status"`
 	Price          int    `json:"price" form:"price"`
 	Gender         string `json:"gender" form:"gender"`
 	Specialist     string `json:"specialist" form:"specialist"`
@@ -27,7 +27,7 @@ type DoctorUpdateResponse struct {
 	NoSTR            int    `json:"no_str" form:"no_str"`
 	Experience       string `json:"experience" form:"experience"`
 	Alumnus          string `json:"alumnus" form:"alumnus"`
-	Status           string `json:"status" form:"status"`
+	Status           bool   `json:"status" form:"status"`
 	AboutDoctor      string `json:"about_doctor" form:"about_doctor"`
 	LocationPractice string `json:"location_practice" form:"location_practice" `
 }
@@ -37,7 +37,7 @@ type DoctorAllResponse struct {
 	Fullname       string `json:"fullname" form:"fullname"`
 	Specialist     string `json:"specialist" form:"specialist"`
 	Price          int    `json:"price" form:"price"`
-	Status         string `json:"status" form:"status"`
+	Status         bool   `json:"status" form:"status"`
 }
 
 type DoctorAllResponseByAdmin struct {
@@ -46,7 +46,7 @@ type DoctorAllResponseByAdmin struct {
 	Fullname       string `json:"fullname" form:"fullname"`
 	Gender         string `json:"gender" form:"gender"`
 	Email          string `json:"email" form:"email"`
-	Status         string `json:"status" form:"status"`
+	Status         bool   `json:"status" form:"status"`
 	Price          int    `json:"price" form:"price"`
 	Specialist     string `json:"specialist" form:"specialist"`
 	Experience     string `json:"experience" form:"experience"`
@@ -58,7 +58,7 @@ type DoctorAllResponseByAdmin struct {
 
 type DoctorIDResponse struct {
 	ProfilePicture   string `json:"profile_picture" form:"profile_picture"`
-	Status           string `json:"status" form:"status"`
+	Status           bool   `json:"status" form:"status"`
 	Fullname         string `json:"fullname" form:"fullname"`
 	Specialist       string `json:"specialist" form:"specialist"`
 	Price            int    `json:"price" form:"price"`
