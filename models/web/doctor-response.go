@@ -1,7 +1,5 @@
 package web
 
-import "time"
-
 type DoctorRegisterResponse struct {
 	Fullname       string `json:"fullname" form:"fullname" `
 	Email          string `json:"email" form:"email"`
@@ -61,11 +59,11 @@ type DoctorAllResponseByAdmin struct {
 	// DoctorTransaction []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
 }
 
-type DoctorPatientResponse struct {
-	UserID              uint      `json:"user_id" form:"user_id"`
-	Fullname            string    `json:"fullname" form:"fullname"`
-	DoctorTransactionID uint      `json:"doctor_transaction_id" form:"doctor_transaction"`
-	CreatedAt           time.Time `json:"created_at" form:"created_at"`
-	HealthDetails       string    `json:"health_details" form:"health_details"`
-	PatientStatus       string    `json:"status" form:"status"`
-}
+// type DoctorPatientResponse struct {
+// 	UserID              uint      `json:"user_id" form:"user_id"`
+// 	Fullname            string    `json:"fullname" form:"fullname"`
+// 	DoctorTransactionID uint      `json:"doctor_transaction_id" form:"doctor_transaction"`
+// 	CreatedAt           time.Time `json:"created_at" form:"created_at"`
+// 	HealthDetails       string    `json:"health_details" form:"health_details"`
+// 	PatientStatus       string    `json:"status" form:"status"`
+// }
