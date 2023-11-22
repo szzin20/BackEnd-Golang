@@ -33,6 +33,7 @@ type DoctorUpdateResponse struct {
 }
 
 type DoctorAllResponse struct {
+	ID             uint   `json:"id" form:"id"`
 	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
 	Fullname       string `json:"fullname" form:"fullname"`
 	Specialist     string `json:"specialist" form:"specialist"`
@@ -68,3 +69,13 @@ type DoctorIDResponse struct {
 	LocationPractice string `json:"location_practice" form:"location_practice"`
 	Alumnus          string `json:"alumnus" form:"alumnus"`
 }
+
+
+// type DoctorPatientResponse struct {
+// 	UserID              uint      `json:"user_id" form:"user_id"`
+// 	Fullname            string    `json:"fullname" form:"fullname"`
+// 	DoctorTransactionID uint      `json:"doctor_transaction_id" form:"doctor_transaction"`
+// 	CreatedAt           time.Time `json:"created_at" form:"created_at"`
+// 	HealthDetails       string    `json:"health_details" form:"health_details"`
+// 	PatientStatus       string    `json:"status" form:"status"`
+// }

@@ -257,7 +257,7 @@ func UpdateDoctorController(c echo.Context) error {
 	// Update the doctor details
 	existingDoctor.ProfilePicture = ProfilePicture
 	existingDoctor.Status = doctorUpdated.Status
-	if err := configs.DB.Model(&existingDoctor).Updates(existingDoctor).Error; err != nil {
+	if err := configs.DB.Model(&existingDoctor).Updates(doctorUpdated).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal memperbarui data dokter"))
 	}
 
@@ -361,3 +361,121 @@ func GetDoctorByIDController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Detail Dokter berhasil diambil", response))
 }
+
+
+// Manage patient
+
+// GetAllPatientsController
+// func GetAllPatientsController(c echo.Context) error {
+//     dokterID, ok := c.Get("userID").(int)
+//     if !ok {
+//         return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil ID Dokter"))
+//     }
+
+//     // Ambil transaksi dokter dari database
+//     var doctorTransactions []schema.DoctorTransaction
+//     if err := configs.DB.Where("doctor_id = ?", dokterID).Find(&doctorTransactions).Error; err != nil {
+//         return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data transaksi dokter"))
+//     }
+
+//     // Periksa jika tidak ada transaksi yang ditemukan
+//     if len(doctorTransactions) == 0 {
+//         return c.JSON(http.StatusNotFound, helper.ErrorResponse("Tidak ada data transaksi dokter"))
+//     }
+
+//     patientResponses := response.ConvertToDoctorPatientResponses(doctorTransactions)
+
+//     return c.JSON(http.StatusOK, helper.SuccessResponse("Data pasien berhasil diambil", patientResponses))
+// }
+
+
+// func GetPatientsByStatusController(c echo.Context) error {
+// 	dokterID, ok := c.Get("userID").(int)
+// 	if !ok {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil ID Dokter"))
+// 	}
+// 	status := c.Param("status")
+
+// 	// Validasi bahwa status tidak boleh kosong
+// 	if status == "" {
+// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Status tidak boleh kosong"))
+// 	}
+
+// 	// Ambil transaksi dokter dari database berdasarkan ID dokter dan status
+// 	var doctorTransactions []schema.DoctorTransaction
+// 	if err := configs.DB.Where("doctor_id = ? AND patient_status = ?", dokterID, status).Find(&doctorTransactions).Error; err != nil {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data transaksi dokter"))
+// 	}
+
+// 	// Jika tidak ada transaksi dokter yang ditemukan, kembalikan respons Not Found
+// 	if len(doctorTransactions) == 0 {
+// 		return c.JSON(http.StatusNotFound, helper.ErrorResponse(fmt.Sprintf("Tidak ada data transaksi dokter dengan status %s", status)))
+// 	}
+
+// 	patientResponses := response.ConvertToDoctorPatientResponses(doctorTransactions)
+
+// 	// Bangun pesan keberhasilan
+// 	successMessage := fmt.Sprintf("Data pasien dengan status %s berhasil diambil", status)
+// 	return c.JSON(http.StatusOK, helper.SuccessResponse(successMessage, patientResponses))
+// }
+
+// func UpdatePatientController(c echo.Context) error {
+// 	dokterID, ok := c.Get("userID").(int)
+// 	if !ok {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil ID Dokter"))
+// 	}
+
+// 	// Mendapatkan ID transaksi dokter
+// 	id, err := strconv.Atoi(c.Param("id"))
+// 	if err != nil {
+// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Gagal mendapatkan ID Transaksi Dokter"))
+// 	}
+
+
+// 	// Membanding data permintaan ke dalam struktur DoctorPatientRequest
+// 	var patientRequest web.DoctorPatientRequest
+// 	if err := c.Bind(&patientRequest); err != nil {
+// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Input tidak valid untuk pembaruan data pasien"))
+// 	}
+// 	if err := helper.ValidateStruct(patientRequest); err != nil {
+// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+// 	}
+
+// 	// Mengambil data transaksi dokter dari database berdasarkan ID
+// 	var existingDoctorTransaction schema.DoctorTransaction
+// 	if err := configs.DB.First(&existingDoctorTransaction, id).Error; err != nil {
+// 		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data transaksi dokter tidak ditemukan"))
+// 	}
+
+// 	// Memastikan transaksi dokter milik dokter yang sedang login
+// 	if uint(dokterID) != existingDoctorTransaction.DoctorID {
+// 		return c.JSON(http.StatusForbidden, helper.ErrorResponse("Anda tidak memiliki izin untuk memperbarui data transaksi ini"))
+// 	}
+
+// 	// Memperbarui status dan Health Details
+// 	existingDoctorTransaction.PatientStatus = patientRequest.PatientStatus
+// 	existingDoctorTransaction.HealthDetails = patientRequest.HealthDetails
+
+// 	// Menyimpan perubahan ke dalam database
+// 	if err := configs.DB.Save(&existingDoctorTransaction).Error; err != nil {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal menyimpan transaksi dokter ke database"))
+// 	}
+
+// 	var patientUser schema.User
+// 	if err := configs.DB.First(&patientUser, existingDoctorTransaction.UserID).Error; err != nil {
+// 		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data pengguna tidak ditemukan"))
+// 	}
+
+// 	response := response.ConvertTopatientDoctorTransaksiResponse(patientUser, existingDoctorTransaction)
+
+// 	return c.JSON(http.StatusOK, helper.SuccessResponse("Data transaksi dokter berhasil diperbarui", response))
+// }
+
+
+
+
+
+
+
+
+

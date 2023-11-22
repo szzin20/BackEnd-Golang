@@ -31,3 +31,9 @@ type DoctorUpdateRequest struct {
 	AboutDoctor      string `json:"about_doctor" form:"about_doctor" validate:"omitempty"`
 	LocationPractice string `json:"location_practice" form:"location_practice" validate:"omitempty"`
 }
+
+// type DoctorPatientRequest struct {
+// 	HealthDetails string `json:"health_details" form:"health_details" validate:"required,min=3"`
+// 	PatientStatus string `json:"status" form:"status" validate:"required,oneof=Diberi resep Konsultasi Lanjutan Di Rujuk"`
+// }
+
