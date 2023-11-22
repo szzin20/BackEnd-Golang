@@ -17,4 +17,3 @@ func ConvertToAdminUpdateResponse(admin *schema.Admin) web.AdminUpdateResponse {
 		Email: admin.Email,
 	}
 }
-
