@@ -19,20 +19,21 @@ type DoctorLoginRequest struct {
 }
 
 type DoctorUpdateRequest struct {
-	Fullname          string `json:"fullname" form:"fullname" validate:"omitempty"`
-	Email             string `json:"email" form:"email" validate:"omitempty,email"`
-	Password          string `json:"password" form:"password" validate:"omitempty,min=10,max=15"`
-	Gender            string `json:"gender" form:"gender" validate:"omitempty"`
-	Specialist        string `json:"specialist" form:"specialist" validate:"omitempty"`
-	ProfilePicture    string `json:"profile_picture" form:"profile_picture" validate:"omitempty"`
-	Status            bool   `json:"status" form:"status" validate:"omitempty,eq=true|eq=false"`
-	Experience        string `json:"experience" form:"experience" validate:"omitempty"`
-	Alumnus           string `json:"alumnus" form:"alumnus" validate:"omitempty"`
-	AboutDoctor       string `json:"about_doctor" form:"about_doctor" validate:"omitempty"`
-	LocationPractice  string `json:"location_practice" form:"location_practice" validate:"omitempty"`
+	Fullname         string `json:"fullname" form:"fullname" validate:"omitempty"`
+	Email            string `json:"email" form:"email" validate:"omitempty,email"`
+	Password         string `json:"password" form:"password" validate:"omitempty,min=10,max=15"`
+	Gender           string `json:"gender" form:"gender" validate:"omitempty"`
+	Specialist       string `json:"specialist" form:"specialist" validate:"omitempty"`
+	ProfilePicture   string `json:"profile_picture" form:"profile_picture" validate:"omitempty"`
+	Status           bool   `json:"status" form:"status" validate:"omitempty,eq=true|eq=false"`
+	Experience       string `json:"experience" form:"experience" validate:"omitempty"`
+	Alumnus          string `json:"alumnus" form:"alumnus" validate:"omitempty"`
+	AboutDoctor      string `json:"about_doctor" form:"about_doctor" validate:"omitempty"`
+	LocationPractice string `json:"location_practice" form:"location_practice" validate:"omitempty"`
 }
 
 // type DoctorPatientRequest struct {
 // 	HealthDetails string `json:"health_details" form:"health_details" validate:"required,min=3"`
 // 	PatientStatus string `json:"status" form:"status" validate:"required,oneof=Diberi resep Konsultasi Lanjutan Di Rujuk"`
 // }
+

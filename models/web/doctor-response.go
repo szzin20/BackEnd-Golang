@@ -19,16 +19,16 @@ type DoctorLoginResponse struct {
 }
 
 type DoctorUpdateResponse struct {
-	Fullname       string `json:"fullname" form:"fullname"`
-	Email          string `json:"email" form:"email"`
-	Gender         string `json:"gender" form:"gender"`
-	Specialist     string `json:"specialist" form:"specialist"`
-	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
-	NoSTR          int    `json:"no_str" form:"no_str"`
-	Experience     string `json:"experience" form:"experience"`
-	Alumnus        string `json:"alumnus" form:"alumnus"`
-	Status         bool   `json:"status" form:"status"`
-	AboutDoctor string `json:"about_doctor" form:"about_doctor"`
+	Fullname         string `json:"fullname" form:"fullname"`
+	Email            string `json:"email" form:"email"`
+	Gender           string `json:"gender" form:"gender"`
+	Specialist       string `json:"specialist" form:"specialist"`
+	ProfilePicture   string `json:"profile_picture" form:"profile_picture"`
+	NoSTR            int    `json:"no_str" form:"no_str"`
+	Experience       string `json:"experience" form:"experience"`
+	Alumnus          string `json:"alumnus" form:"alumnus"`
+	Status           bool   `json:"status" form:"status"`
+	AboutDoctor      string `json:"about_doctor" form:"about_doctor"`
 	LocationPractice string `json:"location_practice" form:"location_practice" `
 }
 
@@ -58,17 +58,18 @@ type DoctorAllResponseByAdmin struct {
 }
 
 type DoctorIDResponse struct {
-	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
-	Status         bool   `json:"status" form:"status"`
-	Fullname       string `json:"fullname" form:"fullname"`
-	Specialist     string `json:"specialist" form:"specialist"`
-	Price          int    `json:"price" form:"price"`
-	Experience     string `json:"experience" form:"experience"`
-	AboutDoctor string `json:"about_doctor" form:"about_doctor"`
-	NoSTR          int    `json:"no_str" form:"no_str"`
+	ProfilePicture   string `json:"profile_picture" form:"profile_picture"`
+	Status           bool   `json:"status" form:"status"`
+	Fullname         string `json:"fullname" form:"fullname"`
+	Specialist       string `json:"specialist" form:"specialist"`
+	Price            int    `json:"price" form:"price"`
+	Experience       string `json:"experience" form:"experience"`
+	AboutDoctor      string `json:"about_doctor" form:"about_doctor"`
+	NoSTR            int    `json:"no_str" form:"no_str"`
 	LocationPractice string `json:"location_practice" form:"location_practice"`
-	Alumnus        string `json:"alumnus" form:"alumnus"`
+	Alumnus          string `json:"alumnus" form:"alumnus"`
 }
+
 
 // type DoctorPatientResponse struct {
 // 	UserID              uint      `json:"user_id" form:"user_id"`
