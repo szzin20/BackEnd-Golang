@@ -5,24 +5,33 @@ import (
 	"healthcare/models/web"
 )
 
-func ConvertToCreateDTResponse(doctorTransaction *schema.DoctorTransaction, doctor schema.Doctor) web.CreateDoctorTransactionResponse {
+func ConvertToCreateDoctorTransactionResponse(doctorTransaction *schema.DoctorTransaction, doctor schema.Doctor) web.CreateDoctorTransactionResponse {
 	return web.CreateDoctorTransactionResponse{
+		ID:                  doctorTransaction.ID,
 		Fullname:            doctor.Fullname,
 		Specialist:          doctor.Specialist,
 		Price:               doctor.Price,
 		PaymentMethod:       doctorTransaction.PaymentMethod,
-		PaymentConfirmation: doctorTransaction.PaymentConfirmation,
 		PaymentStatus:       doctorTransaction.PaymentStatus,
+		PaymentConfirmation: doctorTransaction.PaymentConfirmation,
 	}
 }
 
-func ConvertToGetAllDTResponse(doctorTransaction schema.DoctorTransaction, doctor schema.Doctor ) web.CreateDoctorTransactionResponse {
+func ConvertToGetDoctorTransactionResponse(doctorTransaction schema.DoctorTransaction, doctor schema.Doctor) web.CreateDoctorTransactionResponse {
 	return web.CreateDoctorTransactionResponse{
+		ID:                  doctorTransaction.ID,
 		Fullname:            doctor.Fullname,
 		Specialist:          doctor.Specialist,
 		Price:               doctor.Price,
 		PaymentMethod:       doctorTransaction.PaymentMethod,
-		PaymentConfirmation: doctorTransaction.PaymentConfirmation,
 		PaymentStatus:       doctorTransaction.PaymentStatus,
+		PaymentConfirmation: doctorTransaction.PaymentConfirmation,
+	}
+}
+
+func ConvertToGetAllDoctorTransactionsResponse(doctorTransaction schema.DoctorTransaction, doctor schema.Doctor) web.DoctorTransactionsResponse {
+	return web.DoctorTransactionsResponse{
+		ID:       doctorTransaction.ID,
+		Fullname: doctor.Fullname,
 	}
 }

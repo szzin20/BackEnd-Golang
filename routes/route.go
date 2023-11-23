@@ -4,7 +4,6 @@ import (
 	"healthcare/controllers"
 	"healthcare/middlewares"
 
-	// echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
@@ -23,11 +22,11 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.GET("/profile", controllers.GetUserController, UserJWT)
 	gUsers.PUT("/profile", controllers.UpdateUserController, UserJWT)
 	gUsers.DELETE("", controllers.DeleteUserController, UserJWT)
-	gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsController, UserJWT)
-	gUsers.POST("/doctor-payments", controllers.CreateDoctorTransaction, UserJWT)
-	gUsers.GET("/doctor-payment", controllers.GetDoctorTransactionController, UserJWT)
-	// gUsers.GET("/doctor-payments", controllers.GetDoctorTransactionByStatusController, UserJWT)
-	
+	gUsers.POST("/doctor-payments", controllers.CreateDoctorTransactionController, UserJWT)
+	gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsController, UserJWT) // join with get by id
+	gUsers.GET("/doctor-payment", controllers.GetDoctorTransactionsController, UserJWT)
+
+
 	gDoctors := e.Group("/doctors")
 	gDoctors.POST("/login", controllers.LoginDoctorController)
 	gDoctors.GET("/profile", controllers.GetDoctorProfileController, DoctorJWT)

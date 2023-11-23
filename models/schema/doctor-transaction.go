@@ -11,7 +11,6 @@ type DoctorTransaction struct {
 	DoctorID            uint   `gorm:"foreignKey:DoctorID"`
 	UserID              uint   `gorm:"foreignKey:UserID"`
 	HealthDetails       string `gorm:"not null"`
-	ConsultationTime    string `gorm:"type:enum('30 menit');default:'30 menit'"`
 	Price               int    `gorm:"not null"`
 	PaymentMethod       string `gorm:"type:enum('manual transfer bca', 'manual transfer bri', 'manual transfer bni')"`
 	PaymentConfirmation string `gorm:"not null"`
