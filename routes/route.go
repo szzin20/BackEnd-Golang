@@ -9,17 +9,18 @@ import (
 
 func SetupRoutes(e *echo.Echo) {
 
+	AdminJWT := middlewares.AdminRoleAuth
 	UserJWT := middlewares.UserIDRoleAuth
 	DoctorJWT := middlewares.DoctorIDRoleAuth
 
 	gAdmins := e.Group("/admins")
 	gAdmins.POST("/login", controllers.LoginAdminController)
-	gAdmins.POST("/register/doctor", controllers.RegisterDoctorByAdminController)
-	gAdmins.GET("/list/doctors", controllers.GetAllDoctorByAdminController)
-	gAdmins.PUT("update/doctor/:id", controllers.UpdateDoctorByAdminController)
-	gAdmins.PUT("update/payment/:id", controllers.UpdatePaymentStatusByAdminController)
-	gAdmins.DELETE("delete/doctor/:id", controllers.DeleteDoctorByAdminController)
-	gAdmins.PUT("/:id", controllers.UpdateAdminController)
+	gAdmins.POST("/register/doctor", controllers.RegisterDoctorByAdminController, AdminJWT)
+	gAdmins.GET("/list/doctors", controllers.GetAllDoctorByAdminController, AdminJWT)
+	gAdmins.PUT("/update/doctor/:id", controllers.UpdateDoctorByAdminController, AdminJWT)
+	gAdmins.PUT("/update/payment/:id", controllers.UpdatePaymentStatusByAdminController, AdminJWT)
+	gAdmins.DELETE("/delete/doctor/:id", controllers.DeleteDoctorByAdminController, AdminJWT)
+	gAdmins.PUT("/:id", controllers.UpdateAdminController, AdminJWT)
 	gAdmins.POST("/medicines", controllers.CreateMedicineController)
 	gAdmins.GET("/medicines", controllers.GetAllMedicinesAdminController)
 	gAdmins.GET("/medicines/:id", controllers.GetMedicineController)
