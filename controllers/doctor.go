@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
 )
 
@@ -57,7 +58,7 @@ func LoginDoctorController(c echo.Context) error {
 	var loginRequest web.DoctorLoginRequest
 
 	if err := c.Bind(&loginRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Login Data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Data Login Tidak Valid"))
 	}
 
 	if err := helper.ValidateStruct(loginRequest); err != nil {
@@ -66,17 +67,17 @@ func LoginDoctorController(c echo.Context) error {
 
 	var doctor schema.Doctor
 	if err := configs.DB.Where("email = ?", loginRequest.Email).First(&doctor).Error; err != nil {
-		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Email Not Registered"))
+		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse( "Email Tidak Terdaftar."))
 	}
 
 	if err := helper.ComparePassword(doctor.Password, loginRequest.Password); err != nil {
-		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Incorrect Password"))
+		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Kata Sandi Salah" ))
 	}
 
 	// The rest of your code for generating a token and handling the successful login
 	token, err := middlewares.GenerateToken(doctor.ID, doctor.Email, doctor.Role)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Generate JWT: "+err.Error()))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse( "Gagal Menghasilkan JWT: "+err.Error()))
 	}
 
 	doctorLoginResponse := response.ConvertToDoctorLoginResponse(&doctor)
@@ -86,11 +87,11 @@ func LoginDoctorController(c echo.Context) error {
 	if doctor.Email != "" {
 		notificationType := "login"
 		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "drg"); err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to send notification email: "+err.Error()))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengirim email notifikasi: "+err.Error()))
 		}
 	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", doctorLoginResponse))
+	return c.JSON(http.StatusOK, helper.SuccessResponse( "Login Berhasil", doctorLoginResponse))
 }
 
 func GetAvailableDoctor(c echo.Context) error {
@@ -138,7 +139,6 @@ func GetSpecializeDoctor(c echo.Context) error {
 
 // Get Doctor Profile
 func GetDoctorProfileController(c echo.Context) error {
-
 	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil ID Dokter"))
@@ -146,7 +146,11 @@ func GetDoctorProfileController(c echo.Context) error {
 
 	var doctor schema.Doctor
 	if err := configs.DB.First(&doctor, userID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil Profil Dokter"))
+		if gorm.IsRecordNotFoundError(err) {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("Dokter tidak ditemukan"))
+		} else {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil Profil Dokter"))
+		}
 	}
 
 	response := response.ConvertToGetDoctorResponse(&doctor)
@@ -362,7 +366,6 @@ func GetDoctorByIDController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Detail Dokter berhasil diambil", response))
 }
 
-
 // Manage patient
 
 // GetAllPatientsController
@@ -387,7 +390,6 @@ func GetDoctorByIDController(c echo.Context) error {
 
 //     return c.JSON(http.StatusOK, helper.SuccessResponse("Data pasien berhasil diambil", patientResponses))
 // }
-
 
 // func GetPatientsByStatusController(c echo.Context) error {
 // 	dokterID, ok := c.Get("userID").(int)
@@ -431,7 +433,6 @@ func GetDoctorByIDController(c echo.Context) error {
 // 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Gagal mendapatkan ID Transaksi Dokter"))
 // 	}
 
-
 // 	// Membanding data permintaan ke dalam struktur DoctorPatientRequest
 // 	var patientRequest web.DoctorPatientRequest
 // 	if err := c.Bind(&patientRequest); err != nil {
@@ -470,12 +471,3 @@ func GetDoctorByIDController(c echo.Context) error {
 
 // 	return c.JSON(http.StatusOK, helper.SuccessResponse("Data transaksi dokter berhasil diperbarui", response))
 // }
-
-
-
-
-
-
-
-
-
