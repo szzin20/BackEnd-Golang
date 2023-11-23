@@ -43,5 +43,6 @@ func InitialMigration() {
 		&schema.Admin{},
 		&schema.Doctor{},
 		&schema.Medicine{},
+		&schema.Article{},
 	)
 }
