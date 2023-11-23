@@ -234,7 +234,7 @@ func UpdateDoctorController(c echo.Context) error {
 	// Extract the image file from the form
 	file, fileHeader, err := c.Request().FormFile("profile_picture")
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("File Gambar Diperlukan"))
 	}
 	defer file.Close()
 
@@ -249,13 +249,13 @@ func UpdateDoctorController(c echo.Context) error {
 		}
 	}
 	if !allowed {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse( "Format file gambar tidak valid,Format yang didukung: jpg, jpeg, png"))
 	}
 
 	// Upload the image to Cloud Storage
 	ProfilePicture, err := helper.UploadFilesToGCS(c, fileHeader)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to Cloud Storage"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error mengunggah gambar ke Cloud Storage"))
 	}
 
 	// Update the doctor details
