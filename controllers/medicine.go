@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/labstack/echo/v4"
 	"healthcare/configs"
 	"healthcare/models/schema"
 	"healthcare/models/web"
@@ -11,9 +12,35 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
-
-	"github.com/labstack/echo/v4"
 )
+
+//func GetAll(offset int, limit int, queryInput []schema.Medicine) ([]schema.Medicine, int64, error) {
+//
+//	if offset < 0 || limit < 0 {
+//		return nil, 0, nil
+//	}
+//
+//	queryAll := queryInput
+//	var total int64
+//
+//	query := configs.DB.Model(&queryAll)
+//
+//	query.Find(&queryAll).Count(&total)
+//
+//	query = query.Limit(limit).Offset(offset)
+//
+//	result := query.Find(&queryAll)
+//
+//	if result.Error != nil {
+//		return nil, 0, result.Error
+//	}
+//
+//	if offset >= int(total) {
+//		return nil, 0, fmt.Errorf("not found")
+//	}
+//
+//	return queryAll, total, nil
+//}
 
 // Create Medicine
 func CreateMedicineController(c echo.Context) error {
@@ -53,12 +80,12 @@ func CreateMedicineController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
 	}
 
-	image, err := helper.UploadFilesToGCS(c, fileHeader)
+	imageURL, err := helper.UploadFilesToGCS(c, fileHeader)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to Cloud Storage"))
 	}
 
-	medicine.Image = image
+	medicine.Image = imageURL
 
 	medicineRequest := request.ConvertToMedicineRequest(medicine)
 
@@ -250,7 +277,39 @@ func GetImageMedicineController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Image Data Successfully Retrieved", response))
 }
 
-// Admin Get All Medicines
+// Admin Get All Medicines Pagination
+//
+//	func GetAllMedicinesAdminController(c echo.Context) error {
+//		params := c.QueryParams()
+//		limit, err := strconv.Atoi(params.Get("limit"))
+//
+//		if err != nil {
+//			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params limit not valid"))
+//		}
+//
+//		offset, err := strconv.Atoi(params.Get("offset"))
+//
+//		if err != nil {
+//			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params offset not valid"))
+//		}
+//
+//		var medicines []schema.Medicine
+//
+//		medicine, total, err := GetAll(offset, limit, medicines)
+//
+//		if err != nil {
+//			if strings.Contains(err.Error(), "not found") {
+//				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Medicines Not Found"))
+//			}
+//			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+//		}
+//
+//		pagination := helper.Pagination(offset, limit, total)
+//
+//		response := response.ConvertToAdminGetAllMedicinesResponse(medicine)
+//
+//		return c.JSON(http.StatusOK, helper.PaginationResponse("Medicines Data Successfully Retrieved", response, pagination))
+//	}
 func GetAllMedicinesAdminController(c echo.Context) error {
 	var medicines []schema.Medicine
 
@@ -288,7 +347,57 @@ func GetMedicineByNameAdminController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", response))
 }
 
-// User Get All Medicines
+// User Get Medicine by ID
+func GetMedicineUserController(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Medicine ID"))
+	}
+
+	var medicine schema.Medicine
+
+	if err := configs.DB.First(&medicine, id).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Medicine Data"))
+	}
+
+	response := response.ConvertToUserMedicineResponse(&medicine)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", response))
+}
+
+// User Get All Medicines Pagination
+//func GetAllMedicinesUserController(c echo.Context) error {
+//	params := c.QueryParams()
+//	limit, err := strconv.Atoi(params.Get("limit"))
+//
+//	if err != nil {
+//		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params limit not valid"))
+//	}
+//
+//	offset, err := strconv.Atoi(params.Get("offset"))
+//
+//	if err != nil {
+//		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params offset not valid"))
+//	}
+//
+//	var medicines []schema.Medicine
+//
+//	medicine, total, err := GetAll(offset, limit, medicines)
+//
+//	if err != nil {
+//		if strings.Contains(err.Error(), "not found") {
+//			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Medicines Not Found"))
+//		}
+//		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+//	}
+//
+//	pagination := helper.Pagination(offset, limit, total)
+//
+//	response := response.ConvertToUserGetAllMedicinesResponse(medicine)
+//
+//	return c.JSON(http.StatusOK, helper.PaginationResponse("Medicines Data Successfully Retrieved", response, pagination))
+//}
+
 func GetAllMedicinesUserController(c echo.Context) error {
 	var medicines []schema.Medicine
 
