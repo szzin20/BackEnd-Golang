@@ -81,7 +81,7 @@ func UpdateArticleById(c echo.Context) error {
 	var existingArticle schema.Article
 	result := configs.DB.First(&existingArticle, id, userID)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mendapatkan data artikel"))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data artikel tidak ditemukan"))
 	}
 
 	var updateArticle web.CreateArticle
@@ -200,7 +200,7 @@ func DeleteArticleById(c echo.Context) error {
 	var existingArticle schema.Article
 	result := configs.DB.First(&existingArticle, articleID, userID)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data artikel"))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data artikel tidak ditemukan"))
 	}
 
 	if err := configs.DB.Delete(&existingArticle).Error; err != nil {
