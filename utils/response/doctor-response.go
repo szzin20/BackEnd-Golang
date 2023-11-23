@@ -43,8 +43,8 @@ func ConvertToDoctorUpdateResponse(doctor *schema.Doctor) web.DoctorUpdateRespon
 	}
 }
 
-func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorUpdateResponse {
-	return web.DoctorUpdateResponse{
+func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorProfile {
+	return web.DoctorProfile{
 		Fullname:       doctor.Fullname,
 		Email:          doctor.Email,
 		Gender:         doctor.Gender,
@@ -53,6 +53,7 @@ func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorUpdateResponse 
 		NoSTR:          doctor.NoSTR,
 		Experience:     doctor.Experience,
 		Alumnus:        doctor.Alumnus,
+		AboutDoctor:    doctor.AboutDoctor,
 	}
 }
 
@@ -105,6 +106,7 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 
 func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 	return web.DoctorIDResponse{
+		ID:               doctor.ID,
 		ProfilePicture:   doctor.ProfilePicture,
 		Fullname:         doctor.Fullname,
 		Status:           doctor.Status,

@@ -58,6 +58,8 @@ type DoctorAllResponseByAdmin struct {
 }
 
 type DoctorIDResponse struct {
+  
+	ID               uint   `json:"id" form:"id"`
 	ProfilePicture   string `json:"profile_picture" form:"profile_picture"`
 	Status           bool   `json:"status" form:"status"`
 	Fullname         string `json:"fullname" form:"fullname"`
@@ -71,6 +73,18 @@ type DoctorIDResponse struct {
 }
 
 
+type DoctorProfile struct {
+	Fullname       string `json:"fullname" form:"fullname"`
+	Email          string `json:"email" form:"email"`
+	Gender         string `json:"gender" form:"gender"`
+	Specialist     string `json:"specialist" form:"specialist"`
+	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
+	NoSTR          int    `json:"no_str" form:"no_str"`
+	Experience     string `json:"experience" form:"experience"`
+	Alumnus        string `json:"alumnus" form:"alumnus"`
+	AboutDoctor    string `json:"about_doctor" form:"about_doctor"`
+}
+
 // type DoctorPatientResponse struct {
 // 	UserID              uint      `json:"user_id" form:"user_id"`
 // 	Fullname            string    `json:"fullname" form:"fullname"`
@@ -79,3 +93,4 @@ type DoctorIDResponse struct {
 // 	HealthDetails       string    `json:"health_details" form:"health_details"`
 // 	PatientStatus       string    `json:"status" form:"status"`
 // }
+
