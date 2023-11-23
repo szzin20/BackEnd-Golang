@@ -218,9 +218,9 @@ func DoctorGetAllArticles(c echo.Context) error {
 
 	var articles []schema.Article
 
-	err := configs.DB.Find(&articles, userID).Error
+	err := configs.DB.Where("doctor_id = ?", userID).Find(&articles).Error
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"messages": err})
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data artikel"))
 	}
 
 	if len(articles) == 0 {
