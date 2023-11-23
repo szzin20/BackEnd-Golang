@@ -13,7 +13,7 @@ import (
 
 func main() {
 
-	_ = godotenv.Load()
+	_ = godotenv.Load() // ignore error to anticipate server not run
 
 	configs.Init()
 	e := echo.New()
