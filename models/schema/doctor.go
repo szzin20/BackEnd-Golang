@@ -9,7 +9,7 @@ import (
 type Doctor struct {
 	ID               uint   `gorm:"primarykey"`
 	ProfilePicture   string `gorm:"not null"`
-	Fullname         string `gorm:"not null"`
+	Fullname         string `gorm:"not null;unique"`
 	Gender           string `gorm:"type:enum('male', 'female')"`
 	Email            string `gorm:"not null;unique"`
 	Password         string `gorm:"not null"`

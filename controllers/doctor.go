@@ -185,7 +185,7 @@ func UpdateDoctorController(c echo.Context) error {
 	}
 
 	// Extract the image file from the form
-	file, fileHeader, err := c.Request().FormFile("image")
+	file, fileHeader, err := c.Request().FormFile("profile_picture")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
 	}
