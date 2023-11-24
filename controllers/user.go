@@ -8,17 +8,24 @@ import (
 	"healthcare/utils/helper"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
+	"log"
 	"net/http"
+	"path/filepath"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
 
-// User Register 
+// User Register
 func RegisterUserController(c echo.Context) error {
 	var user web.UserRegisterRequest
 
 	if err := c.Bind(&user); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Register Data"))
+	}
+
+	if err := helper.ValidateStruct(user); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
 	userRequest := request.ConvertToUserRegisterRequest(user)
@@ -35,6 +42,8 @@ func RegisterUserController(c echo.Context) error {
 
 	response := response.ConvertToUserRegisterResponse(userRequest)
 
+	log.Println(response)
+
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("Registered Successful", response))
 }
 
@@ -44,6 +53,10 @@ func LoginUserController(c echo.Context) error {
 
 	if err := c.Bind(&loginRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Login Data"))
+	}
+
+	if err := helper.ValidateStruct(loginRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
 	var user schema.User
@@ -103,21 +116,71 @@ func UpdateUserController(c echo.Context) error {
 
 	var userUpdated web.UserUpdateRequest
 
-	if existingUser := configs.DB.Where("email = ?", userUpdated.Email).First(&userUpdated).Error; existingUser == nil {
-		return c.JSON(http.StatusConflict, helper.ErrorResponse("Email Already Exist"))
-	}
-
 	if err := c.Bind(&userUpdated); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Update Data"))
 	}
 
+	if existingUser := configs.DB.Where("email = ?", userUpdated.Email).First(&userUpdated).Error; existingUser == nil {
+		return c.JSON(http.StatusConflict, helper.ErrorResponse("Email Already Exist"))
+	}
+
+	if err := helper.ValidateStruct(userUpdated); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	err := c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	file, fileHeader, err := c.Request().FormFile("profile_picture")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
+	}
+	defer file.Close()
+
+	allowedExtensions := []string{".jpg", ".jpeg", ".png"}
+	ext := filepath.Ext(fileHeader.Filename)
+	allowed := false
+	for _, validExt := range allowedExtensions {
+		if ext == validExt {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
+	}
+
+	profilePicture, err := helper.UploadFilesToGCS(c, fileHeader)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to Cloud Storage"))
+	}
+
+	userUpdated.ProfilePicture = profilePicture
+
 	userUpdated.Password = helper.HashPassword(userUpdated.Password)
+	gender := strings.ToLower(userUpdated.Gender)
+	bloodType := strings.ToUpper(userUpdated.BloodType)
+	birthdate := userUpdated.Birthdate
+
+	if !helper.GenderIsValid(gender) {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Gender Data ('male', 'female')"))
+	}
+
+	if !helper.BloodTypeIsValid(bloodType) {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Blood Type Data,('A', 'B', 'O', 'AB')"))
+	}
+
+	if !helper.BirthdateIsValid(birthdate) {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Birthdate Data (YYYY-MM-DD)"))
+	}
 
 	configs.DB.Model(&existingUser).Updates(userUpdated)
 
-	response := response.ConvertToUserUpdateResponse(&existingUser)
+	userResponse := response.ConvertToUserUpdateResponse(&existingUser)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("User Updated Data Successful", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("User Updated Data Successful", userResponse))
 }
 
 // Delete User

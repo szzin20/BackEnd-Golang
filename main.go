@@ -13,10 +13,7 @@ import (
 
 func main() {
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Can't access .env files!")
-	}
+	_ = godotenv.Load() // ignore error to anticipate server not run
 
 	configs.Init()
 	e := echo.New()

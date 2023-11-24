@@ -1,24 +1,24 @@
 package web
 
 type UserRegisterRequest struct {
-	Fullname string `json:"fullname" form:"fullname"`
-	Email    string `json:"email" form:"email"`
-	Password string `json:"password" form:"password"`
+	Fullname string `json:"fullname" form:"fullname" validate:"required,max=30"`
+	Email    string `json:"email" form:"email" validate:"required,email"`
+	Password string `json:"password" form:"password" validate:"required,min=10,max=15"`
 }
 
 type UserLoginRequest struct {
-	Email    string `json:"email" form:"email"`
-	Password string `json:"password" form:"password"`
+	Email    string `json:"email" form:"email" validate:"required,email"`
+	Password string `json:"password" form:"password" validate:"required,min=10,max=15"`
 }
 
 type UserUpdateRequest struct {
-	Fullname  string `json:"fullname" form:"fullname"`
-	Email     string `json:"email" form:"email"`
-	Password  string `json:"password" form:"password"`
-	Image     string `json:"image" form:"image"`
-	Gender    string `json:"gender" form:"gender"`
-	Birthdate string `json:"birthdate" form:"birthdate"`
-	BloodType string `json:"blood_type" form:"blood_type"`
-	Height    int    `json:"height" form:"height"`
-	Weight    int    `json:"weight" form:"weight"`
+	Fullname       string `json:"fullname" form:"fullname" validate:"omitempty,max=30"`
+	Email          string `json:"email" form:"email" validate:"omitempty,email"`
+	Password       string `json:"password" form:"password" validate:"omitempty,min=10,max=15"`
+	ProfilePicture string `json:"profile_picture" form:"profile_picture" validate:"omitempty"`
+	Gender         string `json:"gender" form:"gender" validate:"omitempty"`
+	Birthdate      string `json:"birthdate" form:"birthdate" validate:"omitempty"`
+	BloodType      string `json:"blood_type" form:"blood_type" validate:"omitempty"`
+	Height         int    `json:"height" form:"height" validate:"omitempty"`
+	Weight         int    `json:"weight" form:"weight" validate:"omitempty"`
 }

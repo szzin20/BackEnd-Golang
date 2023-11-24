@@ -2,10 +2,12 @@ package configs
 
 import (
 	"fmt"
+	"healthcare/models/schema"
 	"log"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
@@ -28,7 +30,7 @@ func ConnectDB() {
 		configuration.DB_NAME,
 	)
 
-	DB, err = gorm.Open(mysql.Open(connectionString), &gorm.Config{})
+	DB, err = gorm.Open(mysql.Open(connectionString), &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
 	if err != nil {
 		log.Println("Failed to Connect Database")
 	}
@@ -36,5 +38,12 @@ func ConnectDB() {
 }
 
 func InitialMigration() {
-	DB.AutoMigrate()
+	DB.AutoMigrate(
+		&schema.User{},
+		&schema.Admin{},
+		&schema.Doctor{},
+		&schema.Medicine{},
+		&schema.Article{},
+		&schema.DoctorTransaction{},
+	)
 }
