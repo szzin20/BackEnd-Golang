@@ -8,6 +8,7 @@ import (
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -76,7 +77,7 @@ func GetAllDataController(c echo.Context) error {
 	var (
 		doctorTransactions []schema.DoctorTransaction
 		doctor             schema.Doctor
-		responses          []web.ComplaintResponse
+		responses          []web.ComplaintsResponse
 	)
 
 	// Menerapkan filter berdasarkan patientStatus jika query parameter diberikan
@@ -103,7 +104,7 @@ func GetAllDataController(c echo.Context) error {
 				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to retrieve complaining user"))
 			}
 
-			response := response.ConvertToComplaintResponse(complainingUser, transaction, doctor)
+			response := response.ConvertToUserComplaintResponse(complainingUser, transaction, doctor)
 			responses = append(responses, response)
 		}
 	}

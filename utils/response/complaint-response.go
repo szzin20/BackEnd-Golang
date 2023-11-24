@@ -1,6 +1,5 @@
 package response
 
-
 import (
 	"healthcare/models/schema"
 	"healthcare/models/web"
@@ -8,15 +7,15 @@ import (
 
 func ConvertToComplaintResponse(complaint *schema.Complaint) web.ComplaintResponse {
 	return web.ComplaintResponse{
-		Message: complaint.Message,
-		Image:   complaint.Image,
-		Audio:   complaint.Audio,
-		CreatedAt:     complaint.CreatedAt,
+		Message:   complaint.Message,
+		Image:     complaint.Image,
+		Audio:     complaint.Audio,
+		CreatedAt: complaint.CreatedAt,
 	}
 }
 
-func ConvertToComplaintResponse(UserComplaint schema.User, transaction schema.DoctorTransaction, doctor schema.Doctor) web.ComplaintResponse {
-	return web.ComplaintResponse{
+func ConvertToUserComplaintResponse(UserComplaint schema.User, transaction schema.DoctorTransaction, doctor schema.Doctor) web.ComplaintsResponse {
+	return web.ComplaintsResponse{
 		UserID:              UserComplaint.ID,
 		UserFullname:        UserComplaint.Fullname,
 		DoctorID:            doctor.ID,
@@ -41,4 +40,3 @@ func ConvertToComplaintsResponse(UserComplaint schema.User, transaction schema.D
 		CreatedAt:           transaction.CreatedAt,
 	}
 }
-
