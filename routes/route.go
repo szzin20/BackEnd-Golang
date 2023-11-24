@@ -48,7 +48,9 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.POST("/doctor-payments", controllers.CreateDoctorTransactionController, UserJWT)
 	gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsController, UserJWT) 
 	gUsers.GET("/doctor-payment", controllers.GetDoctorTransactionsController, UserJWT)
-
+	gUsers.POST("/complaints", controllers.CreateComplaintController, UserJWT)
+	gUsers.GET("/complaints", controllers.GetComplaintsController, UserJWT)
+	gUsers.GET("/advices", controllers.GetAdvicesController, UserJWT)
 
 	gDoctors := e.Group("/doctors")
 	gDoctors.POST("/login", controllers.LoginDoctorController)
@@ -62,6 +64,9 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.POST("/articles", controllers.CreateArticle, DoctorJWT)
 	gDoctors.PUT("/articles/:id", controllers.UpdateArticleById, DoctorJWT)
 	gDoctors.DELETE("/articles/:id", controllers.DeleteArticleById, DoctorJWT)
+	gDoctors.POST("/advices", controllers.CreateAdviceController, DoctorJWT)
+	gDoctors.GET("/complaints", controllers.GetComplaintsController, DoctorJWT)
+	gDoctors.GET("/advices", controllers.GetAdvicesController, DoctorJWT)
 
 	// gDoctors.GET("manage/patitient", controllers.GetAllPatientsController, DoctorJWT)
 	// gDoctors.GET("manage/patitient/:status", controllers.GetPatientsByStatusController, DoctorJWT)
