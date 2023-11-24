@@ -19,4 +19,5 @@ type DoctorTransaction struct {
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
 	DeletedAt           *gorm.DeletedAt `gorm:"index"`
+	Complaint           Complaint       `gorm:"ForeignKey:TransactionID;references:ID"` // one to one
 }

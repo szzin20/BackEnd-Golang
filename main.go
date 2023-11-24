@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/labstack/gommon/log"
+	"github.com/labstack/echo"
 )
 
 func main() {

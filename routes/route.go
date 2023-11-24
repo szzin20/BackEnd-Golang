@@ -3,49 +3,11 @@ package routes
 import (
 	"healthcare/controllers"
 	"healthcare/middlewares"
+
 	"github.com/labstack/echo/v4"
-	middleware "github.com/labstack/echo/v4/middleware"
 )
 
-func SetupRoutes() *echo.Echo {
-
-	e := echo.New()
-
-	middlewares.RemoveTrailingSlash(e)
-	middlewares.Logger(e)
-	middlewares.RateLimiter(e)
-	middlewares.Recover(e)
-	middlewares.CORS(e)
-
-	_, err := os.Stat(".env")
-	if err == nil {
-		err := godotenv.Load()
-		if err != nil {
-			log.Fatal("Failed to Fetch .env File")
-		}
-	}
-
-	JWT := middleware.JWT([]byte(os.Getenv("JWT_SECRET")))
-
-	gUsers := e.Group("/users")
-	gUsers.POST("/register", controllers.RegisterUserController)
-	gUsers.POST("/login", controllers.LoginUserController)
-	gUsers.GET("", controllers.GetAllUsersController, JWT)
-	gUsers.GET("/:id", controllers.GetUserController, JWT)
-	gUsers.PUT("/:id", controllers.UpdateUserController, JWT)
-	gUsers.DELETE("/:id", controllers.DeleteUserController, JWT)
-
-	gComplaints := e.Group("/complaints")
-	gComplaints.POST("/:transaction_id", controllers.CreateComplaintController, JWT)
-	gComplaints.GET("", controllers.GetAllComplaintsController, JWT)
-	gComplaints.GET("/:transaction_id", controllers.GetComplaintController, JWT)
-
-	gAdvices := e.Group("/advices")
-	gAdvices.POST("/:complaint_id", controllers.CreateAdviceController, JWT)
-	gAdvices.GET("", controllers.GetAllAdvicesController, JWT)
-	gAdvices.GET("/:complaint_id", controllers.GetAdviceController, JWT)
-
-	return e
+func SetupRoutes(e *echo.Echo) {
 
 	AdminJWT := middlewares.AdminRoleAuth
 	UserJWT := middlewares.UserIDRoleAuth
@@ -86,7 +48,9 @@ func SetupRoutes() *echo.Echo {
 	gUsers.POST("/doctor-payments", controllers.CreateDoctorTransactionController, UserJWT)
 	gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsController, UserJWT) 
 	gUsers.GET("/doctor-payment", controllers.GetDoctorTransactionsController, UserJWT)
-
+	gUsers.POST("/complaints", controllers.CreateComplaintController, UserJWT)
+	gUsers.GET("/complaints", controllers.GetComplaintsController, UserJWT)
+	gUsers.GET("/advices", controllers.GetAdvicesController, UserJWT)
 
 	gDoctors := e.Group("/doctors")
 	gDoctors.POST("/login", controllers.LoginDoctorController)
@@ -100,6 +64,9 @@ func SetupRoutes() *echo.Echo {
 	gDoctors.POST("/articles", controllers.CreateArticle, DoctorJWT)
 	gDoctors.PUT("/articles/:id", controllers.UpdateArticleById, DoctorJWT)
 	gDoctors.DELETE("/articles/:id", controllers.DeleteArticleById, DoctorJWT)
+	gDoctors.POST("/advices", controllers.CreateAdviceController, DoctorJWT)
+	gDoctors.GET("/complaints", controllers.GetComplaintsController, DoctorJWT)
+	gDoctors.GET("/advices", controllers.GetAdvicesController, DoctorJWT)
 
 	// gDoctors.GET("manage/patitient", controllers.GetAllPatientsController, DoctorJWT)
 	// gDoctors.GET("manage/patitient/:status", controllers.GetPatientsByStatusController, DoctorJWT)

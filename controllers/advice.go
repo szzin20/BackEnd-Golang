@@ -8,7 +8,6 @@ import (
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -46,7 +45,7 @@ func CreateAdviceController(c echo.Context) error {
 }
 
 // Doctor Get Advice by ID
-func GetAdviceController(c echo.Context) error {
+func GetAdvicesController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
 	if !ok {

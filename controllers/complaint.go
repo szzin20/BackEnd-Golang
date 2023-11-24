@@ -8,7 +8,6 @@ import (
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -45,9 +44,8 @@ func CreateComplaintController(c echo.Context) error {
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("Complaint Successful", response))
 }
 
-
 // User Get Complaint by ID
-func GetComplaintController(c echo.Context) error {
+func GetComplaintsController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
 	if !ok {
