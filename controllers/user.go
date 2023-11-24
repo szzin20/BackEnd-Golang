@@ -8,6 +8,7 @@ import (
 	"healthcare/utils/helper"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -40,6 +41,8 @@ func RegisterUserController(c echo.Context) error {
 	}
 
 	response := response.ConvertToUserRegisterResponse(userRequest)
+
+	log.Println(response)
 
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("Registered Successful", response))
 }
