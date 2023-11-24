@@ -24,7 +24,6 @@ func SetupRoutes(e *echo.Echo) {
 	gAdmins.POST("/medicines", controllers.CreateMedicineController, AdminJWT)
 	gAdmins.GET("/medicines", controllers.GetMedicineAdminController)
 	gAdmins.GET("/medicines/:id", controllers.GetMedicineAdminByIDController)
-	//gAdmins.GET("/medicine", controllers.GetMedicineByNameAdminController)
 	gAdmins.PUT("/medicines/:id", controllers.UpdateMedicineController, AdminJWT)
 	gAdmins.DELETE("/medicines/:id", controllers.DeleteMedicineController, AdminJWT)
 	gAdmins.GET("/medicines/:id/image", controllers.GetImageMedicineController)
