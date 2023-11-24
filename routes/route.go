@@ -46,7 +46,7 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.GET("/articles/:id", controllers.GetArticleByID)
 	gUsers.GET("/article", controllers.GetAllArticlesByTitle)
 	gUsers.POST("/doctor-payments", controllers.CreateDoctorTransactionController, UserJWT)
-	gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsController, UserJWT) // join with get by id
+	gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsController, UserJWT) 
 	gUsers.GET("/doctor-payment", controllers.GetDoctorTransactionsController, UserJWT)
 
 
