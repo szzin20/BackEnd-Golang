@@ -15,7 +15,7 @@ func SetupRoutes(e *echo.Echo) {
 
 	gAdmins := e.Group("/admins")
 	gAdmins.POST("/login", controllers.LoginAdminController)
-	gAdmins.POST("/register/doctor", controllers.RegisterDoctorByAdminController, AdminJWT)
+	gAdmins.POST("/register/doctor", controllers.RegisterDoctorByAdminController, AdminJWT) 
 	gAdmins.GET("/list/doctors", controllers.GetAllDoctorByAdminController, AdminJWT)
 	gAdmins.PUT("/update/doctor/:id", controllers.UpdateDoctorByAdminController, AdminJWT)
 	gAdmins.PUT("/update/payment/:id", controllers.UpdatePaymentStatusByAdminController, AdminJWT)
@@ -46,8 +46,7 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.GET("/articles/:id", controllers.GetArticleByID)
 	gUsers.GET("/article", controllers.GetAllArticlesByTitle)
 	gUsers.POST("/doctor-payments", controllers.CreateDoctorTransactionController, UserJWT)
-	gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsController, UserJWT) 
-	gUsers.GET("/doctor-payment", controllers.GetDoctorTransactionsController, UserJWT)
+	gUsers.GET("/doctor-payments", controllers.GetDoctorTransactionsController, UserJWT)
 
 
 	gDoctors := e.Group("/doctors")
