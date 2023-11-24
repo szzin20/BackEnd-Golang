@@ -2,7 +2,7 @@ package web
 
 // import "time"
 
-// type ComplaintResponse struct {
+// type ComplaintsResponse struct {
 // 	UserID              uint      `json:"user_id" form:"user_id"`
 // 	UserFullname        string    `json:"user_fullname" form:"user_fullname"`
 // 	DoctorID            uint      `json:"Doctor_id" form:"Doctor_id"`

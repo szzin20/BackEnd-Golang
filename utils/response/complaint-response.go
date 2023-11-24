@@ -5,8 +5,8 @@ package response
 // 	"healthcare/models/web"
 // )
 
-// func ConvertToComplaintResponse(UserComplaint schema.User, transaction schema.DoctorTransaction, doctor schema.Doctor) web.ComplaintResponse {
-// 	return web.ComplaintResponse{
+// func ConvertToComplaintResponse(UserComplaint schema.User, transaction schema.DoctorTransaction, doctor schema.Doctor) web.ComplaintsResponse {
+// 	return web.ComplaintsResponse{
 // 		UserID:              UserComplaint.ID,
 // 		UserFullname:        UserComplaint.Fullname,
 // 		DoctorID:            doctor.ID,
