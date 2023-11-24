@@ -22,14 +22,14 @@ func ConvertToUserLoginRequest(user web.UserLoginRequest) *schema.User {
 
 func ConvertToUserUpdateRequest(user web.UserUpdateRequest) *schema.User {
 	return &schema.User{
-		Fullname:  user.Fullname,
-		Email:     user.Email,
-		Password:  user.Password,
-		Image:     user.Image,
-		Gender:    user.Gender,
-		Birthdate: user.Birthdate,
-		BloodType: user.BloodType,
-		Height:    user.Height,
-		Weight:    user.Weight,
+		Fullname:       user.Fullname,
+		Email:          user.Email,
+		Password:       user.Password,
+		ProfilePicture: user.ProfilePicture,
+		Gender:         user.Gender,
+		Birthdate:      user.Birthdate,
+		BloodType:      user.BloodType,
+		Height:         user.Height,
+		Weight:         user.Weight,
 	}
 }

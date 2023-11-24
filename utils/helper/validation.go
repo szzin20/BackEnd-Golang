@@ -3,25 +3,17 @@ package helper
 import "time"
 
 func GenderIsValid(gender string) bool {
-	if gender == "female" || gender == "male" {
-		return true
-	}
-	return false
+	return gender == "female" || gender == "male" || gender == ""
 }
 
 func BloodTypeIsValid(bloodType string) bool {
-	if bloodType == "A" || bloodType == "B" || bloodType == "AB" || bloodType == "O" {
-		return true
-	}
-	return false
+	return bloodType == "A" || bloodType == "B" || bloodType == "AB" || bloodType == "O" || bloodType == ""
 }
 
 func BirthdateIsValid(birthdate string) bool {
-	if birthdate != "" {
-		_, err := time.Parse("2006-01-02", birthdate)
-		return err == nil
+	if birthdate == "" {
+		return true 
 	}
-	return false
+	_, err := time.Parse("2006-01-02", birthdate)
+	return err == nil
 }
-
-

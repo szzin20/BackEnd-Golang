@@ -10,6 +10,7 @@ import (
 	"healthcare/utils/response"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -126,6 +127,37 @@ func UpdateUserController(c echo.Context) error {
 	if err := helper.ValidateStruct(userUpdated); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
+
+	err := c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	file, fileHeader, err := c.Request().FormFile("profile_picture")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
+	}
+	defer file.Close()
+
+	allowedExtensions := []string{".jpg", ".jpeg", ".png"}
+	ext := filepath.Ext(fileHeader.Filename)
+	allowed := false
+	for _, validExt := range allowedExtensions {
+		if ext == validExt {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
+	}
+
+	profilePicture, err := helper.UploadFilesToGCS(c, fileHeader)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to Cloud Storage"))
+	}
+
+	userUpdated.ProfilePicture = profilePicture
 
 	userUpdated.Password = helper.HashPassword(userUpdated.Password)
 	gender := strings.ToLower(userUpdated.Gender)
