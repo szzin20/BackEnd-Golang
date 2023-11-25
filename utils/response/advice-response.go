@@ -5,11 +5,13 @@ import (
 	"healthcare/models/web"
 )
 
-func ConvertToAdviceResponse(advice *schema.Advice) web.AdviceResponse {
-	return web.AdviceResponse{
-		Message:     advice.Message,
-		Image:       advice.Image,
-		Audio:       advice.Audio,
-		CreatedAt:   advice.CreatedAt,
+func ConvertToAdviceResponse(advice *schema.Advice) web.CreateAdviceResponse{
+	return web.CreateAdviceResponse{
+		TransactionID: advice.TransactionID,
+		Message:       advice.Message,
+		Image:         advice.Image,
+		Audio:         advice.Audio,
+		CreatedAt:     advice.CreatedAt,
 	}
 }
+

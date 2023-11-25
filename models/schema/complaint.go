@@ -9,5 +9,5 @@ type Complaint struct {
 	Image         string
 	Audio         string
 	CreatedAt     time.Time
-	Advice        Advice `gorm:"ForeignKey:ComplaintID;references:ID"` // one to one
+	// Advice        Advice `gorm:"ForeignKey:ComplaintID;references:ID"` // one to one
 }

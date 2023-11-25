@@ -13,3 +13,11 @@ func ConvertToComplaintRequest(complaint web.CreateComplaintRequest, Transaction
 		Audio:         complaint.Audio,
 	}
 }
+
+func ConvertToComplaintsRequest(Complaints web.UpdateComplaintRequest) *schema.DoctorTransaction {
+	return &schema.DoctorTransaction{
+		HealthDetails: Complaints.HealthDetails,
+		PatientStatus: Complaints.PatientStatus,
+	}
+}
+

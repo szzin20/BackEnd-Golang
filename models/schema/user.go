@@ -9,7 +9,7 @@ import (
 type User struct {
 	ID             uint `gorm:"primarykey"`
 	Fullname       string
-	Email          string `gorm:"not null;unique"`
+	Email          string `gorm:"not null"`
 	Password       string `gorm:"not null"`
 	ProfilePicture string
 	Gender         string `gorm:"type:enum('male', 'female');default:null"`
