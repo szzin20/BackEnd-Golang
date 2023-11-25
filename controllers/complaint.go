@@ -66,9 +66,9 @@ func GetComplaintsController(c echo.Context) error {
 
 // GetAllDataController untuk mengambil data transaksi dokter berdasarkan beberapa parameter.
 func GetAllDataController(c echo.Context) error {
-	userID, ok := c.Get("userID").(uint)
+	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Doctor ID"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Complaint ID"))
 	}
 
 	// Mengambil nilai transaction_id dari query parameter
