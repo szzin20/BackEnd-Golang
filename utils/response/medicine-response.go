@@ -7,16 +7,31 @@ import (
 
 func ConvertToAdminMedicineResponse(medicine *schema.Medicine) web.MedicineResponse {
 	return web.MedicineResponse{
-		ID:       medicine.ID,
-		Code:     medicine.Code,
-		Name:     medicine.Name,
-		Merk:     medicine.Merk,
-		Category: medicine.Category,
-		Type:     medicine.Type,
-		Stock:    medicine.Stock,
-		Price:    medicine.Price,
-		Details:  medicine.Details,
-		Image:    medicine.Image,
+		ID:        medicine.ID,
+		Code:      medicine.Code,
+		Name:      medicine.Name,
+		Merk:      medicine.Merk,
+		Category:  medicine.Category,
+		Type:      medicine.Type,
+		Stock:     medicine.Stock,
+		Price:     medicine.Price,
+		Details:   medicine.Details,
+		Image:     medicine.Image,
+		CreatedAt: medicine.CreatedAt,
+	}
+}
+
+func ConvertToAdminMedicineUpdateResponse(medicine *schema.Medicine) web.MedicineUpdateResponse {
+	return web.MedicineUpdateResponse{
+		ID:        medicine.ID,
+		Code:      medicine.Code,
+		Name:      medicine.Name,
+		Merk:      medicine.Merk,
+		Category:  medicine.Category,
+		Type:      medicine.Type,
+		Stock:     medicine.Stock,
+		Price:     medicine.Price,
+		Details:   medicine.Details,
 		CreatedAt: medicine.CreatedAt,
 	}
 }
@@ -25,16 +40,16 @@ func ConvertToAdminGetAllMedicinesResponse(medicines []schema.Medicine) []web.Me
 	var results []web.MedicineResponse
 	for _, medicine := range medicines {
 		medicineResponse := web.MedicineResponse{
-			ID:       medicine.ID,
-			Code:     medicine.Code,
-			Name:     medicine.Name,
-			Merk:     medicine.Merk,
-			Category: medicine.Category,
-			Type:     medicine.Type,
-			Stock:    medicine.Stock,
-			Price:    medicine.Price,
-			Details:  medicine.Details,
-			Image:    medicine.Image,
+			ID:        medicine.ID,
+			Code:      medicine.Code,
+			Name:      medicine.Name,
+			Merk:      medicine.Merk,
+			Category:  medicine.Category,
+			Type:      medicine.Type,
+			Stock:     medicine.Stock,
+			Price:     medicine.Price,
+			Details:   medicine.Details,
+			Image:     medicine.Image,
 			CreatedAt: medicine.CreatedAt,
 		}
 		results = append(results, medicineResponse)
@@ -42,8 +57,15 @@ func ConvertToAdminGetAllMedicinesResponse(medicines []schema.Medicine) []web.Me
 	return results
 }
 
-func ConvertToUserMedicineResponse(medicine *schema.Medicine) web.MedicineResponse {
-	return web.MedicineResponse{
+func ConvertToAdminMedicineImageResponse(medicine *schema.Medicine) web.MedicineImageResponse {
+	return web.MedicineImageResponse{
+		Image: medicine.Image,
+	}
+}
+
+func ConvertToUserMedicineResponse(medicine *schema.Medicine) web.MedicineUserResponse {
+	return web.MedicineUserResponse{
+		ID:       medicine.ID,
 		Name:     medicine.Name,
 		Code:     medicine.Code,
 		Merk:     medicine.Merk,
@@ -56,10 +78,11 @@ func ConvertToUserMedicineResponse(medicine *schema.Medicine) web.MedicineRespon
 	}
 }
 
-func ConvertToUserGetAllMedicinesResponse(medicines []schema.Medicine) []web.MedicineResponse {
-	var results []web.MedicineResponse
+func ConvertToUserGetAllMedicinesResponse(medicines []schema.Medicine) []web.MedicineUserResponse {
+	var results []web.MedicineUserResponse
 	for _, medicine := range medicines {
-		medicineResponse := web.MedicineResponse{
+		medicineResponse := web.MedicineUserResponse{
+			ID:       medicine.ID,
 			Code:     medicine.Code,
 			Name:     medicine.Name,
 			Merk:     medicine.Merk,

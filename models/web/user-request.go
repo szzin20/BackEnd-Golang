@@ -12,13 +12,13 @@ type UserLoginRequest struct {
 }
 
 type UserUpdateRequest struct {
-	Fullname  string `json:"fullname" form:"fullname" validate:"omitempty,max=30"`
-	Email     string `json:"email" form:"email" validate:"omitempty,email"`
-	Password  string `json:"password" form:"password" validate:"omitempty,min=10,max=15"`
-	Image     string `json:"image" form:"image" validate:"omitempty"`
-	Gender    string `json:"gender" form:"gender" validate:"omitempty"`
-	Birthdate string `json:"birthdate" form:"birthdate" validate:"omitempty"`
-	BloodType string `json:"blood_type" form:"blood_type" validate:"omitempty"`
-	Height    int    `json:"height" form:"height" validate:"omitempty"`
-	Weight    int    `json:"weight" form:"weight" validate:"omitempty"`
+	Fullname       string `json:"fullname" form:"fullname" validate:"omitempty,max=30"`
+	Email          string `json:"email" form:"email" validate:"omitempty,email"`
+	Password       string `json:"password" form:"password" validate:"omitempty,min=10,max=15"`
+	ProfilePicture string `json:"profile_picture" form:"profile_picture" validate:"omitempty"`
+	Gender         string `json:"gender" form:"gender" validate:"omitempty"`
+	Birthdate      string `json:"birthdate" form:"birthdate" validate:"omitempty"`
+	BloodType      string `json:"blood_type" form:"blood_type" validate:"omitempty"`
+	Height         int    `json:"height" form:"height" validate:"omitempty"`
+	Weight         int    `json:"weight" form:"weight" validate:"omitempty"`
 }
