@@ -7,7 +7,7 @@ import (
 )
 
 type DoctorTransaction struct {
-	ID                  uint   `gorm:"primaryKey"`
+	ID                  uint `gorm:"primaryKey"`
 	DoctorID            uint   `gorm:"foreignKey:DoctorID"`
 	UserID              uint   `gorm:"foreignKey:UserID"`
 	HealthDetails       string `gorm:"not null"`
@@ -19,5 +19,5 @@ type DoctorTransaction struct {
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
 	DeletedAt           *gorm.DeletedAt `gorm:"index"`
-	Complaint           Complaint       `gorm:"ForeignKey:TransactionID;references:ID"` // one to one
+	Complaint           []Complaint     `gorm:"ForeignKey:TransactionID;references:ID"` // one to many
 }

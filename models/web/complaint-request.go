@@ -1,7 +1,7 @@
 package web
 
-type ComplaintRequest struct {
-	Message string `json:"message" form:"message"`
-	Image   string `json:"image" form:"image"`
-	Audio   string `json:"audio" form:"audio"`
+type CreateComplaintRequest struct {
+	Message string `json:"message" form:"message" validate:"omitempty"`
+	Image   string `json:"image" form:"image" validate:"omitempty"`
+	Audio   string `json:"audio" form:"audio" validate:"omitempty"`
 }

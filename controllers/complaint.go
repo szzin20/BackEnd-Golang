@@ -8,6 +8,8 @@ import (
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
+	"path/filepath"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -20,31 +22,71 @@ func CreateComplaintController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Transaction ID"))
 	}
 
-	var existingTransactionID schema.DoctorTransaction
+	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
 
-	result := configs.DB.First(&existingTransactionID, userID)
-	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Transaction ID"))
+	var doctorTransaction schema.DoctorTransaction
+
+	if err := configs.DB.First(&doctorTransaction, "user_id = ? AND id = ?", userID, transactionID).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Doctor Transaction Data"))
 	}
 
-	var complaint web.ComplaintRequest
+	var complaintRequest web.CreateComplaintRequest
 
-	if err := c.Bind(&complaint); err != nil {
+	if err := c.Bind(&complaintRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Complaint Data"))
 	}
 
-	complaintRequest := request.ConvertToComplaintRequest(complaint, existingTransactionID.ID)
+	if err := helper.ValidateStruct(complaintRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
 
-	if err := configs.DB.Create(&complaintRequest).Error; err != nil {
+	err := c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	file, fileHeader, err := c.Request().FormFile("image")
+	if err == http.ErrMissingFile {
+    	complaintRequest.Image = ""
+	} else if err != nil {
+    	return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
+	} else {
+	defer file.Close()
+	
+	allowedExtensions := []string{".jpg", ".jpeg", ".png"}
+	ext := filepath.Ext(fileHeader.Filename)
+	allowed := false
+		for _, validExt := range allowedExtensions {
+			if ext == validExt {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid image file format. Supported formats: jpg, jpeg, png"))
+		}
+	
+		images, err := helper.UploadFilesToGCS(c, fileHeader)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Error uploading image to Cloud Storage"))
+		}
+	
+		complaintRequest.Image = images
+	}
+
+	complaint := request.ConvertToComplaintRequest(complaintRequest, uint(transactionID))
+
+	if err := configs.DB.Create(&complaint).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Send Complaint"))
 	}
 
-	response := response.ConvertToComplaintResponse(complaintRequest)
+	response := response.ConvertToComplaintResponse(complaint)
 
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("Complaint Successful", response))
 }
 
-// User Get Complaint by ID
+
+// Get Complaint by DoctorTransaction ID
 func GetComplaintsController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
@@ -52,13 +94,15 @@ func GetComplaintsController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Complaint ID"))
 	}
 
-	var complaint schema.Complaint
+	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
 
-	if err := configs.DB.First(&complaint, userID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Complaint Data"))
+	var doctorTransaction schema.DoctorTransaction
+
+	if err := configs.DB.Preload("Complaint").Where("user_id = ? AND id = ?", userID, transactionID).First(&doctorTransaction).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Doctor Transaction Data"))
 	}
 
-	response := response.ConvertToComplaintResponse(&complaint)
+	response := response.ConvertToDoctorTransactionResponse(&doctorTransaction)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Complaint Data Successfully Retrieved", response))
 }
