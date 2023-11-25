@@ -47,6 +47,20 @@ func ConvertToGetUserResponse(user *schema.User) web.UserUpdateResponse {
 		Weight:         user.Weight,
 	}
 }
+func ConvertToGetUserIDbyAdminResponse(user *schema.User) web.UserAllResponseByAdmin {
+	return web.UserAllResponseByAdmin{
+		ID:             user.ID,
+		Fullname:       user.Fullname,
+		Email:          user.Email,
+		ProfilePicture: user.ProfilePicture,
+		Gender:         user.Gender,
+		Birthdate:      user.Birthdate,
+		BloodType:      user.BloodType,
+		Height:         user.Height,
+		Weight:         user.Weight,
+		Role:           user.Role,
+	}
+}
 
 func ConvertToGetAllUsersResponse(users []schema.User) []web.UserUpdateResponse {
 	var results []web.UserUpdateResponse

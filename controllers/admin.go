@@ -99,12 +99,6 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 	if err := helper.ValidateStruct(updateRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
-	// Update the payment status in the existing transaction
-	// existingTransaction.PaymentStatus = updateRequest.PaymentStatus
-	// result = configs.DB.Save(&existingTransaction)
-	// if result.Error != nil {
-	// 	return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Update Payment Status"))
-	// }
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Admin Updated Payment Status Successfully", nil))
 }

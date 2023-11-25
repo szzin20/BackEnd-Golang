@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -117,6 +118,22 @@ func GetUserController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Users Data Successfully Retrieved", response))
 }
 
+// Get Doctor by ID
+func GetUserIDbyAdminController(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
+	}
+	var user schema.User
+	result := configs.DB.First(&user, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
+	}
+	response := response.ConvertToGetUserIDbyAdminResponse(&user)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("users data successfully retrieved", response))
+}
+
 // Update User Profile
 func UpdateUserController(c echo.Context) error {
 
@@ -218,4 +235,28 @@ func DeleteUserController(c echo.Context) error {
 	configs.DB.Delete(&existingUser)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("User Deleted Data Successful", nil))
+}
+
+// DeleteDoctorByAdminController deletes a doctor by admin
+func DeleteUserByAdminController(c echo.Context) error {
+	// Parse doctor ID from the request parameters
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
+	}
+
+	// Retrieve the existing doctor from the database
+	var existingUser schema.User
+	result := configs.DB.First(&existingUser, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user"))
+	}
+
+	// Delete the doctor from the database
+	result = configs.DB.Delete(&existingUser, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to delete user"))
+	}
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("user deleted data successful  ", nil))
 }
