@@ -28,7 +28,6 @@ func ConvertToUserComplaintResponse(UserComplaint schema.User, transaction schem
 		PatientStatus:       transaction.PatientStatus,
 	}
 }
-
 func ConvertToComplaintsResponse(UserComplaint schema.User, transaction schema.DoctorTransaction) web.UserComplaintResponse {
 	return web.UserComplaintResponse{
 		UserFullname:        UserComplaint.Fullname,

@@ -64,69 +64,67 @@ func GetComplaintsController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Complaint Data Successfully Retrieved", response))
 }
 
-// Doctor GET All & Status Complaint or user
+// GetAllDataController untuk mengambil data transaksi dokter berdasarkan beberapa parameter.
 func GetAllDataController(c echo.Context) error {
-	dokterID, ok := c.Get("userID").(int)
+	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Dokter ID"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Complaint ID"))
 	}
 
-	// Mendapatkan nilai dari query parameter
-	transactionID := c.QueryParam("transaction_id")
+	// Mengambil nilai transaction_id dari query parameter
+	transactionID, err := strconv.Atoi(c.QueryParam("transaction_id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Transaction ID"))
+	}
+
 	patientStatus := c.QueryParam("patient_status")
 
-	var (
-		doctorTransactions []schema.DoctorTransaction
-		doctor             schema.Doctor
-		responses          []web.ComplaintsResponse
-	)
-
-	// Menerapkan filter berdasarkan ID transaksi dan/atau status pasien jika query parameter diberikan
-	query := `
-        doctor_transactions.user_id = ? 
-        LEFT JOIN users ON doctor_transactions.user_id = users.id
-        LEFT JOIN complaints ON doctor_transactions.user_id = complaints.user_id
-    `
-
-	if transactionID != "" {
-		query += " AND doctor_transactions.id = ?"
-	}
-
-	if patientStatus != "" {
-		query += " AND doctor_transactions.patient_status = ?"
-	}
-
-	// Mendapatkan semua transaksi dokter untuk pengguna dengan atau tanpa filter ID transaksi dan/atau status pasien
-	if err := configs.DB.
-		Joins("LEFT JOIN users ON doctor_transactions.user_id = users.id").
-		Joins("LEFT JOIN complaints ON doctor_transactions.user_id = complaints.user_id").
-		Where(query, dokterID, transactionID, patientStatus).
-		Find(&doctorTransactions).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to retrieve doctor transactions"))
-	}
-
-	for _, transaction := range doctorTransactions {
-		if err := configs.DB.Find(&doctor, "id=?", transaction.DoctorID).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to retrieve doctor data"))
+	// Jika transactionID dan patientStatus kosong, ambil semua transaksi untuk dokter tersebut
+	if transactionID == 0 && patientStatus == "" {
+		// Mengambil semua transaksi dokter yang belum dihapus
+		var doctorTransactions []schema.DoctorTransaction
+		if err := configs.DB.Where("deleted_at IS NULL AND user_id = ?", userID).Find(&doctorTransactions).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Fetch Doctor Transactions"))
 		}
 
-		// Mengambil pengguna yang mengajukan keluhan berdasarkan status pasien
-		if transaction.PatientStatus != "" {
-			var complainingUser schema.User
+		// Membuat response berisi data transaksi dokter dan informasi terkait
+		var responses []web.ComplaintsResponse
+		for _, doctorTransaction := range doctorTransactions {
+			var doctor schema.Doctor
+			if err := configs.DB.Find(&doctor, "id=?", doctorTransaction.DoctorID).Error; err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Fetch Doctor Data"))
+			}
+			var userComplaint schema.User
 
-			if err := configs.DB.
-				Where("id = ?", transaction.UserID).
-				First(&complainingUser).
-				Error; err != nil {
-				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to retrieve complaining user"))
+			responses = append(responses, response.ConvertToUserComplaintResponse(userComplaint, doctorTransaction, doctor))
+		}
+		return c.JSON(http.StatusOK, helper.SuccessResponse("Doctor Transactions Data Successfully Retrieved", responses))
+	}
+
+	// Jika patientStatus tidak kosong, filter transaksi berdasarkan status pasien
+	if patientStatus != "" {
+		// Filter transaksi dokter berdasarkan ID dokter dan status pasien
+		var doctorTransactions []schema.DoctorTransaction
+		if err := configs.DB.Where("user_id = ? AND patient_status = ?", userID, patientStatus).Find(&doctorTransactions).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Fetch Doctor Transactions"))
+		}
+
+		// Membuat response berisi data transaksi dokter dan informasi terkait
+		var responses []web.ComplaintsResponse
+		for _, doctorTransaction := range doctorTransactions {
+			var doctor schema.Doctor
+			if err := configs.DB.Find(&doctor, "id=?", doctorTransaction.DoctorID).Error; err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Fetch Doctor Data"))
 			}
 
-			response := response.ConvertToUserComplaintResponse(complainingUser, transaction, doctor)
-			responses = append(responses, response)
+			// Mendapatkan data (user complaint)
+			var userComplaint schema.User
+		
+			responses = append(responses, response.ConvertToUserComplaintResponse(userComplaint, doctorTransaction, doctor))
 		}
+		return c.JSON(http.StatusOK, helper.SuccessResponse("Doctor Transactions Data Successfully Retrieved", responses))
 	}
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Data successfully retrieved", responses))
+	return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Parameters"))
 }
 
 // Update Complaint or User
