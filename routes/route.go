@@ -15,7 +15,7 @@ func SetupRoutes(e *echo.Echo) {
 
 	gAdmins := e.Group("/admins")
 	gAdmins.POST("/login", controllers.LoginAdminController)
-	gAdmins.PUT("/:id", controllers.UpdateAdminController, AdminJWT)
+	gAdmins.PUT("/profile", controllers.UpdateAdminController, AdminJWT)
 	gAdmins.POST("/register/doctor", controllers.RegisterDoctorByAdminController, AdminJWT)
 	gAdmins.GET("/list/doctors", controllers.GetAllDoctorByAdminController, AdminJWT)
 	gAdmins.GET("/users", controllers.GetAllUserByAdminController, AdminJWT)
