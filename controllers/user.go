@@ -8,6 +8,7 @@ import (
 	"healthcare/utils/helper"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -40,6 +41,8 @@ func RegisterUserController(c echo.Context) error {
 	}
 
 	response := response.ConvertToUserRegisterResponse(userRequest)
+
+	log.Println(response)
 
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("Registered Successful", response))
 }
@@ -148,7 +151,7 @@ func UpdateUserController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	file, fileHeader, err := c.Request().FormFile("image")
+	file, fileHeader, err := c.Request().FormFile("profile_picture")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
 	}
@@ -167,12 +170,12 @@ func UpdateUserController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
 	}
 
-	image, err := helper.UploadFilesToGCS(c, fileHeader)
+	profilePicture, err := helper.UploadFilesToGCS(c, fileHeader)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to Cloud Storage"))
 	}
 
-	userUpdated.Image = image
+	userUpdated.ProfilePicture = profilePicture
 
 	userUpdated.Password = helper.HashPassword(userUpdated.Password)
 	gender := strings.ToLower(userUpdated.Gender)

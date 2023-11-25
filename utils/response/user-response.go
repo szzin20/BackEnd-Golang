@@ -24,27 +24,27 @@ func ConvertToUserUpdateResponse(user *schema.User) web.UserUpdateResponse {
 	bloodType := strings.ToUpper(user.BloodType)
 	gender := strings.ToLower(user.Gender)
 	return web.UserUpdateResponse{
-		Fullname:  user.Fullname,
-		Email:     user.Email,
-		Image:     user.Image,
-		Gender:    gender,
-		Birthdate: user.Birthdate,
-		BloodType: bloodType,
-		Height:    user.Height,
-		Weight:    user.Weight,
+		Fullname:       user.Fullname,
+		Email:          user.Email,
+		ProfilePicture: user.ProfilePicture,
+		Gender:         gender,
+		Birthdate:      user.Birthdate,
+		BloodType:      bloodType,
+		Height:         user.Height,
+		Weight:         user.Weight,
 	}
 }
 
 func ConvertToGetUserResponse(user *schema.User) web.UserUpdateResponse {
 	return web.UserUpdateResponse{
-		Fullname:  user.Fullname,
-		Email:     user.Email,
-		Image:     user.Image,
-		Gender:    user.Gender,
-		Birthdate: user.Birthdate,
-		BloodType: user.BloodType,
-		Height:    user.Height,
-		Weight:    user.Weight,
+		Fullname:       user.Fullname,
+		Email:          user.Email,
+		ProfilePicture: user.ProfilePicture,
+		Gender:         user.Gender,
+		Birthdate:      user.Birthdate,
+		BloodType:      user.BloodType,
+		Height:         user.Height,
+		Weight:         user.Weight,
 	}
 }
 
@@ -52,14 +52,14 @@ func ConvertToGetAllUsersResponse(users []schema.User) []web.UserUpdateResponse 
 	var results []web.UserUpdateResponse
 	for _, user := range users {
 		userResponse := web.UserUpdateResponse{
-			Fullname:  user.Fullname,
-			Email:     user.Email,
-			Image:     user.Image,
-			Gender:    user.Gender,
-			Birthdate: user.Birthdate,
-			BloodType: user.BloodType,
-			Height:    user.Height,
-			Weight:    user.Weight,
+			Fullname:       user.Fullname,
+			Email:          user.Email,
+			ProfilePicture: user.ProfilePicture,
+			Gender:         user.Gender,
+			Birthdate:      user.Birthdate,
+			BloodType:      user.BloodType,
+			Height:         user.Height,
+			Weight:         user.Weight,
 		}
 		results = append(results, userResponse)
 	}
@@ -72,16 +72,16 @@ func ConvertToGetAllUserByAdminResponse(users []schema.User) []web.UserAllRespon
 	// Iterasi melalui setiap dokter dan konversi ke format respons
 	for _, user := range users {
 		userResponse := web.UserAllResponseByAdmin{
-			ID:        user.ID,
-			Fullname:  user.Fullname,
-			Email:     user.Email,
-			Image:     user.Image,
-			Gender:    user.Gender,
-			Birthdate: user.Birthdate,
-			BloodType: user.BloodType,
-			Height:    user.Height,
-			Weight:    user.Weight,
-			Role:      user.Role,
+			ID:             user.ID,
+			Fullname:       user.Fullname,
+			Email:          user.Email,
+			ProfilePicture: user.ProfilePicture,
+			Gender:         user.Gender,
+			Birthdate:      user.Birthdate,
+			BloodType:      user.BloodType,
+			Height:         user.Height,
+			Weight:         user.Weight,
+			Role:           user.Role,
 		}
 
 		results = append(results, userResponse)
