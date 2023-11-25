@@ -66,9 +66,9 @@ func GetComplaintsController(c echo.Context) error {
 
 // GetAllDataController untuk mengambil data transaksi dokter berdasarkan beberapa parameter.
 func GetAllDataController(c echo.Context) error {
-	dokterID, ok := c.Get("userID").(uint)
+	userID, ok := c.Get("userID").(uint)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid User ID"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Doctor ID"))
 	}
 
 	// Mengambil nilai transaction_id dari query parameter
@@ -83,7 +83,7 @@ func GetAllDataController(c echo.Context) error {
 	if transactionID == 0 && patientStatus == "" {
 		// Mengambil semua transaksi dokter yang belum dihapus
 		var doctorTransactions []schema.DoctorTransaction
-		if err := configs.DB.Where("deleted_at IS NULL AND user_id = ?", dokterID).Find(&doctorTransactions).Error; err != nil {
+		if err := configs.DB.Where("deleted_at IS NULL AND user_id = ?", userID).Find(&doctorTransactions).Error; err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Fetch Doctor Transactions"))
 		}
 
@@ -105,7 +105,7 @@ func GetAllDataController(c echo.Context) error {
 	if patientStatus != "" {
 		// Filter transaksi dokter berdasarkan ID dokter dan status pasien
 		var doctorTransactions []schema.DoctorTransaction
-		if err := configs.DB.Where("user_id = ? AND patient_status = ?", dokterID, patientStatus).Find(&doctorTransactions).Error; err != nil {
+		if err := configs.DB.Where("user_id = ? AND patient_status = ?", userID, patientStatus).Find(&doctorTransactions).Error; err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Fetch Doctor Transactions"))
 		}
 
