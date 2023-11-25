@@ -72,7 +72,8 @@ func GetAllDataController(c echo.Context) error {
 	}
 
 	// Mendapatkan nilai dari query parameter
-	patientStatus := c.QueryParam("patientStatus")
+	transactionID := c.QueryParam("transaction_id")
+	patientStatus := c.QueryParam("patient_status")
 
 	var (
 		doctorTransactions []schema.DoctorTransaction
@@ -80,14 +81,27 @@ func GetAllDataController(c echo.Context) error {
 		responses          []web.ComplaintsResponse
 	)
 
-	// Menerapkan filter berdasarkan patientStatus jika query parameter diberikan
-	query := "user_id = ?"
-	if patientStatus != "" {
-		query += " AND patient_status = ?"
+	// Menerapkan filter berdasarkan ID transaksi dan/atau status pasien jika query parameter diberikan
+	query := `
+        doctor_transactions.user_id = ? 
+        LEFT JOIN users ON doctor_transactions.user_id = users.id
+        LEFT JOIN complaints ON doctor_transactions.user_id = complaints.user_id
+    `
+
+	if transactionID != "" {
+		query += " AND doctor_transactions.id = ?"
 	}
 
-	// Mendapatkan semua transaksi dokter untuk pengguna dengan atau tanpa filter patientStatus
-	if err := configs.DB.Find(&doctorTransactions, query, dokterID, patientStatus).Error; err != nil {
+	if patientStatus != "" {
+		query += " AND doctor_transactions.patient_status = ?"
+	}
+
+	// Mendapatkan semua transaksi dokter untuk pengguna dengan atau tanpa filter ID transaksi dan/atau status pasien
+	if err := configs.DB.
+		Joins("LEFT JOIN users ON doctor_transactions.user_id = users.id").
+		Joins("LEFT JOIN complaints ON doctor_transactions.user_id = complaints.user_id").
+		Where(query, dokterID, transactionID, patientStatus).
+		Find(&doctorTransactions).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to retrieve doctor transactions"))
 	}
 
@@ -100,7 +114,10 @@ func GetAllDataController(c echo.Context) error {
 		if transaction.PatientStatus != "" {
 			var complainingUser schema.User
 
-			if err := configs.DB.Where("id = ?", transaction.UserID).First(&complainingUser).Error; err != nil {
+			if err := configs.DB.
+				Where("id = ?", transaction.UserID).
+				First(&complainingUser).
+				Error; err != nil {
 				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to retrieve complaining user"))
 			}
 
@@ -108,6 +125,7 @@ func GetAllDataController(c echo.Context) error {
 			responses = append(responses, response)
 		}
 	}
+
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Data successfully retrieved", responses))
 }
 
@@ -119,7 +137,7 @@ func UpdateComplaintDataController(c echo.Context) error {
 	}
 
 	// Mendapatkan ID transaksi dari parameter query
-	id, err := strconv.Atoi(c.QueryParam("id"))
+	id, err := strconv.Atoi(c.QueryParam("transaction_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Gagal mendapatkan ID Transaksi Dokter"))
 	}

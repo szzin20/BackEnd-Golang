@@ -10,5 +10,5 @@ type ComplaintRequest struct {
 
 type UpdateComplaintRequest struct {
 	HealthDetails string `json:"health_details" form:"health_details" validate:"required,min=3"`
-	PatientStatus string `json:"status" form:"status" validate:"required,oneof=Diberi resep Konsultasi Lanjutan Di Rujuk"`
+	PatientStatus string `json:"patient_status" form:"patient_status" validate:"required,in=pending,recovered,ongoing consultation,referred"`
 }
