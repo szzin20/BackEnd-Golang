@@ -45,8 +45,7 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.GET("/articles/:id", controllers.GetArticleByID)
 	gUsers.GET("/article", controllers.GetAllArticlesByTitle)
 	gUsers.POST("/doctor-payments", controllers.CreateDoctorTransactionController, UserJWT)
-	gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsController, UserJWT) 
-	gUsers.GET("/doctor-payment", controllers.GetDoctorTransactionsController, UserJWT)
+	gUsers.GET("/doctor-payments", controllers.GetDoctorTransactionsController, UserJWT)
 	gUsers.POST("/complaints", controllers.CreateComplaintController, UserJWT)
 	gUsers.GET("/complaints", controllers.GetComplaintsController, UserJWT)
 	gUsers.GET("/advices", controllers.GetAdvicesController, UserJWT)
@@ -68,5 +67,7 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.POST("/advices", controllers.CreateAdviceController, DoctorJWT)
 	gDoctors.GET("/complaint", controllers.GetComplaintsController, DoctorJWT)
 	gDoctors.GET("/advices", controllers.GetAdvicesController, DoctorJWT)
+
+	e.POST("/chatbot", controllers.Chatbot)
 
 }
