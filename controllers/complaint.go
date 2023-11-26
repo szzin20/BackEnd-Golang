@@ -82,26 +82,26 @@ func CreateComplaintController(c echo.Context) error {
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("complaint successful", response))
 }
 
-// Get Complaint by DoctorTransaction ID
-func GetComplaintsController(c echo.Context) error {
+// // Get Doctor Transaction Details by ID
+// func GetDoctorTransactionDetailsController(c echo.Context) error {
 
-	userID, ok := c.Get("userID").(int)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
-	}
+// 	userID, ok := c.Get("userID").(int)
+// 	if !ok {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid id"))
+// 	}
 
-	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
+// 	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
 
-	var doctorTransaction schema.DoctorTransaction
+// 	var doctorTransaction schema.DoctorTransaction
 
-	if err := configs.DB.Preload("Complaint").Preload("Advice").Where("user_id = ? AND id = ?", userID, transactionID).First(&doctorTransaction).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
-	}
+// 	if err := configs.DB.Preload("Complaint").Preload("Advice").Where("user_id = ? AND id = ?", userID, transactionID).First(&doctorTransaction).Error; err != nil {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+// 	}
 
-	response := response.ConvertToDoctorTransactionResponse(&doctorTransaction)
+// 	response := response.ConvertToDoctorTransactionDetailsResponse(&doctorTransaction)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("complaint data successfully retrieved", response))
-}
+// 	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction details data successfully retrieved", response))
+// }
 
 // // GetAllDataController untuk mengambil data transaksi dokter berdasarkan beberapa parameter.
 // func GetAllDataController(c echo.Context) error {

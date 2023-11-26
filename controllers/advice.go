@@ -8,6 +8,7 @@ import (
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -70,7 +71,6 @@ func CreateAdviceController(c echo.Context) error {
 		adviceRequest.Image = adviceImage
 	}
 
-
 	advice := request.ConvertToAdviceRequest(adviceRequest, uint(transactionID))
 
 	if err := configs.DB.Create(&advice).Error; err != nil {
@@ -82,27 +82,27 @@ func CreateAdviceController(c echo.Context) error {
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("advice successful", response))
 }
 
-// Get Advice by DoctorTransaction ID
-func GetAdvicesController(c echo.Context) error {
+// // Get Advice by DoctorTransaction ID
+// func GetAdvicesController(c echo.Context) error {
 
-	userID, ok := c.Get("userID").(int)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
-	}
+// 	userID, ok := c.Get("userID").(int)
+// 	if !ok {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+// 	}
 
-	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
+// 	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
 
-	var doctorTransaction schema.DoctorTransaction
+// 	var doctorTransaction schema.DoctorTransaction
 
-	if err := configs.DB.
-	Preload("Complaint").
-	Preload("Advice").
-    Where("user_id = ? AND id = ?", userID, transactionID).
-    Order("created_at ASC").
-    First(&doctorTransaction).Error; err != nil {
-    return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
-}
-	response := response.ConvertToAdviceResponse(&doctorTransaction)
+// 	if err := configs.DB.
+// 		Preload("Complaint").
+// 		Preload("Advice").
+// 		Where("user_id = ? AND id = ?", userID, transactionID).
+// 		Order("created_at ASC").
+// 		First(&doctorTransaction).Error; err != nil {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+// 	}
+// 	response := response.ConvertToAdviceResponse(&doctorTransaction)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("advice data successfully retrieved", response))
-}
+// 	return c.JSON(http.StatusOK, helper.SuccessResponse("advice data successfully retrieved", response))
+// }

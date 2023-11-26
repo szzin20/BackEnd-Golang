@@ -43,31 +43,31 @@ func ConvertToDoctorTransactionDetailsResponse(doctorTransaction *schema.DoctorT
 		UserID:   doctorTransaction.UserID,
 	}
 
-	var complaintResponses []web.ComplaintsResponse
+	var complaintResults []web.ComplaintsResponse
 	for _, complaint := range doctorTransaction.Complaint {
-		complaints := web.ComplaintsResponse{
+		complaintResponses := web.ComplaintsResponse{
 			ID:            complaint.ID,
 			Message:       complaint.Message,
 			Image:         complaint.Image,
 			Audio:         complaint.Audio,
 			CreatedAt:     complaint.CreatedAt,
 		}
-		complaintResponses = append(complaintResponses, complaints)
+		complaintResults = append(complaintResults, complaintResponses)
 	} 
-	doctorTransactions.Complaint = complaintResponses
+	doctorTransactions.Complaint = complaintResults
 
-	var adviceResponses []web.AdvicesResponse
+	var adviceResults []web.AdvicesResponse
 	for _, advice := range doctorTransaction.Advice {
-		advices := web.AdvicesResponse{
+		adviceResponses := web.AdvicesResponse{
 			ID:            advice.ID,
 			Message:       advice.Message,
 			Image:         advice.Image,
 			Audio:         advice.Audio,
 			CreatedAt:     advice.CreatedAt,
 		}
-		adviceResponses = append(adviceResponses, advices)
+		adviceResults = append(adviceResults, adviceResponses)
 	}
-	doctorTransactions.Advice = adviceResponses
+	doctorTransactions.Advice = adviceResults
 
 	return doctorTransactions
 }
