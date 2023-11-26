@@ -404,7 +404,7 @@ func GetDoctorByIDController(c echo.Context) error {
 
 // Manage Patient
 func GetManagePatientController(c echo.Context) error {
-	userID, ok := c.Get("userID").(uint)
+	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid doctor id"))
 	}
