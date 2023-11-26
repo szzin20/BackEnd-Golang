@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"healthcare/configs"
+	"healthcare/middlewares"
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
@@ -34,7 +35,12 @@ func LoginAdminController(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Incorrect Email or Password"))
 	}
 
+	token, err := middlewares.GenerateToken(admin.ID, admin.Email, admin.Role)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Generate JWT"))
+	}
 	adminLoginResponse := response.ConvertToAdminLoginResponse(admin)
+	adminLoginResponse.Token = token
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", adminLoginResponse))
 }

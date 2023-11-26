@@ -22,8 +22,8 @@ type Doctor struct {
 	Alumnus            string              `gorm:"not null"`
 	AboutDoctor        string              `gorm:"not null"`
 	LocationPractice   string              `gorm:"not null"`
-	// DoctorTransactions []DoctorTransaction `gorm:"foreignKey:DoctorID"`
 	UpdatedAt          time.Time
 	CreatedAt          time.Time
 	DeletedAt          gorm.DeletedAt `gorm:"index"`
+	DoctorTransactions []DoctorTransaction `gorm:"foreignKey:DoctorID"`
 }

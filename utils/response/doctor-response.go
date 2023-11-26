@@ -103,7 +103,6 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 	return results
 }
 
-
 func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 	return web.DoctorIDResponse{
 		ID:               doctor.ID,
@@ -119,3 +118,4 @@ func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 		Alumnus:          doctor.Alumnus,
 	}
 }
+
