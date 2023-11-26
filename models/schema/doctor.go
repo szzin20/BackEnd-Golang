@@ -23,6 +23,7 @@ type Doctor struct {
 	AboutDoctor      string `gorm:"not null"`
 	LocationPractice string `gorm:"not null"`
 	// DoctorTransaction []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
+	Article   []Article
 	UpdatedAt time.Time
 	CreatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
