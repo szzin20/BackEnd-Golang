@@ -31,7 +31,7 @@ func RegisterUserController(c echo.Context) error {
 	userRequest := request.ConvertToUserRegisterRequest(user)
 
 	var existingUserEmail schema.User
-	if existingEmail := configs.DB.Debug().Where("email = ? AND deleted_at IS NULL", userRequest.Email).First(&existingUserEmail).Error; existingEmail == nil {
+	if existingEmail := configs.DB.Where("email = ? AND deleted_at IS NULL", userRequest.Email).First(&existingUserEmail).Error; existingEmail == nil {
 		return c.JSON(http.StatusConflict, helper.ErrorResponse("email already exist"))
 	}
 

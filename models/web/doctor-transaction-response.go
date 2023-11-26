@@ -19,9 +19,16 @@ type DoctorTransactionsResponse struct {
 }
 
 type DoctorTransactionDetailsResponse struct {
-	ID        uint                 `json:"id"`
-	UserID    uint                 `json:"user_id"`
-	DoctorID  uint                 `json:"doctor_id"`
-	Complaint []ComplaintsResponse `json:"complaints"`
-	Advice    []AdvicesResponse    `json:"advices"`
+	ID            uint   `json:"id"`
+	Fullname      string `json:"fullname"`
+	Specialist    string `json:"specialist"`
+	PatientStatus string `json:"patient_status"`
 }
+
+// type DoctorTransactionDetailsResponse struct {
+// 	ID        uint                 `json:"id"`
+// 	UserID    uint                 `json:"user_id"`
+// 	DoctorID  uint                 `json:"doctor_id"`
+// 	Complaint []ComplaintsResponse `json:"complaints"`
+// 	Advice    []AdvicesResponse    `json:"advices"`
+// }

@@ -163,45 +163,45 @@ func GetDoctorTransactionsController(c echo.Context) error {
 	return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
 }
 
-// User Get Doctor Transaction Details by ID
-func GetDoctorTransactionDetailsByUserController(c echo.Context) error {
+// // User Get Doctor Transaction Details by ID
+// func GetDoctorTransactionDetailsByUserController(c echo.Context) error {
 
-	userID, ok := c.Get("userID").(int)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
-	}
+// 	userID, ok := c.Get("userID").(int)
+// 	if !ok {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+// 	}
 
-	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
+// 	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
 
-	var doctorTransaction schema.DoctorTransaction
+// 	var doctorTransaction schema.DoctorTransaction
 
-	if err := configs.DB.Preload("Complaint").Preload("Advice").Where("user_id = ? AND id = ?", userID, transactionID).First(&doctorTransaction).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
-	}
+// 	if err := configs.DB.Preload("Complaint").Preload("Advice").Where("user_id = ? AND id = ?", userID, transactionID).First(&doctorTransaction).Error; err != nil {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+// 	}
 
-	response := response.ConvertToDoctorTransactionDetailsResponse(&doctorTransaction)
+// 	response := response.ConvertToDoctorTransactionDetailsResponse(&doctorTransaction)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction details data successfully retrieved", response))
-}
+// 	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction details data successfully retrieved", response))
+// }
 
 
-// Doctor Get Doctor Transaction Details by ID
-func GetDoctorTransactionDetailsByDoctorController(c echo.Context) error {
+// // Doctor Get Doctor Transaction Details by ID
+// func GetDoctorTransactionDetailsByDoctorController(c echo.Context) error {
 
-	doctorID, ok := c.Get("userID").(int)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid doctor id"))
-	}
+// 	doctorID, ok := c.Get("userID").(int)
+// 	if !ok {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid doctor id"))
+// 	}
 
-	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
+// 	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
 
-	var doctorTransaction schema.DoctorTransaction
+// 	var doctorTransaction schema.DoctorTransaction
 
-	if err := configs.DB.Preload("Complaint").Preload("Advice").Where(" doctor_id ? AND id = ?", doctorID, transactionID).First(&doctorTransaction).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
-	}
+// 	if err := configs.DB.Preload("Complaint").Preload("Advice").Where(" doctor_id ? AND id = ?", doctorID, transactionID).First(&doctorTransaction).Error; err != nil {
+// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+// 	}
 
-	response := response.ConvertToDoctorTransactionDetailsResponse(&doctorTransaction)
+// 	response := response.ConvertToDoctorTransactionDetailsResponse(&doctorTransaction)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction details data successfully retrieved", response))
-}
+// 	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction details data successfully retrieved", response))
+// }
