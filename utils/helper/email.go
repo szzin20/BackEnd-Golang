@@ -95,20 +95,10 @@ func SendNotificationEmail(to, fullname, notificationType, userType string) erro
 			subject = "Login Notification"
 			body = "Hello, "
 
-			// Customize the greeting based on the user type
-			if userType == "drg" {
-				body += "Drg. "
-			}
-
 			body += fullname + "! Anda telah berhasil masuk."
 		case "register":
 			subject = "Registration Notification"
 			body = "Hello, "
-
-			// Customize the greeting based on the user type
-			if userType == "drg" {
-				body += "Drg. "
-			}
 
 			body += fullname + "! Anda telah berhasil mendaftar."
 		default:
