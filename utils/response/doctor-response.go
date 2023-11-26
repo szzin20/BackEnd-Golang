@@ -117,3 +117,5 @@ func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 		LocationPractice: doctor.LocationPractice,
 		Alumnus:          doctor.Alumnus,
 	}
+}
+
