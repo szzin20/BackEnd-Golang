@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
 // RegisterDoctorController
@@ -29,6 +29,36 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 
 	doctorRequest := request.ConvertToDoctorRegisterRequest(doctor)
 
+	err := c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+    }
+
+    file, fileHeader, err := c.Request().FormFile("profile_picture")
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
+    }
+    defer file.Close()
+
+    allowedExtensions := []string{".jpg", ".jpeg", ".png"}
+    ext := filepath.Ext(fileHeader.Filename)
+    allowed := false
+    for _, validExt := range allowedExtensions {
+        if ext == validExt {
+            allowed = true
+            break
+        }
+    }
+    if !allowed {
+        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
+    }
+
+    imageURL, err := helper.UploadFilesToGCS(c,fileHeader)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to Cloud Storage"))
+    }
+
+    doctorRequest.ProfilePicture = imageURL
 	// Periksa apakah email sudah ada
 	if existingDoctor := configs.DB.Where("email = ?", doctorRequest.Email).First(&doctorRequest).Error; existingDoctor == nil {
 		return c.JSON(http.StatusConflict, helper.ErrorResponse("Email Sudah Ada"))
@@ -43,7 +73,7 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 	}
 
 	// Mengirim email pemberitahuan
-	err := helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "drg")
+	err = helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "")
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengirim email verifikasi"))
 	}
@@ -58,7 +88,7 @@ func LoginDoctorController(c echo.Context) error {
 	var loginRequest web.DoctorLoginRequest
 
 	if err := c.Bind(&loginRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Login Data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Data Login Tidak Valid"))
 	}
 
 	if err := helper.ValidateStruct(loginRequest); err != nil {
@@ -67,17 +97,17 @@ func LoginDoctorController(c echo.Context) error {
 
 	var doctor schema.Doctor
 	if err := configs.DB.Where("email = ?", loginRequest.Email).First(&doctor).Error; err != nil {
-		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Email Not Registered"))
+		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse( "Email Tidak Terdaftar."))
 	}
 
 	if err := helper.ComparePassword(doctor.Password, loginRequest.Password); err != nil {
-		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Incorrect Password"))
+		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Kata Sandi Salah" ))
 	}
 
 	// The rest of your code for generating a token and handling the successful login
 	token, err := middlewares.GenerateToken(doctor.ID, doctor.Email, doctor.Role)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Generate JWT: "+err.Error()))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse( "Gagal Menghasilkan JWT: "+err.Error()))
 	}
 
 	doctorLoginResponse := response.ConvertToDoctorLoginResponse(&doctor)
@@ -87,25 +117,30 @@ func LoginDoctorController(c echo.Context) error {
 	if doctor.Email != "" {
 		notificationType := "login"
 		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "drg"); err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to send notification email: "+err.Error()))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengirim email notifikasi: "+err.Error()))
 		}
 	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", doctorLoginResponse))
+	return c.JSON(http.StatusOK, helper.SuccessResponse( "Login Berhasil", doctorLoginResponse))
 }
-
-var db = configs.DB
 
 func GetAvailableDoctor(c echo.Context) error {
 
-	var doctors []schema.Doctor
-	if err := db.Where("status = ?", true).Find(&doctors).Error; err != nil {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data tidak ditemukan!"))
+	var Doctor []schema.Doctor
+
+	err := configs.DB.Where("status = ?", true).Find(&Doctor).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Dokter"))
 	}
 
-	result := response.ConvertToGetAllDoctorResponse(doctors)
+	if len(Doctor) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data tidak ditemukan"))
+	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("success", result))
+	response := response.ConvertToGetAllDoctorResponse(Doctor)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Data Dokter Berhasil Diambil", response))
+
 }
 
 func GetSpecializeDoctor(c echo.Context) error {
@@ -116,22 +151,24 @@ func GetSpecializeDoctor(c echo.Context) error {
 	}
 
 	var doctors []schema.Doctor
-	if err := db.Where("specialist = ?", specialist).Find(&doctors).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data tidak ditemukan!"))
-		}
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Internal server error"))
+	err := configs.DB.Where("specialist LIKE ?", "%"+specialist+"%").Find(&doctors).Error
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Dokter"))
 	}
 
-	result := response.ConvertToGetAllDoctorResponse(doctors)
+	if len(doctors) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data tidak ditemukan"))
+	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("success", result))
+	response := response.ConvertToGetAllDoctorResponse(doctors)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Data Dokter Berhasil Diambil", response))
 
 }
 
 // Get Doctor Profile
 func GetDoctorProfileController(c echo.Context) error {
-
 	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil ID Dokter"))
@@ -139,7 +176,11 @@ func GetDoctorProfileController(c echo.Context) error {
 
 	var doctor schema.Doctor
 	if err := configs.DB.First(&doctor, userID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil Profil Dokter"))
+		if gorm.IsRecordNotFoundError(err) {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("Dokter tidak ditemukan"))
+		} else {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil Profil Dokter"))
+		}
 	}
 
 	response := response.ConvertToGetDoctorResponse(&doctor)
@@ -221,9 +262,9 @@ func UpdateDoctorController(c echo.Context) error {
 	}
 
 	// Extract the image file from the form
-	file, fileHeader, err := c.Request().FormFile("image")
+	file, fileHeader, err := c.Request().FormFile("profile_picture")
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("File Gambar Diperlukan"))
 	}
 	defer file.Close()
 
@@ -238,13 +279,13 @@ func UpdateDoctorController(c echo.Context) error {
 		}
 	}
 	if !allowed {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse( "Format file gambar tidak valid,Format yang didukung: jpg, jpeg, png"))
 	}
 
 	// Upload the image to Cloud Storage
 	ProfilePicture, err := helper.UploadFilesToGCS(c, fileHeader)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to Cloud Storage"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error mengunggah gambar ke Cloud Storage"))
 	}
 
 	// Update the doctor details
@@ -341,16 +382,16 @@ func DeleteDoctorByAdminController(c echo.Context) error {
 
 // Get Doctor by ID
 func GetDoctorByIDController(c echo.Context) error {
-    id, err := strconv.Atoi(c.Param("id"))
-    if err != nil {
-        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Gagal mendapatkan ID Dokter"))
-    }
-    var doctor schema.Doctor
-    result := configs.DB.First(&doctor, id)
-    if result.Error != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data dokter"))
-    }
-    response := response.ConvertToGetIDDoctorResponse(&doctor)
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Gagal mendapatkan ID Dokter"))
+	}
+	var doctor schema.Doctor
+	result := configs.DB.First(&doctor, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal mengambil data dokter"))
+	}
+	response := response.ConvertToGetIDDoctorResponse(&doctor)
 
-    return c.JSON(http.StatusOK, helper.SuccessResponse("Detail Dokter berhasil diambil", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Detail Dokter berhasil diambil", response))
 }

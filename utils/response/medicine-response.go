@@ -63,8 +63,9 @@ func ConvertToAdminMedicineImageResponse(medicine *schema.Medicine) web.Medicine
 	}
 }
 
-func ConvertToUserMedicineResponse(medicine *schema.Medicine) web.MedicineResponse {
-	return web.MedicineResponse{
+func ConvertToUserMedicineResponse(medicine *schema.Medicine) web.MedicineUserResponse {
+	return web.MedicineUserResponse{
+		ID:       medicine.ID,
 		Name:     medicine.Name,
 		Code:     medicine.Code,
 		Merk:     medicine.Merk,
@@ -77,10 +78,11 @@ func ConvertToUserMedicineResponse(medicine *schema.Medicine) web.MedicineRespon
 	}
 }
 
-func ConvertToUserGetAllMedicinesResponse(medicines []schema.Medicine) []web.MedicineResponse {
-	var results []web.MedicineResponse
+func ConvertToUserGetAllMedicinesResponse(medicines []schema.Medicine) []web.MedicineUserResponse {
+	var results []web.MedicineUserResponse
 	for _, medicine := range medicines {
-		medicineResponse := web.MedicineResponse{
+		medicineResponse := web.MedicineUserResponse{
+			ID:       medicine.ID,
 			Code:     medicine.Code,
 			Name:     medicine.Name,
 			Merk:     medicine.Merk,
