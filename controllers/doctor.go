@@ -400,3 +400,77 @@ func GetDoctorByIDController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Doctor details successfully retrieved", response))
 }
+
+
+// Manage Patient
+func GetManagePatientController(c echo.Context) error {
+	userID, ok := c.Get("userID").(uint)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid doctor id"))
+	}
+
+	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
+	patientStatus := c.QueryParam("patient_status")
+
+	if transactionID == 0 && patientStatus == "" {
+		var doctorTransactions []schema.DoctorTransaction
+
+		err := configs.DB.Where("deleted_at IS NULL").Find(&doctorTransactions, "user_id=?", userID).Error
+		if err != nil {
+    		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+		}
+
+		var patientResponses []web.ManagePatientResponse
+		for _, doctorTransaction := range doctorTransactions {
+    		var user schema.User
+    		err := configs.DB.First(&user, "id=?", userID).Error
+    		if err != nil {
+        		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
+    		}
+
+    		patientResponses = append(patientResponses, response.ConvertToManagePatientResponse(&doctorTransaction, &user))
+		}
+
+		return c.JSON(http.StatusOK, helper.SuccessResponse("patient data successfully managed", patientResponses))
+	}
+
+	if patientStatus == "" {
+		var doctorTransaction schema.DoctorTransaction
+		if err := configs.DB.First(&doctorTransaction, "user_id = ? AND id = ?", userID, transactionID).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+		}
+	
+		var user schema.User
+		if err := configs.DB.First(&user, "id = ?", userID).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
+		}
+	
+		managePatientResponse := response.ConvertToManagePatientResponse(&doctorTransaction, &user)
+	
+		return c.JSON(http.StatusOK, helper.SuccessResponse("patient data successfully managed", managePatientResponse))
+	}
+	
+
+	if transactionID == 0 {
+		var doctorTransactions []schema.DoctorTransaction
+		if err := configs.DB.Find(&doctorTransactions, "user_id = ? AND patient_status = ?", userID, patientStatus).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+		}
+	
+		var patientResponses []web.ManagePatientResponse
+		for _, doctorTransaction := range doctorTransactions {
+			var user schema.User
+			err := configs.DB.First(&user, "id=?", userID).Error
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
+			}
+	
+			patientResponses = append(patientResponses, response.ConvertToManagePatientResponse(&doctorTransaction, &user))
+		}
+	
+		return c.JSON(http.StatusOK, helper.SuccessResponse("patient data successfully managed", patientResponses))
+	}
+	
+	return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+}	
+

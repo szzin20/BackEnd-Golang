@@ -1,5 +1,7 @@
 package web
 
+import "time"
+
 type DoctorRegisterResponse struct {
 	Fullname       string `json:"fullname" form:"fullname" `
 	Email          string `json:"email" form:"email"`
@@ -81,4 +83,15 @@ type DoctorProfile struct {
 	Experience     string `json:"experience"`
 	Alumnus        string `json:"alumnus"`
 	AboutDoctor    string `json:"about_doctor"`
+}
+
+// Manage Patient
+
+type ManagePatientResponse struct {
+	UserID        uint      `json:"user_id"`
+	UserFullname  string    `json:"user_fullname"`
+	TransactionID uint      `json:"transaction_id"`
+	CreatedAt     time.Time `json:"created_at"`
+	HealthDetails string    `json:"health_details"`
+	PatientStatus string    `json:"patient_status"`
 }

@@ -119,3 +119,13 @@ func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 	}
 }
 
+func ConvertToManagePatientResponse(managePatient *schema.DoctorTransaction, user *schema.User) web.ManagePatientResponse {
+	return web.ManagePatientResponse{
+		UserID:        user.ID,
+		UserFullname:  user.Fullname,
+		TransactionID: managePatient.ID,
+		CreatedAt:     managePatient.CreatedAt,
+		HealthDetails: managePatient.HealthDetails,
+		PatientStatus: managePatient.PatientStatus,
+	}
+}
