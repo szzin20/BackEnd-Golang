@@ -30,8 +30,3 @@ type DoctorUpdateRequest struct {
 	Alumnus        string `json:"alumnus" form:"alumnus" validate:"omitempty"`
 }
 
-// type DoctorPatientRequest struct {
-// 	HealthDetails string `json:"health_details" form:"health_details" validate:"required,min=3"`
-// 	PatientStatus string `json:"status" form:"status" validate:"required,oneof=Diberi resep Konsultasi Lanjutan Di Rujuk"`
-// }
-
