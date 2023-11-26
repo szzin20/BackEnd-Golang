@@ -67,6 +67,10 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.GET("/advices", controllers.GetAdvicesController, DoctorJWT)
 	gDoctors.GET("/manage-patient", controllers.GetManagePatientController, DoctorJWT) //ID, Status, All
 
+	// gDoctors.GET("manage/patitient", controllers.GetAllPatientsController, DoctorJWT)
+	// gDoctors.GET("manage/patitient/:status", controllers.GetPatientsByStatusController, DoctorJWT)
+	// gDoctors.PUT("manage/patitient/:idTransaksi", controllers.UpdatePatientController, DoctorJWT)
+
 	e.POST("/chatbot", controllers.Chatbot)
 
 }
