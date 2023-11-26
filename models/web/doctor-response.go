@@ -82,3 +82,4 @@ type DoctorProfile struct {
 	Alumnus        string `json:"alumnus" form:"alumnus"`
 	AboutDoctor    string `json:"about_doctor" form:"about_doctor"`
 }
+

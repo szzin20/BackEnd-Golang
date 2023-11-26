@@ -30,3 +30,4 @@ type DoctorUpdateRequest struct {
 	Alumnus        string `json:"alumnus" form:"alumnus" validate:"omitempty"`
 }
 
+

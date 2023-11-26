@@ -40,3 +40,4 @@ func ConvertToDoctorUpdateRequest(doctor web.DoctorUpdateRequest) *schema.Doctor
 		Alumnus:          doctor.Alumnus,
 	}
 }
+
