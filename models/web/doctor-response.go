@@ -86,7 +86,7 @@ type DoctorProfile struct {
 }
 
 // Manage Patient
-type ManagePatientResponse struct {
+type ManageUserResponse struct {
 	UserID              uint      `json:"user_id"`
 	Fullname            string    `json:"fullname"`
 	DoctorTransactionID uint      `json:"transaction_id"`
