@@ -6,7 +6,6 @@ import (
 )
 
 type MedicineDetails struct {
-	gorm.Model
 	MedicineTransactionID uint     `gorm:"not null"`
 	MedicineID            uint     `gorm:"not null"`
 	Medicine              Medicine `gorm:"ForeignKey:MedicineID"`

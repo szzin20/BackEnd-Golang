@@ -5,7 +5,7 @@ import (
 	"healthcare/models/web"
 )
 
-func ConvertToMedicineTransactionRequest(mt web.MedicineTransactionRequest) *schema.MedicineTransaction {
+func ConvertToMedicineTransactionRequest(mt web.MedicineTransactionRequest, userID uint) *schema.MedicineTransaction {
 
 	medicineDetails := make([]schema.MedicineDetails, len(mt.MedicineDetailsRequest))
 
@@ -17,6 +17,8 @@ func ConvertToMedicineTransactionRequest(mt web.MedicineTransactionRequest) *sch
 	}
 
 	return &schema.MedicineTransaction{
+		UserID:          userID,
+		Name:            mt.Name,
 		Address:         mt.Address,
 		HP:              mt.HP,
 		PaymentMethod:   mt.PaymentMethod,

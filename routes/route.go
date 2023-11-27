@@ -49,6 +49,9 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.POST("/complaints", controllers.CreateComplaintController, UserJWT)
 	gUsers.GET("/complaints", controllers.GetComplaintsController, UserJWT)
 	gUsers.GET("/advices", controllers.GetAdvicesController, UserJWT)
+	gUsers.POST("/medicines-payments", controllers.CreateMedicineTransaction, UserJWT)
+	gUsers.GET("/medicines-payments", controllers.GetMedicineTransactionController, UserJWT)
+	gUsers.GET("/medicines-payments/:id", controllers.GetMedicineTransactionByIDController, UserJWT)
 
 	gDoctors := e.Group("/doctors")
 	gDoctors.POST("/login", controllers.LoginDoctorController)
