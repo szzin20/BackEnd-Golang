@@ -13,10 +13,3 @@ func ConvertToComplaintRequest(complaint web.ComplaintRequest, TransactionID uin
 	}
 }
 
-func ConvertToComplaintsRequest(Complaints web.UpdateComplaintRequest) *schema.DoctorTransaction {
-	return &schema.DoctorTransaction{
-		HealthDetails: Complaints.HealthDetails,
-		PatientStatus: Complaints.PatientStatus,
-	}
-}
-

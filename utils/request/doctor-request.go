@@ -41,9 +41,3 @@ func ConvertToDoctorUpdateRequest(doctor web.DoctorUpdateRequest) *schema.Doctor
 	}
 }
 
-// func ConvertToDoctorTransactionRequest(updateRequest web.DoctorPatientRequest) *schema.DoctorTransaction {
-// 	return &schema.DoctorTransaction{
-// 		HealthDetails: updateRequest.HealthDetails,
-// 		PatientStatus: updateRequest.PatientStatus,
-// 	}
-// }
