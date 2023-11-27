@@ -13,7 +13,7 @@ func ConvertToCreateRoomchatResponse(roomchat *schema.Roomchat) web.CreateRoomch
 	}
 }
 
-func ConvertToRoomchatResponse(roomchat *schema.Roomchat) web.RoomchatDetailsResponse {
+func ConvertToRoomchatResponse(roomchat *schema.Roomchat, doctor *schema.Doctor) web.RoomchatDetailsResponse {
 	roomchats := web.RoomchatDetailsResponse{
 		ID:            roomchat.ID,
 		TransactionID: roomchat.TransactionID,
@@ -35,6 +35,13 @@ func ConvertToRoomchatResponse(roomchat *schema.Roomchat) web.RoomchatDetailsRes
 		results = append(results, roomchatResponses)
 	}
 	roomchats.Messages = results
+	doctorprofile := web.DoctorRoomchat{
+		ID: doctor.ID,
+		Fullname: doctor.Fullname,
+		Status: doctor.Status,
+		ProfilePicture: doctor.ProfilePicture,
+	}
+	roomchats.Doctor = doctorprofile
 
 	return roomchats
 }
