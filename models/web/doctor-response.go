@@ -85,6 +85,13 @@ type DoctorProfile struct {
 	AboutDoctor    string `json:"about_doctor" form:"about_doctor"`
 }
 
+type DoctorRoomchat struct {
+	ID			   uint   `json:"id" form:"id"`
+	Fullname       string `json:"fullname" form:"fullname"`
+	Status         bool   `json:"status" form:"status"`
+	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
+}
+
 // type DoctorPatientResponse struct {
 // 	UserID              uint      `json:"user_id" form:"user_id"`
 // 	Fullname            string    `json:"fullname" form:"fullname"`
