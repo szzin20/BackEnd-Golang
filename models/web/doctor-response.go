@@ -86,12 +86,11 @@ type DoctorProfile struct {
 }
 
 // Manage Patient
-
 type ManagePatientResponse struct {
-	UserID        uint      `json:"user_id"`
-	UserFullname  string    `json:"user_fullname"`
-	TransactionID uint      `json:"transaction_id"`
-	CreatedAt     time.Time `json:"created_at"`
-	HealthDetails string    `json:"health_details"`
-	PatientStatus string    `json:"patient_status"`
+	UserID              uint      `json:"user_id"`
+	Fullname            string    `json:"fullname"`
+	DoctorTransactionID uint      `json:"transaction_id"`
+	CreatedAt           time.Time `json:"created_at"`
+	HealthDetails       string    `json:"health_details"`
+	PatientStatus       string    `json:"patient_status"`
 }
