@@ -8,8 +8,6 @@ import (
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
-	"path/filepath"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -19,90 +17,49 @@ func CreateAdviceController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Complaint ID"))
 	}
 
-	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
+	var existingComplaintID schema.Complaint
 
-	var doctorTransaction schema.DoctorTransaction
-
-	if err := configs.DB.First(&doctorTransaction, "user_id = ? AND id = ?", userID, transactionID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+	result := configs.DB.First(&existingComplaintID, userID)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Complaint ID"))
 	}
 
-	var adviceRequest web.AdviceRequest
+	var advice web.AdviceRequest
 
-	if err := c.Bind(&adviceRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input advice data"))
+	if err := c.Bind(&advice); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Advice Data"))
 	}
 
-	if err := helper.ValidateStruct(adviceRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	adviceRequest := request.ConvertToAdviceRequest(advice, existingComplaintID.ID)
+
+	if err := configs.DB.Create(&adviceRequest).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Send Advice"))
 	}
 
-	err := c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
-	}
+	response := response.ConvertToAdviceResponse(adviceRequest)
 
-	file, fileHeader, err := c.Request().FormFile("image")
-
-	if err == nil {
-		defer file.Close()
-
-		allowedExtensions := []string{".jpg", ".jpeg", ".png"}
-		ext := filepath.Ext(fileHeader.Filename)
-		allowed := false
-		for _, validExt := range allowedExtensions {
-			if ext == validExt {
-				allowed = true
-				break
-			}
-		}
-		if !allowed {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. supported formats: .jpg, .jpeg, .png"))
-		}
-
-		adviceImage, err := helper.UploadFilesToGCS(c, fileHeader)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading image to cloud storage"))
-		}
-
-		adviceRequest.Image = adviceImage
-	}
-
-	advice := request.ConvertToAdviceRequest(adviceRequest, uint(transactionID))
-
-	if err := configs.DB.Create(&advice).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send advice"))
-	}
-
-	response := response.ConvertToAdviceResponse(advice)
-
-	return c.JSON(http.StatusCreated, helper.SuccessResponse("advice successful", response))
+	return c.JSON(http.StatusCreated, helper.SuccessResponse("Advice Successful", response))
 }
 
-// // Get Advice by DoctorTransaction ID
-// func GetAdvicesController(c echo.Context) error {
+// Doctor Get Advice by ID
+func GetAdvicesController(c echo.Context) error {
 
-// 	userID, ok := c.Get("userID").(int)
-// 	if !ok {
-// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
-// 	}
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid Advice ID"))
+	}
 
-// 	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
+	var advice schema.Advice
 
-// 	var doctorTransaction schema.DoctorTransaction
+	if err := configs.DB.First(&advice, userID).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Advice Data"))
+	}
 
-// 	if err := configs.DB.
-// 		Preload("Complaint").
-// 		Preload("Advice").
-// 		Where("user_id = ? AND id = ?", userID, transactionID).
-// 		Order("created_at ASC").
-// 		First(&doctorTransaction).Error; err != nil {
-// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
-// 	}
-// 	response := response.ConvertToAdviceResponse(&doctorTransaction)
+	response := response.ConvertToAdviceResponse(&advice)
 
-// 	return c.JSON(http.StatusOK, helper.SuccessResponse("advice data successfully retrieved", response))
-// }
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Advice Data Successfully Retrieved", response))
+}
+

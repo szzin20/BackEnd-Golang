@@ -1,0 +1,27 @@
+1. Pilih Obat yang Dibutuhkan:
+- Navigasi ke bagian obat pada aplikasi Healthfy.
+- Pilih obat yang ingin Anda beli dan tambahkan ke keranjang belanja.
+
+2. Proses Pembayaran:
+- Pilih opsi "Pembayaran Manual" pada halaman pembayaran.
+- Anda akan melihat rincian pembayaran, termasuk jumlah yang harus ditransfer dan rincian rekening bank.
+
+3. Transfer Manual ke Bank:
+-Gunakan layanan perbankan Anda untuk melakukan transfer sesuai dengan rincian yang disediakan.
+- Pastikan untuk memasukkan jumlah yang benar dan mencantumkan nomor pesanan Anda sebagai catatan pembayaran.
+
+4. Unggah Bukti Pembayaran:
+- Setelah transfer selesai, kembali ke aplikasi Healthfy.
+- Pilih opsi "Unggah Bukti Pembayaran" dan ikuti petunjuk untuk mengunggah foto atau file bukti pembayaran.
+
+5. Proses Verifikasi:
+- Tim kami akan memeriksa bukti pembayaran Anda dalam beberapa menit.
+- Sementara menunggu, Anda akan menerima notifikasi bahwa bukti pembayaran Anda sedang diverifikasi.
+
+6. Konfirmasi Pembayaran:
+- Setelah verifikasi selesai, Anda akan menerima konfirmasi bahwa pembayaran Anda berhasil.
+- Status pesanan Anda akan diperbarui, dan obat akan diproses untuk pengiriman.
+
+7. Tunggu Pengiriman:
+- Tunggu beberapa saat hingga obat Anda diproses dan dikirim.
+- Anda akan menerima pemberitahuan ketika obat telah dikirimkan.
