@@ -44,13 +44,13 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.GET("/articles", controllers.GetAllArticles)
 	gUsers.GET("/articles/:id", controllers.GetArticleByID)
 	gUsers.GET("/article", controllers.GetAllArticlesByTitle)
-	gUsers.POST("/doctor-payments", controllers.CreateDoctorTransactionController, UserJWT)
-	gUsers.GET("/doctor-payments", controllers.GetDoctorTransactionsController, UserJWT)
-	gUsers.POST("/complaints", controllers.CreateComplaintController, UserJWT)
-	gUsers.POST("/chats", controllers.CreateRoomchatController, UserJWT) // users/chats?transaction_id=value
-	gUsers.GET("/chats", controllers.GetUserRoomchatController, UserJWT) // users/chats?roomchat_id=value
-	gUsers.POST("/chats/:id", controllers.CreateComplaintMessageController, UserJWT) 
-	// gUsers.GET("/complaints", controllers.GetDoctorTransactionDetailsByUserController, UserJWT)
+	gUsers.POST("/doctor-payments/:doctor_id", controllers.CreateDoctorTransactionController, UserJWT)
+	gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsController, UserJWT)
+	gUsers.GET("/doctor-payments/:transaction_id", controllers.GetDoctorTransactionController, UserJWT)
+	gUsers.POST("/chats/:transaction_id", controllers.CreateRoomchatController, UserJWT)
+	// gUsers.GET("/chats", controllers.GetAllUserRoomchatsController, UserJWT) 
+	gUsers.GET("/chats/:roomchat_id", controllers.GetUserRoomchatController, UserJWT) 
+	gUsers.POST("/chats/:roomchat_id/message", controllers.CreateComplaintMessageController, UserJWT) 
 
 	gDoctors := e.Group("/doctors")
 	gDoctors.POST("/login", controllers.LoginDoctorController)
@@ -64,10 +64,11 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.POST("/articles", controllers.CreateArticle, DoctorJWT)
 	gDoctors.PUT("/articles/:id", controllers.UpdateArticleById, DoctorJWT)
 	gDoctors.DELETE("/articles/:id", controllers.DeleteArticleById, DoctorJWT)
-	// gDoctors.GET("/complaints", controllers.GetAllDataController, DoctorJWT)
-	// gDoctors.PUT("/update-complaint", controllers.UpdateComplaintDataController, DoctorJWT)
-	gDoctors.POST("/advices", controllers.CreateAdviceController, DoctorJWT)
-	// gDoctors.GET("/advices", controllers.GetDoctorTransactionDetailsByDoctorController, DoctorJWT)
+	// gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsByDoctorController, DoctorJWT)
+	// gUsers.GET("/chats", controllers.GetAllDoctorRoomchatController, DoctorJWT)
+	// gUsers.GET("/chats/:id", controllers.GetDoctorRoomchatController, DoctorJWT) 
+	gUsers.POST("/chats/:id/message", controllers.CreateAdviceMessageController, DoctorJWT) 
+
 
 	e.POST("/chatbot", controllers.Chatbot)
 
