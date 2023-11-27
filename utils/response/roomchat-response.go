@@ -5,7 +5,7 @@ import (
 	"healthcare/models/web"
 )
 
-func ConvertToCreateRoomchatResponse(roomchat *schema.Roomchat) web.CreateRoomchatResponse{
+func ConvertToCreateRoomchatResponse(roomchat *schema.Roomchat) web.CreateRoomchatResponse {
 	return web.CreateRoomchatResponse{
 		ID:            roomchat.ID,
 		TransactionID: roomchat.TransactionID,
@@ -36,9 +36,9 @@ func ConvertToRoomchatResponse(roomchat *schema.Roomchat, doctor *schema.Doctor)
 	}
 	roomchats.Messages = results
 	doctorprofile := web.DoctorRoomchat{
-		ID: doctor.ID,
-		Fullname: doctor.Fullname,
-		Status: doctor.Status,
+		ID:             doctor.ID,
+		Fullname:       doctor.Fullname,
+		Status:         doctor.Status,
 		ProfilePicture: doctor.ProfilePicture,
 	}
 	roomchats.Doctor = doctorprofile
