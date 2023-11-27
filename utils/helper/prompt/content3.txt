@@ -1,0 +1,6 @@
+Setelah Konsultasi berakhir riwayat chat akan tersimpan pada halaman riwayat, langkah-langkahnya sebagai berikut :
+
+1. Klik menu riwayat 
+2. Riwayat konsultasi
+3. List riwayat konsultasi
+4. Pilih icon dokumen untuk melihat riwayat.
