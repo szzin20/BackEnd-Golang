@@ -22,25 +22,32 @@ func CreateComplaintMessageController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
 	}
 
-	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
+	roomchatID, err := strconv.Atoi(c.Param("roomchat_id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid roomchat id"))
+	}
 
-	var doctorTransaction schema.DoctorTransaction
+	var existingRoomchat schema.Roomchat
+	if err := configs.DB.First(&existingRoomchat, "id = ?", roomchatID).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve roomchat data"))
+	}
 
-	if err := configs.DB.First(&doctorTransaction, "user_id = ? AND id = ?", userID, transactionID).Error; err != nil {
+	var doctortransaction schema.DoctorTransaction
+	if err := configs.DB.Where("user_id = ? AND id = ?", userID, existingRoomchat.TransactionID).First(&doctortransaction).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
 	}
 
-	var complaintRequest web.CreateComplaintRequest
+	var complaintMessageRequest web.CreateMessageRequest
 
-	if err := c.Bind(&complaintRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input complaint data"))
+	if err := c.Bind(&complaintMessageRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input complaint message data"))
 	}
 
-	if err := helper.ValidateStruct(complaintRequest); err != nil {
+	if err := helper.ValidateStruct(complaintMessageRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	err := c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
+	err = c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
@@ -68,16 +75,93 @@ func CreateComplaintMessageController(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading image to cloud storage"))
 		}
 
-		complaintRequest.Image = complaintImage
+		complaintMessageRequest.Image = complaintImage
 	}
 
-	complaint := request.ConvertToComplaintRequest(complaintRequest, uint(transactionID))
+	complaint := request.ConvertToCreateComplaintMessageRequest(complaintMessageRequest, uint(roomchatID), uint(userID))
 
 	if err := configs.DB.Create(&complaint).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send complaint"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send complaint message"))
 	}
 
-	response := response.ConvertToCreateComplaintResponse(complaint)
+	response := response.ConvertToCreateMessageResponse(complaint)
 
-	return c.JSON(http.StatusCreated, helper.SuccessResponse("complaint successful", response))
+	return c.JSON(http.StatusCreated, helper.SuccessResponse("complaint message successful send", response))
 }
+
+// Doctor Create Advice Message
+func CreateAdviceMessageController(c echo.Context) error {
+
+	doctorID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid doctor id"))
+	}
+
+	roomchatID, err := strconv.Atoi(c.Param("roomchat_id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid roomchat id"))
+	}
+
+	var existingRoomchat schema.Roomchat
+	if err := configs.DB.First(&existingRoomchat, "id = ?", roomchatID).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve roomchat data"))
+	}
+
+	var doctortransaction schema.DoctorTransaction
+	if err := configs.DB.Where("user_id = ? AND id = ?", doctorID, existingRoomchat.TransactionID).First(&doctortransaction).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+	}
+
+	var adviceMessageRequest web.CreateMessageRequest
+
+	if err := c.Bind(&adviceMessageRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input advice message data"))
+	}
+
+	if err := helper.ValidateStruct(adviceMessageRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	err = c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	file, fileHeader, err := c.Request().FormFile("image")
+
+	if err == nil {
+		defer file.Close()
+
+		allowedExtensions := []string{".jpg", ".jpeg", ".png"}
+		ext := filepath.Ext(fileHeader.Filename)
+		allowed := false
+		for _, validExt := range allowedExtensions {
+			if ext == validExt {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. supported formats: .jpg, .jpeg, .png"))
+		}
+
+		adviceImage, err := helper.UploadFilesToGCS(c, fileHeader)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading image to cloud storage"))
+		}
+
+		adviceMessageRequest.Image = adviceImage
+	}
+
+	advice := request.ConvertToCreateAdviceMessageRequest(adviceMessageRequest, uint(roomchatID), uint(doctorID))
+
+	if err := configs.DB.Create(&advice).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send advice message"))
+	}
+
+	response := response.ConvertToCreateMessageResponse(advice)
+
+	return c.JSON(http.StatusCreated, helper.SuccessResponse("advice message successful send", response))
+}
+
+

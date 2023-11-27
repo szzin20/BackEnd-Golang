@@ -5,3 +5,4 @@ type CreateMessageRequest struct {
 	Image   string `json:"image" form:"image" validate:"omitempty"`
 	Audio   string `json:"audio" form:"audio" validate:"omitempty"`
 }
+

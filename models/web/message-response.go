@@ -12,5 +12,3 @@ type CreateMessageResponse struct {
 	Audio      string    `json:"audio"`
 	CreatedAt  time.Time `json:"created_at"`
 }
-
-
