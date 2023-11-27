@@ -72,5 +72,6 @@ func SetupRoutes(e *echo.Echo) {
 	// gDoctors.PUT("manage/patitient/:idTransaksi", controllers.UpdatePatientController, DoctorJWT)
 
 	e.POST("/chatbot", controllers.Chatbot)
+	e.POST("/customerservice", controllers.CustomerService)
 
 }
