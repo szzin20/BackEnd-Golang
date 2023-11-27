@@ -402,10 +402,9 @@ func GetDoctorByIDController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Doctor details successfully retrieved", response))
 }
 
-// Manage Patient
-
+// Manage User
 func GetManagePatientController(c echo.Context) error {
-	dokterID, ok := c.Get("userID").(int)
+	doctorID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
 	}
@@ -413,8 +412,8 @@ func GetManagePatientController(c echo.Context) error {
 	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
 	patientStatus := c.QueryParam("patient_status")
 
-	var managePatient []schema.DoctorTransaction
-	
+	var manageUser []schema.DoctorTransaction
+
 	var err error
 	// Refaktor penanganan kesalahan untuk mengurangi pengulangan
 	handleError := func(errorMessage string) error {
@@ -423,35 +422,91 @@ func GetManagePatientController(c echo.Context) error {
 
 	if transactionID != 0 {
 		// transaksi berdasarkan ID
-		err = configs.DB.First(&managePatient, "doctor_id = ? AND id = ?", dokterID, transactionID).Error
+		err = configs.DB.First(&manageUser, "doctor_id = ? AND id = ?", doctorID, transactionID).Error
 	} else if patientStatus != "" {
 		// transaksi berdasarkan status pasien
-		err = configs.DB.Find(&managePatient, "doctor_id = ? AND patient_status = ?", dokterID, patientStatus).Error
+		err = configs.DB.Find(&manageUser, "doctor_id = ? AND patient_status = ?", doctorID, patientStatus).Error
 	} else {
 		// semua transaksi
-		err = configs.DB.Where("deleted_at IS NULL").Find(&managePatient, "doctor_id=?", dokterID).Error
+		err = configs.DB.Where("deleted_at IS NULL").Find(&manageUser, "doctor_id=?", doctorID).Error
 	}
 
 	if err != nil {
 		return handleError("failed to retrieve doctor transaction data")
 	}
 
-	if len(managePatient) == 0 {
-		errorMessage := fmt.Sprintf("no doctor transaction data found for dokterID: %d, transactionID: %d, patientStatus: %s", dokterID, transactionID, patientStatus)
+	if len(manageUser) == 0 {
+		errorMessage := fmt.Sprintf("no doctor transaction data found for dokterID: %d, transactionID: %d, patientStatus: %s", doctorID, transactionID, patientStatus)
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse(errorMessage))
 	}
 
-	var responses []web.ManagePatientResponse
-	for _, doctorTransaction := range managePatient {
+	var responses []web.ManageUserResponse
+	for _, doctorTransaction := range manageUser {
 		var user schema.User
 		err := configs.DB.First(&user, "id=?", doctorTransaction.UserID).Error
 		if err != nil {
 			return handleError("failed to retrieve user data")
 		}
 
-		response := response.ConvertToManagePatientResponse(doctorTransaction, user)
+		response := response.ConvertToManageUserResponse(doctorTransaction, user)
 		responses = append(responses, response)
 	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction data successfully retrieved", responses))
 }
+// Update manage user
+func UpdateManagePatientController(c echo.Context) error {
+	// Getting the doctor ID from the context
+	doctorID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+	}
+
+	var requestBody web.UpdateManageUserRequest
+
+	if err := c.Bind(&requestBody); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid request body"))
+	}
+	if err := helper.ValidateStruct(requestBody); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	// Checking if the required fields have been provided
+	if requestBody.HealthDetails == "" && requestBody.PatientStatus == "" {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("health_details or patient_status is required"))
+	}
+
+	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
+
+	var doctorTransaction schema.DoctorTransaction
+	// Getting doctor transaction based on doctor ID and transaction ID
+	err := configs.DB.First(&doctorTransaction, "doctor_id = ? AND id = ?", doctorID, transactionID).Error
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("doctor transaction not found"))
+	}
+
+	// Updating health details and patient status if provided
+	if requestBody.HealthDetails != "" {
+		doctorTransaction.HealthDetails = requestBody.HealthDetails
+	}
+
+	if requestBody.PatientStatus != "" {
+		doctorTransaction.PatientStatus = requestBody.PatientStatus
+	}
+
+	// Saving the updated doctor transaction to the database
+	if err := configs.DB.Model(&doctorTransaction).Updates(requestBody).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update health details and patient status"))
+	}
+
+	// Getting user data
+	var user schema.User
+	err = configs.DB.First(&user, "id=?", doctorTransaction.UserID).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
+	}
+	response := response.ConvertToManageUserResponse(doctorTransaction, user)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("health details and patient status successfully updated", response))
+}
+

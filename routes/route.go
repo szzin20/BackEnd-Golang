@@ -65,7 +65,8 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.POST("/advices", controllers.CreateAdviceController, DoctorJWT)
 	gDoctors.GET("/complaint", controllers.GetComplaintsController, DoctorJWT)
 	gDoctors.GET("/advices", controllers.GetAdvicesController, DoctorJWT)
-	gDoctors.GET("/manage-patient", controllers.GetManagePatientController, DoctorJWT)
+	gDoctors.GET("/manage-user", controllers.GetManagePatientController, DoctorJWT)
+	gDoctors.PUT("/manage-user", controllers.UpdateManagePatientController, DoctorJWT)
 
 	// gDoctors.GET("manage/patitient", controllers.GetAllPatientsController, DoctorJWT)
 	// gDoctors.GET("manage/patitient/:status", controllers.GetPatientsByStatusController, DoctorJWT)
