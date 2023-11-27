@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"healthcare/configs"
 	"healthcare/middlewares"
 	"healthcare/models/schema"
@@ -30,35 +31,35 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 	doctorRequest := request.ConvertToDoctorRegisterRequest(doctor)
 
 	err := c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
-    if err != nil {
-        return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
-    }
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
 
-    file, fileHeader, err := c.Request().FormFile("profile_picture")
-    if err != nil {
-        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
-    }
-    defer file.Close()
+	file, fileHeader, err := c.Request().FormFile("profile_picture")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
+	}
+	defer file.Close()
 
-    allowedExtensions := []string{".jpg", ".jpeg", ".png"}
-    ext := filepath.Ext(fileHeader.Filename)
-    allowed := false
-    for _, validExt := range allowedExtensions {
-        if ext == validExt {
-            allowed = true
-            break
-        }
-    }
-    if !allowed {
-        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
-    }
+	allowedExtensions := []string{".jpg", ".jpeg", ".png"}
+	ext := filepath.Ext(fileHeader.Filename)
+	allowed := false
+	for _, validExt := range allowedExtensions {
+		if ext == validExt {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
+	}
 
-    imageURL, err := helper.UploadFilesToGCS(c,fileHeader)
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to Cloud Storage"))
-    }
+	imageURL, err := helper.UploadFilesToGCS(c, fileHeader)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to Cloud Storage"))
+	}
 
-    doctorRequest.ProfilePicture = imageURL
+	doctorRequest.ProfilePicture = imageURL
 	// Periksa apakah email sudah ada
 	if existingDoctor := configs.DB.Where("email = ?", doctorRequest.Email).First(&doctorRequest).Error; existingDoctor == nil {
 		return c.JSON(http.StatusConflict, helper.ErrorResponse("Email Sudah Ada"))
@@ -400,3 +401,112 @@ func GetDoctorByIDController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor details successfully retrieved", response))
 }
+
+// Manage User
+func GetManagePatientController(c echo.Context) error {
+	doctorID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+	}
+
+	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
+	patientStatus := c.QueryParam("patient_status")
+
+	var manageUser []schema.DoctorTransaction
+
+	var err error
+	// Refaktor penanganan kesalahan untuk mengurangi pengulangan
+	handleError := func(errorMessage string) error {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(errorMessage))
+	}
+
+	if transactionID != 0 {
+		// transaksi berdasarkan ID
+		err = configs.DB.First(&manageUser, "doctor_id = ? AND id = ?", doctorID, transactionID).Error
+	} else if patientStatus != "" {
+		// transaksi berdasarkan status pasien
+		err = configs.DB.Find(&manageUser, "doctor_id = ? AND patient_status = ?", doctorID, patientStatus).Error
+	} else {
+		// semua transaksi
+		err = configs.DB.Where("deleted_at IS NULL").Find(&manageUser, "doctor_id=?", doctorID).Error
+	}
+
+	if err != nil {
+		return handleError("failed to retrieve doctor transaction data")
+	}
+
+	if len(manageUser) == 0 {
+		errorMessage := fmt.Sprintf("no doctor transaction data found for dokterID: %d, transactionID: %d, patientStatus: %s", doctorID, transactionID, patientStatus)
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(errorMessage))
+	}
+
+	var responses []web.ManageUserResponse
+	for _, doctorTransaction := range manageUser {
+		var user schema.User
+		err := configs.DB.First(&user, "id=?", doctorTransaction.UserID).Error
+		if err != nil {
+			return handleError("failed to retrieve user data")
+		}
+
+		response := response.ConvertToManageUserResponse(doctorTransaction, user)
+		responses = append(responses, response)
+	}
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction data successfully retrieved", responses))
+}
+// Update manage user
+func UpdateManagePatientController(c echo.Context) error {
+	// Getting the doctor ID from the context
+	doctorID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+	}
+
+	var requestBody web.UpdateManageUserRequest
+
+	if err := c.Bind(&requestBody); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid request body"))
+	}
+	if err := helper.ValidateStruct(requestBody); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	// Checking if the required fields have been provided
+	if requestBody.HealthDetails == "" && requestBody.PatientStatus == "" {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("health_details or patient_status is required"))
+	}
+
+	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
+
+	var doctorTransaction schema.DoctorTransaction
+	// Getting doctor transaction based on doctor ID and transaction ID
+	err := configs.DB.First(&doctorTransaction, "doctor_id = ? AND id = ?", doctorID, transactionID).Error
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("doctor transaction not found"))
+	}
+
+	// Updating health details and patient status if provided
+	if requestBody.HealthDetails != "" {
+		doctorTransaction.HealthDetails = requestBody.HealthDetails
+	}
+
+	if requestBody.PatientStatus != "" {
+		doctorTransaction.PatientStatus = requestBody.PatientStatus
+	}
+
+	// Saving the updated doctor transaction to the database
+	if err := configs.DB.Model(&doctorTransaction).Updates(requestBody).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update health details and patient status"))
+	}
+
+	// Getting user data
+	var user schema.User
+	err = configs.DB.First(&user, "id=?", doctorTransaction.UserID).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
+	}
+	response := response.ConvertToManageUserResponse(doctorTransaction, user)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("health details and patient status successfully updated", response))
+}
+
