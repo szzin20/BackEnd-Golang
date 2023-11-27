@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"healthcare/configs"
 	"healthcare/models/schema"
 	"healthcare/utils/helper"
@@ -63,7 +62,7 @@ func GetUserRoomchatController(c echo.Context) error {
 	}
 
 	var existingRoomchat schema.Roomchat
-	if err := configs.DB.Debug().First(&existingRoomchat, "id = ?", roomchatID).Error; err != nil {
+	if err := configs.DB.First(&existingRoomchat, "id = ?", roomchatID).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve roomchat data"))
 	}
 
@@ -83,10 +82,48 @@ func GetUserRoomchatController(c echo.Context) error {
 	}
 
 	response := response.ConvertToRoomchatResponse(&roomchat, &doctor)
-	fmt.Println(response)
 
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", response))
 }
+
+// Doctor Get Roomchat by ID
+func GetDoctorRoomchatController(c echo.Context) error {
+
+	doctorID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid doctor id"))
+	}
+
+	roomchatID, err := strconv.Atoi(c.Param("roomchat_id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid roomchat id"))
+	}
+
+	var existingRoomchat schema.Roomchat
+	if err := configs.DB.First(&existingRoomchat, "id = ?", roomchatID).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve roomchat data"))
+	}
+
+	var doctortransaction schema.DoctorTransaction
+	if err := configs.DB.Where("user_id = ? AND id = ?", doctorID, existingRoomchat.TransactionID).First(&doctortransaction).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+	}
+
+	var roomchat schema.Roomchat
+	if err := configs.DB.Where("id = ?", roomchatID).Preload("Message").First(&roomchat).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve message data"))
+	}
+
+	var doctor schema.Doctor
+	if err := configs.DB.Where("id = ?", doctortransaction.DoctorID).First(&doctor).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
+	}
+
+	response := response.ConvertToRoomchatResponse(&roomchat, &doctor)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", response))
+}
+
 
 
 

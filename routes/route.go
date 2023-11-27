@@ -66,8 +66,8 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.DELETE("/articles/:id", controllers.DeleteArticleById, DoctorJWT)
 	// gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsByDoctorController, DoctorJWT)
 	// gUsers.GET("/chats", controllers.GetAllDoctorRoomchatController, DoctorJWT)
-	// gUsers.GET("/chats/:id", controllers.GetDoctorRoomchatController, DoctorJWT) 
-	gUsers.POST("/chats/:id/message", controllers.CreateAdviceMessageController, DoctorJWT) 
+	gUsers.GET("/chats/:roomchat_id", controllers.GetDoctorRoomchatController, DoctorJWT) 
+	gUsers.POST("/chats/:roomchat_id/message", controllers.CreateAdviceMessageController, DoctorJWT) 
 
 
 	e.POST("/chatbot", controllers.Chatbot)
