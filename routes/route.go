@@ -48,7 +48,6 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsController, UserJWT)
 	gUsers.GET("/doctor-payments/:transaction_id", controllers.GetDoctorTransactionController, UserJWT)
 	gUsers.POST("/chats/:transaction_id", controllers.CreateRoomchatController, UserJWT)
-	// gUsers.GET("/chats", controllers.GetAllUserRoomchatsController, UserJWT) ongoing
 	gUsers.GET("/chats/:roomchat_id", controllers.GetUserRoomchatController, UserJWT) 
 	gUsers.POST("/chats/:roomchat_id/message", controllers.CreateComplaintMessageController, UserJWT) 
 
@@ -64,15 +63,12 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.POST("/articles", controllers.CreateArticle, DoctorJWT)
 	gDoctors.PUT("/articles/:id", controllers.UpdateArticleById, DoctorJWT)
 	gDoctors.DELETE("/articles/:id", controllers.DeleteArticleById, DoctorJWT)
-	gDoctors.POST("/advices", controllers.CreateAdviceController, DoctorJWT)
-	// gDoctors.GET("/complaint", controllers.GetComplaintsController, DoctorJWT)
-	gDoctors.GET("/advices", controllers.GetAdvicesController, DoctorJWT)
-	gDoctors.GET("/manage-user", controllers.GetManagePatientController, DoctorJWT) //IdTransaction/patientStatus
-	gUsers.GET("/chats/:roomchat_id", controllers.GetDoctorRoomchatController, DoctorJWT) 
-	gUsers.POST("/chats/:roomchat_id/message", controllers.CreateAdviceMessageController, DoctorJWT) 
+	// gUsers.GET("/doctor-consultation", controllers.GetAllDoctorConsutationController, DoctorJWT) ongoing
+	gDoctors.GET("/chats", controllers.GetAllDoctorRoomchatController, DoctorJWT) 
+	gDoctors.GET("/chats/:roomchat_id", controllers.GetDoctorRoomchatController, DoctorJWT) 
+	gDoctors.POST("/chats/:roomchat_id/message", controllers.CreateAdviceMessageController, DoctorJWT) 
+	gDoctors.GET("/manage-user", controllers.GetManagePatientController, DoctorJWT)
 	gDoctors.PUT("/manage-user", controllers.UpdateManagePatientController, DoctorJWT)
-	// gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsByDoctorController, DoctorJWT) ongoing
-	// gUsers.GET("/chats", controllers.GetAllDoctorRoomchatController, DoctorJWT) ongoing
 
 	e.POST("/chatbot", controllers.Chatbot)
 	e.POST("/customerservice", controllers.CustomerService)
