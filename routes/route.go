@@ -53,7 +53,7 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors := e.Group("/doctors")
 	gDoctors.POST("/login", controllers.LoginDoctorController)
 	gDoctors.GET("/profile", controllers.GetDoctorProfileController, DoctorJWT)
-	gDoctors.GET("/:id", controllers.GetDoctorByIDController)
+	gDoctors.GET("/:idDokter", controllers.GetDoctorByIDController)
 	gDoctors.PUT("/profile", controllers.UpdateDoctorController, DoctorJWT)
 	gDoctors.DELETE("", controllers.DeleteDoctorController, DoctorJWT)
 	gDoctors.GET("", controllers.GetAllDoctorController)
@@ -65,12 +65,8 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.POST("/advices", controllers.CreateAdviceController, DoctorJWT)
 	gDoctors.GET("/complaint", controllers.GetComplaintsController, DoctorJWT)
 	gDoctors.GET("/advices", controllers.GetAdvicesController, DoctorJWT)
-	gDoctors.GET("/manage-user", controllers.GetManagePatientController, DoctorJWT)
+	gDoctors.GET("/manage-user", controllers.GetManagePatientController, DoctorJWT) //IdTransaction/patientStatus
 	gDoctors.PUT("/manage-user", controllers.UpdateManagePatientController, DoctorJWT)
-
-	// gDoctors.GET("manage/patitient", controllers.GetAllPatientsController, DoctorJWT)
-	// gDoctors.GET("manage/patitient/:status", controllers.GetPatientsByStatusController, DoctorJWT)
-	// gDoctors.PUT("manage/patitient/:idTransaksi", controllers.UpdatePatientController, DoctorJWT)
 
 	e.POST("/chatbot", controllers.Chatbot)
 	e.POST("/customerservice", controllers.CustomerService)
