@@ -47,16 +47,18 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.GET("/articles", controllers.GetAllArticles)
 	gUsers.GET("/articles/:id", controllers.GetArticleByID)
 	gUsers.GET("/article", controllers.GetAllArticlesByTitle)
-	gUsers.POST("/doctor-payments", controllers.CreateDoctorTransactionController, UserJWT)
-	gUsers.GET("/doctor-payments", controllers.GetDoctorTransactionsController, UserJWT)
-	gUsers.POST("/complaints", controllers.CreateComplaintController, UserJWT)
-	gUsers.GET("/complaints", controllers.GetComplaintsController, UserJWT)
-	gUsers.GET("/advices", controllers.GetAdvicesController, UserJWT)
+	gUsers.POST("/doctor-payments/:doctor_id", controllers.CreateDoctorTransactionController, UserJWT)
+	gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsController, UserJWT)
+	gUsers.GET("/doctor-payments/:transaction_id", controllers.GetDoctorTransactionController, UserJWT)
+	gUsers.POST("/chats/:transaction_id", controllers.CreateRoomchatController, UserJWT)
+	// gUsers.GET("/chats", controllers.GetAllUserRoomchatsController, UserJWT) ongoing
+	gUsers.GET("/chats/:roomchat_id", controllers.GetUserRoomchatController, UserJWT) 
+	gUsers.POST("/chats/:roomchat_id/message", controllers.CreateComplaintMessageController, UserJWT) 
 
 	gDoctors := e.Group("/doctors")
 	gDoctors.POST("/login", controllers.LoginDoctorController)
 	gDoctors.GET("/profile", controllers.GetDoctorProfileController, DoctorJWT)
-	gDoctors.GET("/:id", controllers.GetDoctorByIDController)
+	gDoctors.GET("/:idDokter", controllers.GetDoctorByIDController)
 	gDoctors.PUT("/profile", controllers.UpdateDoctorController, DoctorJWT)
 	gDoctors.DELETE("", controllers.DeleteDoctorController, DoctorJWT)
 	gDoctors.GET("", controllers.GetAllDoctorController)
@@ -66,13 +68,14 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.PUT("/articles/:id", controllers.UpdateArticleById, DoctorJWT)
 	gDoctors.DELETE("/articles/:id", controllers.DeleteArticleById, DoctorJWT)
 	gDoctors.POST("/advices", controllers.CreateAdviceController, DoctorJWT)
-	gDoctors.GET("/complaint", controllers.GetComplaintsController, DoctorJWT)
+	// gDoctors.GET("/complaint", controllers.GetComplaintsController, DoctorJWT)
 	gDoctors.GET("/advices", controllers.GetAdvicesController, DoctorJWT)
-	gDoctors.GET("/manage-patient", controllers.GetManagePatientController, DoctorJWT)
-
-	// gDoctors.GET("manage/patitient", controllers.GetAllPatientsController, DoctorJWT)
-	// gDoctors.GET("manage/patitient/:status", controllers.GetPatientsByStatusController, DoctorJWT)
-	// gDoctors.PUT("manage/patitient/:idTransaksi", controllers.UpdatePatientController, DoctorJWT)
+	gDoctors.GET("/manage-user", controllers.GetManagePatientController, DoctorJWT) //IdTransaction/patientStatus
+	gUsers.GET("/chats/:roomchat_id", controllers.GetDoctorRoomchatController, DoctorJWT) 
+	gUsers.POST("/chats/:roomchat_id/message", controllers.CreateAdviceMessageController, DoctorJWT) 
+	gDoctors.PUT("/manage-user", controllers.UpdateManagePatientController, DoctorJWT)
+	// gUsers.GET("/doctor-payments", controllers.GetAllDoctorTransactionsByDoctorController, DoctorJWT) ongoing
+	// gUsers.GET("/chats", controllers.GetAllDoctorRoomchatController, DoctorJWT) ongoing
 
 	e.POST("/chatbot", controllers.Chatbot)
 	e.POST("/customerservice", controllers.CustomerService)

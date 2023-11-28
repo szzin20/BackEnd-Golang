@@ -4,9 +4,19 @@ import (
 	"time"
 )
 
-type AdviceResponse struct {
-	Message     string    `json:"message" form:"message"`
-	Image       string    `json:"image" form:"image"`
-	Audio       string    `json:"audio" form:"audio"`
-	CreatedAt   time.Time `json:"created_at" form:"created_at"`
+type CreateAdviceResponse struct {
+	TransactionID uint      `json:"transaction_id"`
+	ID            uint      `json:"id"`
+	Message       string    `json:"message"`
+	Image         string    `json:"image"`
+	Audio         string    `json:"audio"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
+type AdvicesResponse struct {
+	ID        uint      `json:"id"`
+	Message   string    `json:"message"`
+	Image     string    `json:"image"`
+	Audio     string    `json:"audio"`
+	CreatedAt time.Time `json:"created_at"`
 }

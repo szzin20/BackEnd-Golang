@@ -86,7 +86,7 @@ type DoctorProfile struct {
 }
 
 // Manage Patient
-type ManagePatientResponse struct {
+type ManageUserResponse struct {
 	UserID              uint      `json:"user_id"`
 	Fullname            string    `json:"fullname"`
 	DoctorTransactionID uint      `json:"transaction_id"`
@@ -94,3 +94,19 @@ type ManagePatientResponse struct {
 	HealthDetails       string    `json:"health_details"`
 	PatientStatus       string    `json:"patient_status"`
 }
+
+type DoctorRoomchat struct {
+	ID			   uint   `json:"id" form:"id"`
+	Fullname       string `json:"fullname" form:"fullname"`
+	Status         bool   `json:"status" form:"status"`
+	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
+}
+
+// type DoctorPatientResponse struct {
+// 	UserID              uint      `json:"user_id" form:"user_id"`
+// 	Fullname            string    `json:"fullname" form:"fullname"`
+// 	DoctorTransactionID uint      `json:"doctor_transaction_id" form:"doctor_transaction"`
+// 	CreatedAt           time.Time `json:"created_at" form:"created_at"`
+// 	HealthDetails       string    `json:"health_details" form:"health_details"`
+// 	PatientStatus       string    `json:"status" form:"status"`
+// }
