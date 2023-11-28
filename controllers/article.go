@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"healthcare/configs"
-	"healthcare/constanta"
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
+	"healthcare/utils/helper/constanta"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"

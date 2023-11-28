@@ -22,7 +22,10 @@ func CreateDoctorTransactionController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
 	}
 
-	doctorID, _ := strconv.Atoi(c.QueryParam("doctor_id"))
+	doctorID, err := strconv.Atoi(c.Param("doctor_id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid doctor id"))
+	}
 
 	var doctorTransactionRequest web.CreateDoctorTransactionRequest
 
@@ -30,7 +33,7 @@ func CreateDoctorTransactionController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input doctor transaction data"))
 	}
 
-	err := c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
+	err = c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
@@ -82,29 +85,31 @@ func CreateDoctorTransactionController(c echo.Context) error {
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("doctor transaction created successful", response))
 }
 
-// Get All Doctor Transactions or Get Doctor Transaction by ID or Get Doctor Transaction by Status 
-func GetDoctorTransactionsController(c echo.Context) error {
+// Get All Doctor Transactions or Get Doctor Transaction by Status
+func GetAllDoctorTransactionsController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
 	}
 
-	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
 	paymentStatus := c.QueryParam("payment_status")
 
-	if transactionID == 0 && paymentStatus == "" {
+	if paymentStatus == "" {
+
 		var doctorTransaction []schema.DoctorTransaction
 
-		err := configs.DB.Where("deleted_at IS NULL").Find(&doctorTransaction, "user_id=?", userID).Error
+		err := configs.DB.Find(&doctorTransaction, "user_id=?", userID).Error
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
 		}
 
 		var responses []web.DoctorTransactionsResponse
-		for i, doctor_id := range doctorTransaction {
+		for i, doctorTransactions := range doctorTransaction {
+
 			var doctor schema.Doctor
-			err := configs.DB.Find(&doctor, "id=?", doctor_id.DoctorID).Error
+
+			err := configs.DB.Find(&doctor, "id=?",  doctorTransactions.DoctorID).Error
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
 			}
@@ -119,47 +124,56 @@ func GetDoctorTransactionsController(c echo.Context) error {
 		return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction data successfully retrieved", responses))
 	}
 
-	if paymentStatus == "" {
-		var doctorTransaction schema.DoctorTransaction
-		if err := configs.DB.First(&doctorTransaction, "user_id = ? AND id = ?", userID, transactionID).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
-		}
+	var doctorTransactions []schema.DoctorTransaction
 
+	if err := configs.DB.Find(&doctorTransactions, "user_id = ? AND payment_status = ?", userID, paymentStatus).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+	}
+
+	var responses []web.CreateDoctorTransactionResponse
+	for i, doctor_id := range doctorTransactions {
 		var doctor schema.Doctor
-		if err := configs.DB.First(&doctor, "id = ?", doctorTransaction.DoctorID).Error; err != nil {
+		err := configs.DB.Find(&doctor, "id=?", doctor_id.DoctorID).Error
+		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
 		}
 
-		response := response.ConvertToGetDoctorTransactionResponse(doctorTransaction, doctor)
-
-		return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction data successfully retrieved", response))
-
-	}
-
-	if transactionID == 0 {
-
-		var doctorTransactions []schema.DoctorTransaction
-		if err := configs.DB.Find(&doctorTransactions, "user_id = ? AND payment_status = ?", userID, paymentStatus).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+		if len(doctorTransactions) == 0 {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("empty doctor transaction data"))
 		}
 
-		var responses []web.CreateDoctorTransactionResponse
-		for i, doctor_id := range doctorTransactions {
-			var doctor schema.Doctor
-			err := configs.DB.Find(&doctor, "id=?", doctor_id.DoctorID).Error
-			if err != nil {
-				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
-			}
-
-			if len(doctorTransactions) == 0 {
-				return c.JSON(http.StatusNotFound, helper.ErrorResponse("empty doctor transaction data"))
-			}
-
-			responses = append(responses, response.ConvertToGetDoctorTransactionResponse(doctorTransactions[i], doctor))
-		}
-		return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction data successfully retrieved", responses))
-
+		responses = append(responses, response.ConvertToGetDoctorTransactionResponse(doctorTransactions[i], doctor))
 	}
-	return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction data successfully retrieved", responses))
+
 }
 
+// Get Doctor Transaction by ID
+func GetDoctorTransactionController(c echo.Context) error {
+
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+	}
+
+	transactionID, err := strconv.Atoi(c.Param("transaction_id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid transaction id"))
+	}
+
+	var doctorTransaction schema.DoctorTransaction
+
+	if err := configs.DB.First(&doctorTransaction, "user_id = ? AND id = ?", userID, transactionID).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+	}
+
+	var doctor schema.Doctor
+	if err := configs.DB.First(&doctor, "id = ?", doctorTransaction.DoctorID).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
+	}
+
+	response := response.ConvertToGetDoctorTransactionResponse(doctorTransaction, doctor)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction data successfully retrieved", response))
+
+}

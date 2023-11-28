@@ -5,11 +5,12 @@ import (
 	"healthcare/models/web"
 )
 
-func ConvertToComplaintRequest(complaint web.ComplaintRequest, TransactionID uint) *schema.Complaint {
+func ConvertToComplaintRequest(complaint web.CreateComplaintRequest, TransactionID uint) *schema.Complaint {
 	return &schema.Complaint{
-		Message: complaint.Message,
-		Image:   complaint.Image,
-		Audio:   complaint.Audio,
+		TransactionID: TransactionID,
+		Message:       complaint.Message,
+		Image:         complaint.Image,
+		Audio:         complaint.Audio,
 	}
 }
 

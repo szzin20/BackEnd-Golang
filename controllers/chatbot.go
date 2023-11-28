@@ -3,9 +3,9 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"healthcare/constanta"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
+	"healthcare/utils/helper/constanta"
 	"net/http"
 	"os"
 	"strings"
