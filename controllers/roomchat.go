@@ -170,7 +170,7 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 
 	// response := response.ConvertToGetAllRoomchatResponse()
 
-	// return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", response))
+	 return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", "response"))
 }
 
 // cek doctor id x punya transaction id apa aja (table doctor transaction)
