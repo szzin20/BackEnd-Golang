@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -81,6 +82,24 @@ func LoginUserController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("login successful", userLoginResponse))
 }
 
+// Get All Doctors by Admin
+func GetAllUserByAdminController(c echo.Context) error {
+	var User []schema.User
+
+	err := configs.DB.Find(&User).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Pengguna"))
+	}
+
+	if len(User) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data Pengguna Kosong"))
+	}
+
+	response := response.ConvertToGetAllUserByAdminResponse(User)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Data Pengguna Berhasil Diambil", response))
+}
+
 // Get User Profile
 func GetUserController(c echo.Context) error {
 
@@ -96,6 +115,22 @@ func GetUserController(c echo.Context) error {
 	}
 
 	response := response.ConvertToGetUserResponse(&user)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("users data successfully retrieved", response))
+}
+
+// Get Doctor by ID
+func GetUserIDbyAdminController(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
+	}
+	var user schema.User
+	result := configs.DB.First(&user, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
+	}
+	response := response.ConvertToGetUserIDbyAdminResponse(&user)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("users data successfully retrieved", response))
 }
@@ -203,4 +238,27 @@ func DeleteUserController(c echo.Context) error {
 	configs.DB.Delete(&existingUser)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("user deleted data successful", nil))
+}
+
+func DeleteUserByAdminController(c echo.Context) error {
+	// Parse doctor ID from the request parameters
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
+	}
+
+	// Retrieve the existing doctor from the database
+	var existingUser schema.User
+	result := configs.DB.First(&existingUser, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user"))
+	}
+
+	// Delete the doctor from the database
+	result = configs.DB.Delete(&existingUser, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to delete user"))
+	}
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("user deleted data successful  ", nil))
 }

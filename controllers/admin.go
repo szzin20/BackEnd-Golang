@@ -19,7 +19,7 @@ func LoginAdminController(c echo.Context) error {
 	var loginRequest web.AdminLoginRequest
 
 	if err := c.Bind(&loginRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Login Data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input login data"))
 	}
 
 	if err := helper.ValidateStruct(loginRequest); err != nil {
@@ -28,47 +28,44 @@ func LoginAdminController(c echo.Context) error {
 
 	var admin schema.Admin
 	if err := configs.DB.Where("email = ?", loginRequest.Email).First(&admin).Error; err != nil {
-		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Email Not Registered"))
+		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("email not registered"))
 	}
 
 	if err := configs.DB.Where("email = ? AND password = ?", loginRequest.Email, loginRequest.Password).First(&admin).Error; err != nil {
-		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("Incorrect Email or Password"))
+		return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("incorrect email or password"))
 	}
 
 	token, err := middlewares.GenerateToken(admin.ID, admin.Email, admin.Role)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Generate JWT"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to generate jwt"))
 	}
 	adminLoginResponse := response.ConvertToAdminLoginResponse(admin)
 	adminLoginResponse.Token = token
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Login Successful", adminLoginResponse))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("login successful", adminLoginResponse))
 }
 
 // Update Admin
 func UpdateAdminController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Admin ID"))
-	}
+	userID := c.Get("userID")
 
 	var updatedAdmin web.AdminUpdateRequest
 
 	if err := c.Bind(&updatedAdmin); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Update Data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input update data"))
 	}
 
 	var existingAdmin schema.Admin
-	result := configs.DB.First(&existingAdmin, id)
+	result := configs.DB.First(&existingAdmin, userID)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Admin"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve admin"))
 	}
 
 	configs.DB.Model(&existingAdmin).Updates(updatedAdmin)
 
 	response := response.ConvertToAdminUpdateResponse(&existingAdmin)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Admin Updated Data Successful", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("admin updated data successful", response))
 }
 
 // UpdatePaymentStatusByAdminController updates payment status by admin
@@ -76,14 +73,14 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 	// Parse transaction ID from the request parameters
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Transaction ID"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid transaction id"))
 	}
 
 	// Retrieve the existing transaction from the database
 	var existingTransaction schema.DoctorTransaction
 	result := configs.DB.First(&existingTransaction, id)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Transaction"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve transaction"))
 	}
 
 	// Bind the updated payment status from the request body
@@ -92,19 +89,13 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 	}
 
 	if err := c.Bind(&updateRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Update Data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input update data"))
 	}
 
 	// Validate the updated payment status
 	if err := helper.ValidateStruct(updateRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
-	// Update the payment status in the existing transaction
-	// existingTransaction.PaymentStatus = updateRequest.PaymentStatus
-	// result = configs.DB.Save(&existingTransaction)
-	// if result.Error != nil {
-	// 	return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Update Payment Status"))
-	// }
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Admin Updated Payment Status Successfully", nil))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("payment status updated successfully", nil))
 }
