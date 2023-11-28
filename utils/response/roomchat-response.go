@@ -45,3 +45,17 @@ func ConvertToRoomchatResponse(roomchat *schema.Roomchat, doctor *schema.Doctor)
 
 	return roomchats
 }
+
+func ConvertToGetAllRoomchat(roomchats []schema.Roomchat) []web.RoomchatListResponse {
+	var results []web.RoomchatListResponse
+	for _, roomchat := range roomchats {
+		roomchatResponse := web.RoomchatListResponse{
+			ID:        roomchat.ID,
+			// Fullname:  user.Fullname,
+			// Message:   roomchat.Message,
+			CreatedAt: roomchat.CreatedAt,
+		}
+		results = append(results, roomchatResponse)
+	}
+	return results
+}

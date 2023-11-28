@@ -11,8 +11,10 @@ type CreateRoomchatResponse struct {
 }
 
 type RoomchatListResponse struct {
-	ID       uint `json:"id"`
-	Fullname uint `json:"fullname"`
+	ID          uint      `json:"id"`
+	Fullname    uint      `json:"fullname"`
+	LastMessage string    `json:"last_message"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 type RoomchatDetailsResponse struct {

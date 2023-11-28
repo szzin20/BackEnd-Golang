@@ -7,3 +7,10 @@ func CreateRoomchatRequest(transactionID uint) schema.Roomchat {
 		TransactionID: transactionID,
 	}
 }
+
+func ConvertToGetAllRoomchatRequest(userID uint,  fullname string,) *schema.DoctorTransaction {
+	return &schema.DoctorTransaction{
+		UserID:              userID,
+	
+	}
+}
