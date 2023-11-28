@@ -108,7 +108,7 @@ func CreateAdviceMessageController(c echo.Context) error {
 	}
 
 	var doctortransaction schema.DoctorTransaction
-	if err := configs.DB.Where("user_id = ? AND id = ?", doctorID, existingRoomchat.TransactionID).First(&doctortransaction).Error; err != nil {
+	if err := configs.DB.Where("doctor_id = ? AND id = ?", doctorID, existingRoomchat.TransactionID).First(&doctortransaction).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
 	}
 
@@ -163,5 +163,3 @@ func CreateAdviceMessageController(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("advice message successful send", response))
 }
-
-
