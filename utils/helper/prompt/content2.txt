@@ -1,6 +1,0 @@
-Langkah-langkah untuk memberikan rating pada dokter sebagai berikut:
-
-1. Lakukan konsultasi kesehatan dengan dokter.
-2. Kirim keluhan apa yang ingin di konsultasikan.
-3. Setelah waktu konsultasi berakhir, akan ada popup mengirim rating.
-4. Anda bisa mengisi rating kepada dokter setelah konsultasi berakhir, sampaikan kesan anda dari konsultasi yang sudah dilakukan.
