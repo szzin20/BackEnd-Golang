@@ -506,4 +506,38 @@ func UpdateManagePatientController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("health details and patient status successfully updated", response))
 }
 
+func GetAllDoctorConsutationController(c echo.Context) error {
+    var consultations []schema.DoctorTransaction
+    if err := configs.DB.Find(&consultations).Error; err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve consultations"))
+    }
+
+    // Membuat slice untuk menyimpan hasil konversi
+    var ConsultationResponses []web.DoctorConsultationResponse
+    for _, consultation := range consultations {
+        // Mengambil data user berdasarkan ID
+        var user schema.User
+        if err := configs.DB.First(&user, consultation.UserID).Error; err != nil {
+            return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
+        }
+
+        // Mengambil data dokter berdasarkan ID
+        var doctor schema.Doctor
+        if err := configs.DB.First(&doctor, consultation.DoctorID).Error; err != nil {
+            return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
+        }
+
+        Response := response.ConvertToConsultationResponse(consultation, user, doctor)
+        ConsultationResponses = append(ConsultationResponses, Response)
+    }
+
+    // Memeriksa apakah tidak ada konsultasi yang berhasil diambil
+    if len(ConsultationResponses) == 0 {
+        return c.JSON(http.StatusNotFound, helper.ErrorResponse("no consultations found"))
+    }
+
+    return c.JSON(http.StatusOK, helper.SuccessResponse("successfully retrieved consultations", ConsultationResponses))
+}
+
+
 
