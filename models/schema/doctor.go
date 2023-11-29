@@ -21,8 +21,6 @@ type Doctor struct {
 	NoSTR            int    `gorm:"not null"`
 	Role             string `gorm:"type:enum('doctor');default:'doctor'"`
 	Alumnus          string `gorm:"not null"`
-	AboutDoctor      string `gorm:"not null"`
-	LocationPractice string `gorm:"not null"`
 	Article   []Article
   DoctorTransactions []DoctorTransaction `gorm:"foreignKey:DoctorID"`
 	UpdatedAt time.Time

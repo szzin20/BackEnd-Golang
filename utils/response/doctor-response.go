@@ -33,8 +33,6 @@ func ConvertToDoctorUpdateResponse(doctor *schema.Doctor) web.DoctorUpdateRespon
 		Email:            doctor.Email,
 		Gender:           doctor.Gender,
 		Specialist:       doctor.Specialist,
-		AboutDoctor:      doctor.AboutDoctor,
-		LocationPractice: doctor.LocationPractice,
 		ProfilePicture:   doctor.ProfilePicture,
 		NoSTR:            doctor.NoSTR,
 		Status:           doctor.Status,
@@ -53,7 +51,6 @@ func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorProfile {
 		NoSTR:          doctor.NoSTR,
 		Experience:     doctor.Experience,
 		Alumnus:        doctor.Alumnus,
-		AboutDoctor:    doctor.AboutDoctor,
 	}
 }
 
@@ -112,10 +109,7 @@ func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 		Specialist:       doctor.Specialist,
 		Price:            doctor.Price,
 		Experience:       doctor.Experience,
-		AboutDoctor:      doctor.AboutDoctor,
-		NoSTR:            doctor.NoSTR,
-		LocationPractice: doctor.LocationPractice,
-		Alumnus:          doctor.Alumnus,
+		NoSTR:            doctor.NoSTR,		Alumnus:          doctor.Alumnus,
 	}
 }
 
