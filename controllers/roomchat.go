@@ -1,9 +1,10 @@
 package controllers
 
 import (
-	"errors"
+	"fmt"
 	"healthcare/configs"
 	"healthcare/models/schema"
+	"healthcare/models/web"
 	"healthcare/utils/helper"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
@@ -11,7 +12,6 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
 // User Create Roomchat
@@ -139,26 +139,11 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 	if err := configs.DB.Find(&existingDoctorTransactions, "doctor_id = ?", doctorID).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
 	}
-
+	fmt.Println(len(existingDoctorTransactions))
+	var responses []web.RoomchatListResponse
 	// cek doctor transaction yang sudah sesuai dengan dooctor id untuk di cek apakah id doctor transaksi terdapat di roomchat
 	for _, doctorTransaction := range existingDoctorTransactions {
-
-		// preload message terakhir
-		var existingRoomchat schema.Roomchat
-		if err := configs.DB.Where("id = ?", doctorTransaction.ID).Preload("Message", func(db *gorm.DB) *gorm.DB {
-			subquery := db.Select("roomchat_id, MAX(created_at) as max_created_at").
-				Group("roomchat_id").
-				Order("max_created_at DESC").
-				Limit(1)
-			return db.Joins("JOIN (?) AS subq ON subq.roomchat_id = messages.roomchat_id AND subq.max_created_at = messages.created_at", subquery)
-		}).First(&existingRoomchat).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				continue
-			} else {
-				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve roomchat data"))
-			}
-		}
-
+		
 		// mengambil data user yang sesuai di data doctor transaksi id yang sudah di filter dengan doctor id untuk mencari fullname
 		userID := doctorTransaction.UserID
 		var user schema.User
@@ -166,11 +151,43 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
 		}
 
+		//preload message
+		var existingRoomchat schema.Roomchat
+		if err := configs.DB.Debug().Preload("Message").Where("transaction_id = ?", doctorTransaction.ID).Find(&existingRoomchat).Error; err != nil{
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve roomchat data"))
+		}
+		
+		//get last message
+		LastMessage := schema.Message{}
+		lenghtMessage := len(existingRoomchat.Message) - 1
+		if lenghtMessage >= 0 {
+			LastMessage = existingRoomchat.Message[lenghtMessage]
+		}
+		response := response.ConvertToGetRoomchats(user, existingRoomchat, LastMessage)
+
+		// // preload message terakhir
+		// var existingRoomchat schema.Roomchat
+		// if err := configs.DB.Where("id = ?", doctorTransaction.ID).Preload("Message", func(db *gorm.DB) *gorm.DB {
+		// 	subquery := db.Select("roomchat_id, MAX(created_at) as max_created_at").
+		// 		Group("roomchat_id").
+		// 		Order("max_created_at DESC").
+		// 		Limit(1)
+		// 	return db.Joins("JOIN (?) AS subq ON subq.roomchat_id = messages.roomchat_id AND subq.max_created_at = messages.created_at", subquery)
+		// }).First(&existingRoomchat).Error; err != nil {
+		// 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		// 		continue
+		// 	} else {
+		// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve roomchat data"))
+		// 	}
+		// }
+
+		responses = append(responses, response)
+
 	}
 
 	// response := response.ConvertToGetAllRoomchatResponse()
 
-	 return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", "response"))
+	 return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", responses))
 }
 
 // cek doctor id x punya transaction id apa aja (table doctor transaction)

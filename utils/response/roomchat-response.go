@@ -59,3 +59,12 @@ func ConvertToGetAllRoomchat(roomchats []schema.Roomchat) []web.RoomchatListResp
 	}
 	return results
 }
+
+func ConvertToGetRoomchats(user schema.User, roomchat schema.Roomchat, lastMessage schema.Message) web.RoomchatListResponse {
+	return web.RoomchatListResponse{
+		ID: roomchat.ID,
+		Fullname: user.Fullname,
+		LastMessage: lastMessage.Message,
+		CreatedAt: lastMessage.CreatedAt,
+	}
+}
