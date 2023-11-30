@@ -386,13 +386,13 @@ func DeleteDoctorByAdminController(c echo.Context) error {
 
 // Get Doctor by ID
 func GetDoctorByIDController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	doctorID, err := strconv.Atoi(c.Param("doctor_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed to retrieve doctor id"))
 	}
 
 	var doctor schema.Doctor
-	result := configs.DB.First(&doctor, id)
+	result := configs.DB.First(&doctor, doctorID)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to fetch doctor data"))
 	}
