@@ -386,13 +386,13 @@ func DeleteDoctorByAdminController(c echo.Context) error {
 
 // Get Doctor by ID
 func GetDoctorByIDController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	doctorID, err := strconv.Atoi(c.Param("doctor_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed to retrieve doctor id"))
 	}
 
 	var doctor schema.Doctor
-	result := configs.DB.First(&doctor, id)
+	result := configs.DB.First(&doctor, doctorID)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to fetch doctor data"))
 	}
@@ -403,7 +403,7 @@ func GetDoctorByIDController(c echo.Context) error {
 }
 
 // Manage User
-func GetManagePatientController(c echo.Context) error {
+func GetManageUserController(c echo.Context) error {
 	doctorID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid user ID"))
@@ -451,7 +451,7 @@ func GetManagePatientController(c echo.Context) error {
 }
 
 // Update manage user
-func UpdateManagePatientController(c echo.Context) error {
+func UpdateManageUserController(c echo.Context) error {
 	// Getting the doctor ID from the context
 	doctorID, ok := c.Get("userID").(int)
 	if !ok {
@@ -506,7 +506,7 @@ func UpdateManagePatientController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("health details and patient status successfully updated", response))
 }
 
-func GetAllDoctorConsutationController(c echo.Context) error {
+func GetAllDoctorConsultationController(c echo.Context) error {
     var consultations []schema.DoctorTransaction
     if err := configs.DB.Find(&consultations).Error; err != nil {
         return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve consultations"))
