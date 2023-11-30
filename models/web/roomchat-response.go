@@ -12,7 +12,7 @@ type CreateRoomchatResponse struct {
 
 type RoomchatListResponse struct {
 	ID          uint      `json:"id"`
-	Fullname    uint      `json:"fullname"`
+	Fullname    string    `json:"fullname"`
 	LastMessage string    `json:"last_message"`
 	CreatedAt   time.Time `json:"created_at"`
 }
