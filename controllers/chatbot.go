@@ -6,6 +6,7 @@ import (
 	"healthcare/models/web"
 	"healthcare/utils/helper"
 	"healthcare/utils/helper/constanta"
+	"healthcare/utils/helper/prompt"
 	"net/http"
 	"os"
 	"strings"
@@ -27,18 +28,12 @@ func Chatbot(c echo.Context) error {
 
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 
-	filePath := "utils/helper/prompt/prompt.txt"
-	promptContent, err := os.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-
 	response, err := client.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
 		Model: openai.GPT3Dot5Turbo,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleUser,
-				Content: fmt.Sprintf("%s %s", string(promptContent), request.Request),
+				Content: fmt.Sprintf("%s %s", prompt.Prompt, request.Request),
 			},
 		},
 	})
@@ -73,28 +68,14 @@ func CustomerService(c echo.Context) error {
 	}
 
 	if strings.Contains(strings.ToLower(request.Request), "pembayaran obat") {
-		filePath := "utils/helper/prompt/content1.txt"
-		content1, err := os.ReadFile(filePath)
-		if err != nil {
-			return err
-		}
 
-		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"recommendation", string(content1)))
+		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"recommendation", prompt.Content1))
+
 	} else if strings.Contains(strings.ToLower(request.Request), "rating dokter") {
-		filePath := "utils/helper/prompt/content2.txt"
-		content2, err := os.ReadFile(filePath)
-		if err != nil {
-			return err
-		}
 
-		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"recommendation", string(content2)))
+		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"recommendation", prompt.Content2))
 	}
 
-	filePath := "utils/helper/prompt/content3.txt"
-	content3, err := os.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"recommendation", string(content3)))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"recommendation", prompt.Content3))
 
 }
