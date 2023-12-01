@@ -108,7 +108,7 @@ func LoginDoctorController(c echo.Context) error {
 	// The rest of your code for generating a token and handling the successful login
 	token, err := middlewares.GenerateToken(doctor.ID, doctor.Email, doctor.Role)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to generate jwt: " + err.Error()))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to generate jwt: "+err.Error()))
 	}
 
 	doctorLoginResponse := response.ConvertToDoctorLoginResponse(&doctor)
@@ -118,7 +118,7 @@ func LoginDoctorController(c echo.Context) error {
 	if doctor.Email != "" {
 		notificationType := "login"
 		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, ""); err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send notification email: " + err.Error()))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send notification email: "+err.Error()))
 		}
 	}
 
@@ -151,7 +151,7 @@ func GetSpecializeDoctor(c echo.Context) error {
 	}
 
 	var doctors []schema.Doctor
-	err := configs.DB.Where("specialist LIKE ?", "%"+specialist+"%").Find(&doctors).Error
+	err := configs.DB.Where("specialist LIKE ? AND status = ?", "%"+specialist+"%", true).Find(&doctors).Error
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve data"))
@@ -507,37 +507,34 @@ func UpdateManageUserController(c echo.Context) error {
 }
 
 func GetAllDoctorConsultationController(c echo.Context) error {
-    var consultations []schema.DoctorTransaction
-    if err := configs.DB.Find(&consultations).Error; err != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve consultations"))
-    }
+	var consultations []schema.DoctorTransaction
+	if err := configs.DB.Find(&consultations).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve consultations"))
+	}
 
-    // Membuat slice untuk menyimpan hasil konversi
-    var ConsultationResponses []web.DoctorConsultationResponse
-    for _, consultation := range consultations {
-        // Mengambil data user berdasarkan ID
-        var user schema.User
-        if err := configs.DB.First(&user, consultation.UserID).Error; err != nil {
-            return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
-        }
+	// Membuat slice untuk menyimpan hasil konversi
+	var ConsultationResponses []web.DoctorConsultationResponse
+	for _, consultation := range consultations {
+		// Mengambil data user berdasarkan ID
+		var user schema.User
+		if err := configs.DB.First(&user, consultation.UserID).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
+		}
 
-        // Mengambil data dokter berdasarkan ID
-        var doctor schema.Doctor
-        if err := configs.DB.First(&doctor, consultation.DoctorID).Error; err != nil {
-            return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
-        }
+		// Mengambil data dokter berdasarkan ID
+		var doctor schema.Doctor
+		if err := configs.DB.First(&doctor, consultation.DoctorID).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
+		}
 
-        Response := response.ConvertToConsultationResponse(consultation, user, doctor)
-        ConsultationResponses = append(ConsultationResponses, Response)
-    }
+		Response := response.ConvertToConsultationResponse(consultation, user, doctor)
+		ConsultationResponses = append(ConsultationResponses, Response)
+	}
 
-    // Memeriksa apakah tidak ada konsultasi yang berhasil diambil
-    if len(ConsultationResponses) == 0 {
-        return c.JSON(http.StatusNotFound, helper.ErrorResponse("no consultations found"))
-    }
+	// Memeriksa apakah tidak ada konsultasi yang berhasil diambil
+	if len(ConsultationResponses) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("no consultations found"))
+	}
 
-    return c.JSON(http.StatusOK, helper.SuccessResponse("successfully retrieved consultations", ConsultationResponses))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("successfully retrieved consultations", ConsultationResponses))
 }
-
-
-
