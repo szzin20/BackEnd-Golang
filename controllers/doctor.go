@@ -418,7 +418,7 @@ func GetDoctorIDbyAdminController(c echo.Context) error {
 
 	response := response.ConvertToGetIDDoctorResponse(&doctor)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor details successfully retrieved", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse("data successfully retrieved", response))
 }
 
 // Manage User
