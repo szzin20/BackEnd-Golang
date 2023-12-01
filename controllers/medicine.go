@@ -100,7 +100,7 @@ func CreateMedicineController(c echo.Context) error {
 
 // Update Medicine by ID
 func UpdateMedicineController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("medicines_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
 	}
@@ -135,7 +135,7 @@ func UpdateMedicineController(c echo.Context) error {
 
 // Update Image Medicine by ID
 func UpdateImageMedicineController(c echo.Context) error {
-	medicineID, err := strconv.Atoi(c.Param("id"))
+	medicineID, err := strconv.Atoi(c.Param("medicines_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
 	}
@@ -194,7 +194,7 @@ func UpdateImageMedicineController(c echo.Context) error {
 
 // Delete Medicine by ID
 func DeleteMedicineController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("medicines_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
 	}
@@ -216,7 +216,7 @@ func DeleteMedicineController(c echo.Context) error {
 
 // Delete Image Medicine by ID
 func DeleteImageMedicineController(c echo.Context) error {
-	medicineID, err := strconv.Atoi(c.Param("id"))
+	medicineID, err := strconv.Atoi(c.Param("medicines_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
 	}
@@ -244,7 +244,7 @@ func DeleteImageMedicineController(c echo.Context) error {
 
 // Get Image Medicine by ID
 func GetImageMedicineController(c echo.Context) error {
-	medicineID, err := strconv.Atoi(c.Param("id"))
+	medicineID, err := strconv.Atoi(c.Param("medicines_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
 	}
@@ -295,7 +295,7 @@ func GetImageMedicineController(c echo.Context) error {
 
 // Admin Get Medicine by ID
 func GetMedicineAdminByIDController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("medicines_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
 	}
@@ -313,7 +313,7 @@ func GetMedicineAdminByIDController(c echo.Context) error {
 
 // Admin Get Medicines
 func GetMedicineAdminController(c echo.Context) error {
-	idStr := c.QueryParam("id")
+	idStr := c.QueryParam("medicines_id")
 	name := c.QueryParam("name")
 
 	if idStr != "" {
@@ -397,7 +397,7 @@ func GetMedicineAdminController(c echo.Context) error {
 
 // User Get Medicine
 func GetMedicineUserController(c echo.Context) error {
-	idStr := c.QueryParam("id")
+	idStr := c.QueryParam("medicines_id")
 	name := c.QueryParam("name")
 
 	if idStr != "" {
@@ -448,7 +448,7 @@ func GetMedicineUserController(c echo.Context) error {
 
 // User Get Medicine by ID
 func GetMedicineUserByIDController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("medicines_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
 	}
