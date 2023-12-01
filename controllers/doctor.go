@@ -64,13 +64,14 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 	if existingDoctor := configs.DB.Where("email = ?", doctorRequest.Email).First(&doctorRequest).Error; existingDoctor == nil {
 		return c.JSON(http.StatusConflict, helper.ErrorResponse("email already exist"))
 	}
+	
 
 	// Hash kata sandi
 	doctorRequest.Password = helper.HashPassword(doctor.Password)
 
 	// Simpan data dokter ke database
 	if err := configs.DB.Create(&doctorRequest).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to register"))
+		return c.JSON(http.StatusInternalServerError, err)
 	}
 
 	// Mengirim email pemberitahuan
@@ -363,20 +364,20 @@ func DeleteDoctorController(c echo.Context) error {
 // DeleteDoctorByAdminController deletes a doctor by admin
 func DeleteDoctorByAdminController(c echo.Context) error {
 	// Parse doctor ID from the request parameters
-	id, err := strconv.Atoi(c.Param("id"))
+	doctor_id, err := strconv.Atoi(c.Param("doctor_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid id"))
 	}
 
 	// Retrieve the existing doctor from the database
 	var existingDoctor schema.Doctor
-	result := configs.DB.First(&existingDoctor, id)
+	result := configs.DB.First(&existingDoctor, doctor_id)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve data"))
 	}
 
 	// Delete the doctor from the database
-	result = configs.DB.Delete(&existingDoctor, id)
+	result = configs.DB.Delete(&existingDoctor, doctor_id)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to delete data"))
 	}
@@ -393,6 +394,24 @@ func GetDoctorByIDController(c echo.Context) error {
 
 	var doctor schema.Doctor
 	result := configs.DB.First(&doctor, id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to fetch doctor data"))
+	}
+
+	response := response.ConvertToGetIDDoctorResponse(&doctor)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor details successfully retrieved", response))
+}
+
+// Get Doctor by ID
+func GetDoctorIDbyAdminController(c echo.Context) error {
+	doctor_id, err := strconv.Atoi(c.Param("doctor_id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed to retrieve doctor id"))
+	}
+
+	var doctor schema.Doctor
+	result := configs.DB.First(&doctor, doctor_id)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to fetch doctor data"))
 	}

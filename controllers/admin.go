@@ -71,31 +71,36 @@ func UpdateAdminController(c echo.Context) error {
 // UpdatePaymentStatusByAdminController updates payment status by admin
 func UpdatePaymentStatusByAdminController(c echo.Context) error {
 	// Parse transaction ID from the request parameters
-	id, err := strconv.Atoi(c.Param("id"))
+	transaction_id, err := strconv.Atoi(c.Param("transaction_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid transaction id"))
 	}
+	
+	// Bind the updated payment status from the request body
+	var updateRequest web.AdminUpdatePaymentStatus
 
 	// Retrieve the existing transaction from the database
 	var existingTransaction schema.DoctorTransaction
-	result := configs.DB.First(&existingTransaction, id)
+	result := configs.DB.First(&existingTransaction, transaction_id)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve transaction"))
-	}
-
-	// Bind the updated payment status from the request body
-	var updateRequest struct {
-		PaymentStatus string `json:"payment_status" validate:"required,oneof=pending success cancelled"`
 	}
 
 	if err := c.Bind(&updateRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input update data"))
 	}
-
+	
 	// Validate the updated payment status
 	if err := helper.ValidateStruct(updateRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
+	
+	result = configs.DB.First(&existingTransaction, transaction_id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve transaction"))
+	}
+
+	configs.DB.Model(&existingTransaction).Updates(updateRequest)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("payment status updated successfully", nil))
 }

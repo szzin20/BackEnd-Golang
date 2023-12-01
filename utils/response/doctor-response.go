@@ -7,6 +7,7 @@ import (
 
 func ConvertToDoctorRegisterResponse(doctor *schema.Doctor) web.DoctorRegisterResponse {
 	return web.DoctorRegisterResponse{
+		ID:             doctor.ID,
 		Fullname:       doctor.Fullname,
 		Email:          doctor.Email,
 		Price:          doctor.Price,
@@ -29,15 +30,15 @@ func ConvertToDoctorLoginResponse(doctor *schema.Doctor) web.DoctorLoginResponse
 
 func ConvertToDoctorUpdateResponse(doctor *schema.Doctor) web.DoctorUpdateResponse {
 	return web.DoctorUpdateResponse{
-		Fullname:         doctor.Fullname,
-		Email:            doctor.Email,
-		Gender:           doctor.Gender,
-		Specialist:       doctor.Specialist,
-		ProfilePicture:   doctor.ProfilePicture,
-		NoSTR:            doctor.NoSTR,
-		Status:           doctor.Status,
-		Experience:       doctor.Experience,
-		Alumnus:          doctor.Alumnus,
+		Fullname:       doctor.Fullname,
+		Email:          doctor.Email,
+		Gender:         doctor.Gender,
+		Specialist:     doctor.Specialist,
+		ProfilePicture: doctor.ProfilePicture,
+		NoSTR:          doctor.NoSTR,
+		Status:         doctor.Status,
+		Experience:     doctor.Experience,
+		Alumnus:        doctor.Alumnus,
 	}
 }
 
@@ -89,7 +90,6 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 			Price:          doctor.Price,
 			Specialist:     doctor.Specialist,
 			NoSTR:          doctor.NoSTR,
-			Role:           doctor.Role,
 			Experience:     doctor.Experience,
 			Alumnus:        doctor.Alumnus,
 		}
@@ -102,14 +102,14 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 
 func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 	return web.DoctorIDResponse{
-		ID:               doctor.ID,
-		ProfilePicture:   doctor.ProfilePicture,
-		Fullname:         doctor.Fullname,
-		Status:           doctor.Status,
-		Specialist:       doctor.Specialist,
-		Price:            doctor.Price,
-		Experience:       doctor.Experience,
-		NoSTR:            doctor.NoSTR,		Alumnus:          doctor.Alumnus,
+		ID:             doctor.ID,
+		ProfilePicture: doctor.ProfilePicture,
+		Fullname:       doctor.Fullname,
+		Status:         doctor.Status,
+		Specialist:     doctor.Specialist,
+		Price:          doctor.Price,
+		Experience:     doctor.Experience,
+		NoSTR:          doctor.NoSTR, Alumnus: doctor.Alumnus,
 	}
 }
 

@@ -10,3 +10,7 @@ type AdminUpdateRequest struct {
 	Email    string `json:"email" form:"email" validate:"omitempty,email"`
 	Password string `json:"password" form:"password" validate:"omitempty,min=10,max=15"`
 }
+// Bind the updated payment status from the request body
+type AdminUpdatePaymentStatus struct {
+	PaymentStatus string `json:"payment_status" validate:"required,oneof=pending success cancelled"`
+}
