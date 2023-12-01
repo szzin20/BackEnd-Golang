@@ -6,6 +6,7 @@ import (
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
+	"healthcare/utils/helper/constanta"
 	"healthcare/utils/response"
 	"strconv"
 
@@ -76,8 +77,11 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid transaction id"))
 	}
 	
-	// Bind the updated payment status from the request body
-	var updateRequest web.AdminUpdatePaymentStatus
+	var existingData schema.DoctorTransaction
+	results := configs.DB.First(&existingData, transaction_id)
+	if results.Error != nil {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
+	}
 
 	// Retrieve the existing transaction from the database
 	var existingTransaction schema.DoctorTransaction
@@ -86,8 +90,9 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve transaction"))
 	}
 
+	var updateRequest web.UpdatePaymentRequest
 	if err := c.Bind(&updateRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input update data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
 	}
 	
 	// Validate the updated payment status
@@ -102,5 +107,27 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 
 	configs.DB.Model(&existingTransaction).Updates(updateRequest)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("payment status updated successfully", nil))
+	result = configs.DB.Model(&existingTransaction).Updates(updateRequest)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"payment status"))
+	}
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"payment status", nil))
+}
+
+func GetAdminProfileController(c echo.Context) error {
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrInvalidIDParam))
+	}
+
+	var admin schema.Admin
+	if err := configs.DB.First(&admin, userID).Error; err != nil {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
+
+	}
+
+	response := response.ConvertToGetProfileAdminResponse(&admin)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"admin profile", response))
 }
