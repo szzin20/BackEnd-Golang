@@ -119,14 +119,14 @@ func GetUserController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("users data successfully retrieved", response))
 }
 
-// Get Doctor by ID
+// Get User by ID
 func GetUserIDbyAdminController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	user_id, err := strconv.Atoi(c.Param("user_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 	var user schema.User
-	result := configs.DB.First(&user, id)
+	result := configs.DB.First(&user, user_id)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
 	}
@@ -242,20 +242,20 @@ func DeleteUserController(c echo.Context) error {
 
 func DeleteUserByAdminController(c echo.Context) error {
 	// Parse doctor ID from the request parameters
-	id, err := strconv.Atoi(c.Param("id"))
+	user_id, err := strconv.Atoi(c.Param("user_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
 	// Retrieve the existing doctor from the database
 	var existingUser schema.User
-	result := configs.DB.First(&existingUser, id)
+	result := configs.DB.First(&existingUser, user_id)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user"))
 	}
 
 	// Delete the doctor from the database
-	result = configs.DB.Delete(&existingUser, id)
+	result = configs.DB.Delete(&existingUser, user_id)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to delete user"))
 	}
