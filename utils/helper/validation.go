@@ -17,3 +17,7 @@ func BirthdateIsValid(birthdate string) bool {
 	_, err := time.Parse("2006-01-02", birthdate)
 	return err == nil
 }
+
+func PaymentMethodIsValid(paymentMethod string) bool {
+	return paymentMethod == "manual transfer bni" || paymentMethod == "manual transfer bca" || paymentMethod == "manual transfer bri" || paymentMethod == ""
+}
