@@ -21,3 +21,7 @@ func BirthdateIsValid(birthdate string) bool {
 func PaymentMethodIsValid(paymentMethod string) bool {
 	return paymentMethod == "manual transfer bni" || paymentMethod == "manual transfer bca" || paymentMethod == "manual transfer bri" || paymentMethod == ""
 }
+
+func PaymentStatusIsValid(paymentStatus string) bool {
+	return paymentStatus == "pending" || paymentStatus == "success" || paymentStatus == "cancelled" || paymentStatus == ""
+}
