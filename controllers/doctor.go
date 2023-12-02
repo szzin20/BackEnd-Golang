@@ -65,6 +65,7 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 	if existingDoctor := configs.DB.Where("email = ?", doctorRequest.Email).First(&doctorRequest).Error; existingDoctor == nil {
 		return c.JSON(http.StatusConflict, helper.ErrorResponse("email already exist"))
 	}
+	
 
 	// Hash kata sandi
 	doctorRequest.Password = helper.HashPassword(doctor.Password)
@@ -152,7 +153,7 @@ func GetSpecializeDoctor(c echo.Context) error {
 	}
 
 	var doctors []schema.Doctor
-	err := configs.DB.Where("specialist LIKE ?", "%"+specialist+"%").Find(&doctors).Error
+	err := configs.DB.Where("specialist LIKE ? AND status = ?", "%"+specialist+"%", true).Find(&doctors).Error
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve data"))
@@ -358,20 +359,20 @@ func DeleteDoctorController(c echo.Context) error {
 // DeleteDoctorByAdminController deletes a doctor by admin
 func DeleteDoctorByAdminController(c echo.Context) error {
 	// Parse doctor ID from the request parameters
-	id, err := strconv.Atoi(c.Param("id"))
+	doctor_id, err := strconv.Atoi(c.Param("doctor_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid id"))
 	}
 
 	// Retrieve the existing doctor from the database
 	var existingDoctor schema.Doctor
-	result := configs.DB.First(&existingDoctor, id)
+	result := configs.DB.First(&existingDoctor, doctor_id)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve data"))
 	}
 
 	// Delete the doctor from the database
-	result = configs.DB.Delete(&existingDoctor, id)
+	result = configs.DB.Delete(&existingDoctor, doctor_id)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to delete data"))
 	}
@@ -395,6 +396,24 @@ func GetDoctorByIDController(c echo.Context) error {
 	response := response.ConvertToGetIDDoctorResponse(&doctor)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"doctor details", response))
+}
+
+// Get Doctor by ID
+func GetDoctorIDbyAdminController(c echo.Context) error {
+	doctor_id, err := strconv.Atoi(c.Param("doctor_id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("failed to retrieve doctor id"))
+	}
+
+	var doctor schema.Doctor
+	result := configs.DB.First(&doctor, doctor_id)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to fetch doctor data"))
+	}
+
+	response := response.ConvertToGetIDDoctorResponse(&doctor)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("data successfully retrieved", response))
 }
 
 // Manage User
@@ -512,6 +531,7 @@ func UpdateManageUserController(c echo.Context) error {
 
 func GetAllDoctorConsultationController(c echo.Context) error {
 	var consultations []schema.DoctorTransaction
+
 	if err := configs.DB.Where("payment_status = ?", "success").Find(&consultations).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"consultations"))
 	}
@@ -519,6 +539,7 @@ func GetAllDoctorConsultationController(c echo.Context) error {
 	// Membuat slice untuk menyimpan hasil konversi
 	var ConsultationResponses []web.DoctorConsultationResponse
 	for _, consultation := range consultations {
+    
 		var user schema.User
 		if err := configs.DB.First(&user, consultation.UserID).Error; err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"user data"))
@@ -578,7 +599,6 @@ func ChangeDoctorStatusController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"doctor status", response))
 }
 
-// reset password dan mengirimkan OTP ke email
 // func OTPPasswordReset(c echo.Context) error {
 
 // 	var reset web.PasswordResetRequest
@@ -598,6 +618,7 @@ func ChangeDoctorStatusController(c echo.Context) error {
 
 // 	return c.JSON(http.StatusOK, helper.SuccessResponse("OTP sent successfully", nil))
 // }
+
 
 // func ChangePasswordAfterOTPVerificationHandler(c echo.Context) error {
 //     var verify web.VerifyPasswordResetRequest
@@ -622,3 +643,4 @@ func ChangeDoctorStatusController(c echo.Context) error {
 //     // Respond successfully
 //     return c.JSON(http.StatusOK, helper.SuccessResponse("Password changed successfully", nil))
 // }
+

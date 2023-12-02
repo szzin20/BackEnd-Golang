@@ -58,7 +58,6 @@ func ConvertToGetUserIDbyAdminResponse(user *schema.User) web.UserAllResponseByA
 		BloodType:      user.BloodType,
 		Height:         user.Height,
 		Weight:         user.Weight,
-		Role:           user.Role,
 	}
 }
 
@@ -95,7 +94,6 @@ func ConvertToGetAllUserByAdminResponse(users []schema.User) []web.UserAllRespon
 			BloodType:      user.BloodType,
 			Height:         user.Height,
 			Weight:         user.Weight,
-			Role:           user.Role,
 		}
 
 		results = append(results, userResponse)

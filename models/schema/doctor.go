@@ -7,6 +7,7 @@ import (
 )
 
 type Doctor struct {
+
 	ID                 uint   `gorm:"primarykey"`
 	ProfilePicture     string `gorm:"not null"`
 	Fullname           string `gorm:"not null"`
@@ -22,10 +23,10 @@ type Doctor struct {
 	Alumnus            string `gorm:"not null"`
 	AboutDoctor        string `gorm:"not null"`
 	LocationPractice   string `gorm:"not null"`
-	// OTP                string
 	Article            []Article
 	DoctorTransactions []DoctorTransaction `gorm:"foreignKey:DoctorID"`
 	UpdatedAt          time.Time
 	CreatedAt          time.Time
 	DeletedAt          gorm.DeletedAt `gorm:"index"`
+
 }
