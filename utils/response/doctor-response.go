@@ -30,28 +30,16 @@ func ConvertToDoctorLoginResponse(doctor *schema.Doctor) web.DoctorLoginResponse
 
 func ConvertToDoctorUpdateResponse(doctor *schema.Doctor) web.DoctorUpdateResponse {
 	return web.DoctorUpdateResponse{
-		Fullname:       doctor.Fullname,
-		Email:          doctor.Email,
-		Gender:         doctor.Gender,
-		Specialist:     doctor.Specialist,
-		ProfilePicture: doctor.ProfilePicture,
-		NoSTR:          doctor.NoSTR,
-		Status:         doctor.Status,
-		Experience:     doctor.Experience,
-		Alumnus:        doctor.Alumnus,
-	}
-}
-
-func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorProfile {
-	return web.DoctorProfile{
-		Fullname:       doctor.Fullname,
-		Email:          doctor.Email,
-		Gender:         doctor.Gender,
-		Specialist:     doctor.Specialist,
-		ProfilePicture: doctor.ProfilePicture,
-		NoSTR:          doctor.NoSTR,
-		Experience:     doctor.Experience,
-		Alumnus:        doctor.Alumnus,
+		Fullname:         doctor.Fullname,
+		Email:            doctor.Email,
+		Gender:           doctor.Gender,
+		Specialist:       doctor.Specialist,
+		ProfilePicture:   doctor.ProfilePicture,
+		NoSTR:            doctor.NoSTR,
+		Experience:       doctor.Experience,
+		Alumnus:          doctor.Alumnus,
+		AboutDoctor:      doctor.AboutDoctor,
+		LocationPractice: doctor.LocationPractice,
 	}
 }
 
