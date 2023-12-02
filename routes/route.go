@@ -75,8 +75,8 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.POST("/chats/:roomchat_id/message", controllers.CreateAdviceMessageController, DoctorJWT)
 	gDoctors.GET("/manage-user", controllers.GetManageUserController, DoctorJWT)
 	gDoctors.PUT("/manage-user/:transaction_id", controllers.UpdateManageUserController, DoctorJWT)
-	// gDoctors.POST("/change-password", controllers.ChangePasswordAfterOTPVerificationHandler)
-	// gDoctors.POST("/otp-password", controllers.OTPPasswordReset)
+	gDoctors.POST("/otp-password", controllers.OTPPasswordReset)
+	// gDoctors.POST("/change-password", controllers.ChangePasswordAfterOTP)
 
 
 	e.POST("/chatbot", controllers.Chatbot)
