@@ -68,6 +68,12 @@ func CreateDoctorTransactionController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
+	paymentMethod := doctorTransactionRequest.PaymentMethod
+
+	if !helper.PaymentMethodIsValid(paymentMethod) {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input payment method data ('manual transfer bca', 'manual transfer bri', 'manual transfer bni')"))
+	}
+
 	var doctor schema.Doctor
 
 	if err := configs.DB.First(&doctor, "id = ? AND status = true ", doctorID).Error; err != nil {
