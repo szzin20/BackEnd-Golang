@@ -73,18 +73,6 @@ type DoctorIDResponse struct {
 	Alumnus          string `json:"alumnus"`
 }
 
-type DoctorProfile struct {
-	Fullname       string `json:"fullname"`
-	Email          string `json:"email"`
-	Gender         string `json:"gender"`
-	Specialist     string `json:"specialist"`
-	ProfilePicture string `json:"profile_picture"`
-	NoSTR          int    `json:"no_str"`
-	Experience     string `json:"experience"`
-	Alumnus        string `json:"alumnus"`
-	AboutDoctor    string `json:"about_doctor"`
-}
-
 // Manage Patient
 type ManageUserResponse struct {
 	UserID              uint      `json:"user_id"`

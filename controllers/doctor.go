@@ -184,7 +184,7 @@ func GetDoctorProfileController(c echo.Context) error {
 		}
 	}
 
-	response := response.ConvertToGetDoctorResponse(&doctor)
+	response := response.ConvertToDoctorUpdateResponse(&doctor)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"doctor profile", response))
 }
