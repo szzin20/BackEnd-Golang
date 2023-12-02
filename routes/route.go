@@ -60,6 +60,7 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.GET("/profile", controllers.GetDoctorProfileController, DoctorJWT)
 	gDoctors.GET("/:doctor_id", controllers.GetDoctorByIDController)
 	gDoctors.PUT("/profile", controllers.UpdateDoctorController, DoctorJWT)
+	gDoctors.PUT("/status/:doctor_id", controllers.ChangeDoctorStatusController)
 	gDoctors.DELETE("", controllers.DeleteDoctorController, DoctorJWT)
 	gDoctors.GET("", controllers.GetAllDoctorController)
 	gDoctors.GET("/articles", controllers.DoctorGetAllArticles, DoctorJWT)
@@ -72,7 +73,10 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.GET("/chats/:roomchat_id", controllers.GetDoctorRoomchatController, DoctorJWT)
 	gDoctors.POST("/chats/:roomchat_id/message", controllers.CreateAdviceMessageController, DoctorJWT)
 	gDoctors.GET("/manage-user", controllers.GetManageUserController, DoctorJWT)
-	gDoctors.PUT("/manage-user", controllers.UpdateManageUserController, DoctorJWT)
+	gDoctors.PUT("/manage-user/:transaction_id", controllers.UpdateManageUserController, DoctorJWT)
+	// gDoctors.POST("/change-password", controllers.ChangePasswordAfterOTPVerificationHandler)
+	// gDoctors.POST("/otp-password", controllers.OTPPasswordReset)
+
 
 	e.POST("/chatbot", controllers.Chatbot)
 	e.POST("/customerservice", controllers.CustomerService)

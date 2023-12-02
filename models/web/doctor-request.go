@@ -25,7 +25,6 @@ type DoctorUpdateRequest struct {
 	Gender         string `json:"gender" form:"gender" validate:"omitempty"`
 	Specialist     string `json:"specialist" form:"specialist" validate:"omitempty"`
 	ProfilePicture string `json:"profile_picture" form:"profile_picture" validate:"omitempty"`
-	Status         bool   `json:"status" form:"status" validate:"omitempty,eq=true|eq=false"`
 	Experience     string `json:"experience" form:"experience" validate:"omitempty"`
 	Alumnus        string `json:"alumnus" form:"alumnus" validate:"omitempty"`
 }
@@ -36,3 +35,16 @@ type UpdateManageUserRequest struct {
 	PatientStatus string `json:"patient_status" form:"patient_status" validate:"omitempty"`
 }
 
+type ChangeDoctorStatusRequest struct {
+	Status bool `json:"status" form:"status" validate:"omitempty"`
+}
+
+// type PasswordResetRequest struct {
+// 	Email string `json:"email" form:"email" validate:"required,email"`
+// }
+
+// type VerifyPasswordResetRequest struct {
+// 	OTP         int    `json:"otp" form:"otp" validate:"required"`
+// 	Email       string `json:"email" form:"email" validate:"required,email"`
+// 	NewPassword string `json:"new_password" form:"new_password" validate:"omitempty,min=10,max=15"`
+// }
