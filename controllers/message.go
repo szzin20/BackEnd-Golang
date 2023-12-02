@@ -49,7 +49,7 @@ func CreateComplaintMessageController(c echo.Context) error {
 
 	err = c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("file size exceeds the maximum allowed size"))
 	}
 
 	file, fileHeader, err := c.Request().FormFile("image")
