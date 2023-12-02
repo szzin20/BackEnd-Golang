@@ -579,32 +579,31 @@ func ChangeDoctorStatusController(c echo.Context) error {
 }
 
 // reset password dan mengirimkan OTP ke email
-// func OTPPasswordReset(c echo.Context) error {
+func OTPPasswordReset(c echo.Context) error {
 
-// 	var reset web.PasswordResetRequest
-// 	if err := c.Bind(&reset); err != nil {
-// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input data"))
-// 	}
+	var reset web.PasswordResetRequest
+	if err := c.Bind(&reset); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionCreated+"password reset"))
+	}
 
-// 	if err := helper.ValidateStruct(reset); err != nil {
-// 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
-// 	}
+	if err := helper.ValidateStruct(reset); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
 
-// 	// Generate dan kirim OTP
-// 	err := helper.SendOTPViaEmail(reset.Email)
-// 	if err != nil {
-// 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send OTP"))
-// 	}
+	// Generate dan kirim OTP
+	err := helper.SendOTPViaEmail(reset.Email)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionCreated+"send OTP"))
+	}
 
-// 	return c.JSON(http.StatusOK, helper.SuccessResponse("OTP sent successfully", nil))
-// }
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"sent OTP ", nil))
+}
 
-// func ChangePasswordAfterOTPVerificationHandler(c echo.Context) error {
+// func ChangePasswordAfterOTP(c echo.Context) error {
 //     var verify web.VerifyPasswordResetRequest
 
 //     // Parse request body for VerifyPasswordResetRequest
 //     if err := c.Bind(&verify); err != nil {
-//         log.Printf("Error binding request body: %v", err)
 //         return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input data for verification"))
 //     }
 
@@ -619,6 +618,17 @@ func ChangeDoctorStatusController(c echo.Context) error {
 //         return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("invalid OTP"))
 //     }
 
+//     // Update Password
+//     newPassword := verify.NewPassword
+//     if newPassword == "" {
+//         return c.JSON(http.StatusBadRequest, helper.ErrorResponse("New password is required"))
+//     }
+
+//     if err := helper.HashPassword(verify.Email, newPassword); err != nil {
+//         return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update password"))
+//     }
+
 //     // Respond successfully
-//     return c.JSON(http.StatusOK, helper.SuccessResponse("Password changed successfully", nil))
+//     return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"Password changed", nil))
 // }
+

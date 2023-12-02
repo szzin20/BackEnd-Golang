@@ -39,9 +39,9 @@ type ChangeDoctorStatusRequest struct {
 	Status bool `json:"status" form:"status" validate:"omitempty"`
 }
 
-// type PasswordResetRequest struct {
-// 	Email string `json:"email" form:"email" validate:"required,email"`
-// }
+type PasswordResetRequest struct {
+	Email string `json:"email" form:"email" validate:"required,email"`
+}
 
 // type VerifyPasswordResetRequest struct {
 // 	OTP         int    `json:"otp" form:"otp" validate:"required"`
