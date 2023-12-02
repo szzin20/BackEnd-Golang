@@ -101,6 +101,12 @@ func GetAllDoctorTransactionsController(c echo.Context) error {
 
 	paymentStatus := c.QueryParam("payment_status")
 
+
+	if !helper.PaymentStatusIsValid(paymentStatus) {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input payment status data ('pending', 'success', 'cancelled')"))
+	}
+
+
 	if paymentStatus == "" {
 
 		var doctorTransaction []schema.DoctorTransaction
@@ -111,45 +117,45 @@ func GetAllDoctorTransactionsController(c echo.Context) error {
 		}
 
 		var responses []web.DoctorTransactionsResponse
-		for i, doctorTransactions := range doctorTransaction {
+		for _, doctorTransactions := range doctorTransaction {
 
 			var doctor schema.Doctor
-
 			err := configs.DB.Find(&doctor, "id=?",  doctorTransactions.DoctorID).Error
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
 			}
 
-			if len(doctorTransaction) == 0 {
-				return c.JSON(http.StatusNotFound, helper.ErrorResponse("empty doctor transaction data"))
-			}
+			responses = append(responses, response.ConvertToGetAllDoctorTransactionsResponse(doctorTransactions, doctor))
+		}
 
-			responses = append(responses, response.ConvertToGetAllDoctorTransactionsResponse(doctorTransaction[i], doctor))
+		if len(doctorTransaction) == 0 {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("empty doctor transaction data"))
 		}
 
 		return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction data successfully retrieved", responses))
 	}
 
-	var doctorTransactions []schema.DoctorTransaction
-
-	if err := configs.DB.Find(&doctorTransactions, "user_id = ? AND payment_status = ?", userID, paymentStatus).Error; err != nil {
+	var doctorTransaction []schema.DoctorTransaction
+	if err := configs.DB.Find(&doctorTransaction, "user_id = ? AND payment_status = ?", userID, paymentStatus).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
 	}
 
 	var responses []web.CreateDoctorTransactionResponse
-	for i, doctor_id := range doctorTransactions {
+	for _, doctorTransactions := range doctorTransaction {
+		
 		var doctor schema.Doctor
-		err := configs.DB.Find(&doctor, "id=?", doctor_id.DoctorID).Error
+		err := configs.DB.Find(&doctor, "id=?", doctorTransactions.DoctorID).Error
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
 		}
 
-		if len(doctorTransactions) == 0 {
-			return c.JSON(http.StatusNotFound, helper.ErrorResponse("empty doctor transaction data"))
-		}
-
-		responses = append(responses, response.ConvertToGetDoctorTransactionResponse(doctorTransactions[i], doctor))
+		responses = append(responses, response.ConvertToGetDoctorTransactionResponse(doctorTransactions, doctor))
 	}
+
+	if len(doctorTransaction) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("empty doctor transaction data"))
+	}
+
 	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction data successfully retrieved", responses))
 
 }
