@@ -17,14 +17,6 @@ type AdminProfileResponse struct {
 	Email string `json:"email"`
 }
 
-// type AdminTransactionResponse struct {
-// 	TransactionID       uint      `json:"transaction_id"`
-// 	DoctorID            uint      `json:"Doctor_id"`
-// 	UserID              uint      `json:"user_id"`
-// 	Price               int       `json:"price"`
-// 	CreatedAt           time.Time `json:"created_at"`
-// }
-
 type AdminTransactionUsersResponse struct {
 	TransactionID       uint      `json:"transaction_id"`
 	DoctorID            uint      `json:"Doctor_id"`
@@ -35,13 +27,3 @@ type AdminTransactionUsersResponse struct {
 	PaymentConfirmation string    `json:"payment_confirmation"`
 	PaymentStatus       string    `json:"payment_status"`
 }
-
-// type AdminTransactionMedicineResponse struct {
-// 	TransactionID       uint      `json:"transaction_id"`
-// 	UserID              uint      `json:"user_id"`
-// 	PaymentMethod       string    `json:"payment_method"`
-// 	Price               int       `json:"price"`
-// 	CreatedAt           time.Time `json:"created_at"`
-// 	PaymentConfirmation string    `json:"payment_confirmation"`
-// 	PaymentStatus       string    `json:"payment_status"`
-// }

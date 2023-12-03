@@ -9,7 +9,7 @@ import (
 	"healthcare/utils/helper/constanta"
 	"healthcare/utils/response"
 	"strconv"
-
+	"sort"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -132,23 +132,46 @@ func GetAdminProfileController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"admin profile", response))
 }
 
+// Get all transactions by doctors
 func GetAllDoctorsPaymentsByAdminsController(c echo.Context) error {
-	adminID, ok := c.Get("userID").(int)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrInvalidIDParam))
-	}
+    var doctorTransactions []schema.DoctorTransaction
 
-	var doctorTransactions []schema.DoctorTransaction
-	if err := configs.DB.Where("admin_id = ? AND payment_status = ?", adminID, "pending").
-		Order("payment_status DESC").Find(&doctorTransactions).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet + "doctor transactions"))
-	}
+    // "success" 
+    if err := configs.DB.Where("payment_status = ?", "success").Find(&doctorTransactions).Error; err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet + "doctor transactions"))
+    }
 
-	if len(doctorTransactions) == 0 {
-		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.ErrNotFound + "no doctor transactions found", nil))
-	}
+    // "pending" 
+    var pending []schema.DoctorTransaction
+    if err := configs.DB.Where("payment_status = ?", "pending").Find(&pending).Error; err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet + "pending doctor transactions"))
+    }
 
-	responses := response.ConvertToAdminTransactionUsersResponse(doctorTransactions)
+    // "cancelled" 
+    var cancelled []schema.DoctorTransaction
+    if err := configs.DB.Where("payment_status = ?", "cancelled").Find(&cancelled).Error; err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet + "cancelled doctor transactions"))
+    }
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"doctor transactions", responses))
+    // Concatenate the results
+    doctorTransactions = append(doctorTransactions, pending...)
+    doctorTransactions = append(doctorTransactions, cancelled...)
+
+    // Sort by custom order: pending, success, cancelled
+    sort.Slice(doctorTransactions, func(i, j int) bool {
+        order := map[string]int{"pending": 0, "success": 1, "cancelled": 2}
+        return order[doctorTransactions[i].PaymentStatus] < order[doctorTransactions[j].PaymentStatus]
+    })
+
+    if len(doctorTransactions) == 0 {
+        return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.ErrNotFound + "doctor transactions", nil))
+    }
+
+    Responses := response.ConvertToAdminTransactionUsersResponse(doctorTransactions)
+
+    return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated + "doctor transactions", Responses))
 }
+
+
+
+
