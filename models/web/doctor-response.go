@@ -3,7 +3,7 @@ package web
 import "time"
 
 type DoctorRegisterResponse struct {
-	ID             uint   `json:"id" form:"id"` 
+	ID             uint   `json:"id" form:"id"`
 	Fullname       string `json:"fullname" form:"fullname" `
 	Email          string `json:"email" form:"email"`
 	Status         bool   `json:"status" form:"status"`
