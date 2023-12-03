@@ -45,7 +45,7 @@ func ErrorResponse(message string) interface{} {
 func ErrorResponseWithData(message string, data interface{}) interface{} {
 	return TSuccessResponse{
 		Meta: TResponseMeta{
-			Success: true,
+			Success: false,
 			Message: message,
 		},
 		Results: data,
