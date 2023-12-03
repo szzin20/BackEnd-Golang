@@ -186,8 +186,7 @@ func GetDoctorProfileController(c echo.Context) error {
 
 	response := response.ConvertToDoctorUpdateResponse(&doctor)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"doctor profile", response))
-	
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"doctor profile", response))	
 }
 
 // Get All Doctors
@@ -567,9 +566,9 @@ func GetAllDoctorConsultationController(c echo.Context) error {
 // Change Doctor Status
 func ChangeDoctorStatusController(c echo.Context) error {
 
-	doctorID, err := strconv.Atoi(c.Param("doctor_id"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
+	doctorID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor id"))
 	}
 
 	// Parse the request body
