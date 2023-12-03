@@ -8,6 +8,7 @@ import (
 	"healthcare/utils/helper"
 	"healthcare/utils/helper/constanta"
 	"healthcare/utils/response"
+	"log"
 	"strconv"
 	"sort"
 	"net/http"
@@ -69,14 +70,14 @@ func UpdateAdminController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("admin updated data successful", response))
 }
 
-// UpdatePaymentStatusByAdminController updates payment status by admin
+// Admin Update Payment Status and Send Notification to Doctor
 func UpdatePaymentStatusByAdminController(c echo.Context) error {
 	// Parse transaction ID from the request parameters
 	transaction_id, err := strconv.Atoi(c.Param("transaction_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid transaction id"))
 	}
-	
+
 	var existingData schema.DoctorTransaction
 	results := configs.DB.First(&existingData, transaction_id)
 	if results.Error != nil {
@@ -94,12 +95,12 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 	if err := c.Bind(&updateRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
 	}
-	
+
 	// Validate the updated payment status
 	if err := helper.ValidateStruct(updateRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
-	
+
 	result = configs.DB.First(&existingTransaction, transaction_id)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve transaction"))
@@ -110,6 +111,24 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 	result = configs.DB.Model(&existingTransaction).Updates(updateRequest)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"payment status"))
+	}
+
+
+	if updateRequest.PaymentStatus == "success" {
+		
+		var doctor schema.Doctor
+		result := configs.DB.First(&doctor, "id = ?", existingTransaction.DoctorID)
+		if result.Error != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
+		}
+
+		// Send an email to the doctor
+		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "")
+		log.Printf(doctor.Email)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
+		}
+	
 	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"payment status", nil))
