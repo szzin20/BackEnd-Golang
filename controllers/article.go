@@ -70,7 +70,7 @@ func CreateArticle(c echo.Context) error {
 
 func UpdateArticleById(c echo.Context) error {
 
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("article_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}
@@ -154,7 +154,7 @@ func GetAllArticles(c echo.Context) error {
 }
 
 func GetArticleByID(c echo.Context) error {
-	articleID, err := strconv.Atoi(c.Param("id"))
+	articleID, err := strconv.Atoi(c.Param("article_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}
@@ -195,7 +195,7 @@ func GetAllArticlesByTitle(c echo.Context) error {
 func DeleteArticleById(c echo.Context) error {
 	userID := c.Get("userID").(int)
 
-	articleID, err := strconv.Atoi(c.Param("id"))
+	articleID, err := strconv.Atoi(c.Param("article_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}
@@ -238,10 +238,10 @@ func DoctorGetAllArticles(c echo.Context) error {
 func DoctorGetArticleByID(c echo.Context) error {
 	userID := c.Get("userID").(int)
 
-	articleID := c.Param("id")
+	articleID := c.Param("article_id")
 
 	var article schema.Article
-	if err := configs.DB.Where("id = ? AND doctor_id = ?", articleID, userID).Find(&article).Error; err != nil {
+	if err := configs.DB.Where("id = ? AND doctor_id = ?", articleID, userID).First(&article).Error; err != nil {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
