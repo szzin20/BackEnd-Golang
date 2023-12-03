@@ -6,11 +6,22 @@ import (
 )
 
 func ConvertToCheckoutResponse(checkout *schema.Checkout) web.CheckoutResponse {
+
 	return web.CheckoutResponse{
 		ID:                    checkout.ID,
-		MedicineTransactionID: checkout.MedicineTransactionID,
-		PaymentConfirmation:   checkout.PaymentConfirmation,
 		PaymentStatus:         checkout.PaymentStatus,
+		MedicineTransactionID: checkout.MedicineTransactionID,
 		CreatedAt:             checkout.CreatedAt,
+		PaymentConfirmation:   checkout.PaymentConfirmation,
 	}
+}
+
+func ConvertToCheckoutListResponse(checkouts []schema.Checkout) []web.CheckoutResponse {
+	var checkoutResponses []web.CheckoutResponse
+
+	for _, checkout := range checkouts {
+		checkoutResponses = append(checkoutResponses, ConvertToCheckoutResponse(&checkout))
+	}
+
+	return checkoutResponses
 }

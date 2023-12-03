@@ -11,3 +11,9 @@ func ConvertToCheckoutRequest(checkout web.CheckoutRequest) *schema.Checkout {
 		PaymentConfirmation:   checkout.PaymentConfirmation,
 	}
 }
+
+func ConvertToCheckoutUpdate(checkout web.CheckoutUpdate) *schema.Checkout {
+	return &schema.Checkout{
+		PaymentStatus: checkout.PaymentStatus,
+	}
+}

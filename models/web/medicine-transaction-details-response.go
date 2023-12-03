@@ -10,8 +10,8 @@ type MedicineDetailsResponse struct {
 
 type CheckoutResponse struct {
 	ID                    uint      `json:"id"`
-	MedicineTransactionID uint      `json:"medicine_transaction_id"`
-	PaymentConfirmation   string    `json:"payment_confirmation"`
 	PaymentStatus         string    `json:"payment_status"`
+	MedicineTransactionID uint      `json:"medicine_transaction_id"`
 	CreatedAt             time.Time `json:"created_at"`
+	PaymentConfirmation   string    `json:"payment_confirmation"`
 }
