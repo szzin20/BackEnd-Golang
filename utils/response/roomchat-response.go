@@ -3,6 +3,7 @@ package response
 import (
 	"healthcare/models/schema"
 	"healthcare/models/web"
+	"healthcare/utils/helper"
 )
 
 func ConvertToCreateRoomchatResponse(roomchat *schema.Roomchat) web.CreateRoomchatResponse {
@@ -48,10 +49,13 @@ func ConvertToRoomchatResponse(roomchat *schema.Roomchat, doctor *schema.Doctor)
 }
 
 func ConvertToGetAllRoomchats(user schema.User, roomchat schema.Roomchat, lastMessage schema.Message) web.RoomchatListResponse {
+	lastMessageContent := helper.GetMessageContent(lastMessage)
+
 	return web.RoomchatListResponse{
-		ID:          roomchat.ID,
-		Fullname:    user.Fullname,
-		LastMessage: lastMessage.Message,
-		CreatedAt:   lastMessage.CreatedAt,
+		ID:             roomchat.ID,
+		Fullname:       user.Fullname,
+		ProfilePicture: user.ProfilePicture,
+		LastMessage:    lastMessageContent,
+		CreatedAt:      lastMessage.CreatedAt,
 	}
 }
