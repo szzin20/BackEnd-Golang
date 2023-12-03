@@ -131,3 +131,24 @@ func GetAdminProfileController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"admin profile", response))
 }
+
+func GetAllDoctorsPaymentsByAdminsController(c echo.Context) error {
+	adminID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrInvalidIDParam))
+	}
+
+	var doctorTransactions []schema.DoctorTransaction
+	if err := configs.DB.Where("admin_id = ? AND payment_status = ?", adminID, "pending").
+		Order("payment_status DESC").Find(&doctorTransactions).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet + "doctor transactions"))
+	}
+
+	if len(doctorTransactions) == 0 {
+		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.ErrNotFound + "no doctor transactions found", nil))
+	}
+
+	responses := response.ConvertToAdminTransactionUsersResponse(doctorTransactions)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"doctor transactions", responses))
+}

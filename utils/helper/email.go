@@ -54,7 +54,7 @@ func SendEmail(to, subject, body, htmlBody string) error {
 	return nil
 }
 
-// SendNotificationEmail sends a notification email based on the notification type.
+
 func SendNotificationEmail(to, fullname, notificationType, userType string) error {
 	go func() {
 		var subject, body string
@@ -115,7 +115,6 @@ func SendNotificationEmail(to, fullname, notificationType, userType string) erro
 }
 
 
-// SendOTPViaEmail sends a one-time password (OTP) via email.
 func SendOTPViaEmail(email string) error {
 	// Generate OTP
 	otp, err := GenerateRandomCode()
