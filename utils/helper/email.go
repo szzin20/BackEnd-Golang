@@ -66,6 +66,9 @@ func SendNotificationEmail(to, fullname, notificationType, userType string) erro
 		case "register":
 			subject = "Registration Notification"
 			body = "Hello, " + fullname + "! You have successfully registered."
+		case "complaint":
+			subject = "Consultation Notification"
+			body = "Hello, " + fullname + "! You have a new consultation request that requires immediate attention. Please review and attend to it promptly."
 		default:
 			err := errors.New("Invalid notification type")
 			log.Println(err)
@@ -113,7 +116,6 @@ func SendNotificationEmail(to, fullname, notificationType, userType string) erro
 
 	return nil
 }
-
 
 // SendOTPViaEmail sends a one-time password (OTP) via email.
 func SendOTPViaEmail(email string) error {
@@ -177,6 +179,3 @@ func SendOTPViaEmail(email string) error {
 
 	return nil
 }
-
-
-
