@@ -1,6 +1,9 @@
 package helper
 
-import "time"
+import (
+	"healthcare/models/schema"
+	"time"
+)
 
 func GenderIsValid(gender string) bool {
 	return gender == "female" || gender == "male" || gender == ""
@@ -24,4 +27,14 @@ func PaymentMethodIsValid(paymentMethod string) bool {
 
 func PaymentStatusIsValid(paymentStatus string) bool {
 	return paymentStatus == "pending" || paymentStatus == "success" || paymentStatus == "cancelled" || paymentStatus == ""
+}
+
+func GetMessageContent(lastMessage schema.Message) string {
+	if lastMessage.Audio != "" {
+		return "Audio Message"
+	} else if lastMessage.Image != "" {
+		return "Image Message"
+	} else {
+		return lastMessage.Message
+	}
 }
