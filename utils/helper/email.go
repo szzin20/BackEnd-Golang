@@ -147,6 +147,7 @@ func getButtonHTML(notificationType string) string {
 }
 
 
+// SendOTPViaEmail sends a one-time password (OTP) via email.
 func SendOTPViaEmail(email string) error {
 	// Generate OTP
 	otp, err := GenerateRandomCode()
@@ -208,6 +209,3 @@ func SendOTPViaEmail(email string) error {
 
 	return nil
 }
-
-
-
