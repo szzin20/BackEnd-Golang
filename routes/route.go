@@ -26,6 +26,7 @@ func SetupRoutes(e *echo.Echo) {
 	gAdmins.PUT("/doctor/:doctor_id", controllers.UpdateDoctorByAdminController, AdminJWT)
 	gAdmins.DELETE("/doctor/:doctor_id", controllers.DeleteDoctorByAdminController, AdminJWT)
 	gAdmins.PUT("/doctor-payments/:transaction_id", controllers.UpdatePaymentStatusByAdminController, AdminJWT)
+	gAdmins.GET("/doctor-payments", controllers.GetAllDoctorsPaymentsByAdminsController, AdminJWT)
 	gAdmins.POST("/medicines", controllers.CreateMedicineController, AdminJWT)
 	gAdmins.GET("/medicines", controllers.GetMedicineAdminController)
 	gAdmins.GET("/medicines/:medicine_id", controllers.GetMedicineAdminByIDController)
@@ -77,7 +78,6 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.PUT("/manage-user/:transaction_id", controllers.UpdateManageUserController, DoctorJWT)
 	gDoctors.POST("/otp-password", controllers.OTPPasswordReset)
 	// gDoctors.POST("/change-password", controllers.ChangePasswordAfterOTP)
-
 
 	e.POST("/chatbot", controllers.Chatbot)
 	e.POST("/customerservice", controllers.CustomerService)

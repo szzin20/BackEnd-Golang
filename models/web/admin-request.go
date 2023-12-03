@@ -14,3 +14,7 @@ type AdminUpdateRequest struct {
 type UpdatePaymentRequest struct {
 	PaymentStatus string `json:"payment_status" validate:"required,oneof=pending success cancelled"`
 }
+
+type UpdateManageUsersRequest struct {
+	PaymentStatus string `json:"payment_status" validate:"required"`
+}

@@ -54,7 +54,7 @@ func SendEmail(to, subject, body, htmlBody string) error {
 	return nil
 }
 
-// SendNotificationEmail sends a notification email based on the notification type.
+
 func SendNotificationEmail(to, fullname, notificationType, userType string) error {
 	go func() {
 		var subject, body string
@@ -66,7 +66,7 @@ func SendNotificationEmail(to, fullname, notificationType, userType string) erro
 		case "register":
 			subject = "Registration Notification"
 			body = "Hello, " + fullname + "! You have successfully registered."
-		case "complaint":
+		case "complaints":
 			subject = "Consultation Notification"
 			body = "Hello, " + fullname + "! You have a new consultation request that requires immediate attention. Please review and attend to it promptly."
 		default:
@@ -97,16 +97,27 @@ func SendNotificationEmail(to, fullname, notificationType, userType string) erro
 					p {
 						color: #333;
 					}
+					.button {
+						display: inline-block;
+						padding: 10px 20px;
+						font-size: 16px;
+						text-align: center;
+						text-decoration: none;
+						background-color: %s; 
+						color: #ffffff;
+						border-radius: 5px;
+					}
 				</style>
 			</head>
 			<body>
 				<div class="container">
 					<h1>%s</h1>
 					<p>%s</p>
+					%s <!-- Button -->
 				</div>
 			</body>
 			</html>
-		`, subject, body)
+		`, getButtonColor(notificationType), subject, body, getButtonHTML(notificationType))
 
 		err := SendEmail(to, subject, body, htmlBody)
 		if err != nil {
@@ -116,6 +127,25 @@ func SendNotificationEmail(to, fullname, notificationType, userType string) erro
 
 	return nil
 }
+
+func getButtonColor(notificationType string) string {
+    switch notificationType {
+    case "complaints":
+        return "#20B2AA" 
+    default:
+        return "#007bff" 
+    }
+}
+
+func getButtonHTML(notificationType string) string {
+    switch notificationType {
+    case "complaints":
+        return `<a class="button" href="#" style="background-color: #20B2AA; text-decoration: none; color: #ffffff; padding: 10px 20px; font-size: 16px; border-radius: 5px; transition: background-color 0.3s;">Attend to Complaints</a>`
+    default:
+        return "" 
+    }
+}
+
 
 // SendOTPViaEmail sends a one-time password (OTP) via email.
 func SendOTPViaEmail(email string) error {
