@@ -28,7 +28,7 @@ type DoctorUpdateRequest struct {
 	Experience        string `json:"experience" form:"experience" validate:"omitempty"`
 	Alumnus           string `json:"alumnus" form:"alumnus" validate:"omitempty"`
 	AboutDoctor       string `json:"about_doctor" form:"about_doctor"  validate:"omitempty,min=0,max=30"`
-	LocationPractices string `json:"location_practice" form:"location_practice" validate:"omitempty"`
+	LocationPractice string `json:"location_practice" form:"location_practice" validate:"omitempty"`
 }
 
 // Manage Patient
