@@ -20,7 +20,7 @@ func SendEmail(to, subject, body, htmlBody string) error {
 
 	// Check if all environment variables are set
 	if smtpServer == "" || smtpPortStr == "" || smtpUsername == "" || smtpPassword == "" {
-		return errors.New("Incomplete SMTP configuration. Please set all required environment variables.")
+		return errors.New("incomplete smtp configuration. please set all required environment variables.")
 	}
 
 	// Convert smtpPortStr to int
@@ -70,7 +70,7 @@ func SendNotificationEmail(to, fullname, notificationType, userType string) erro
 			subject = "Consultation Notification"
 			body = "Hello, " + fullname + "! You have a new consultation request that requires immediate attention. Please review and attend to it promptly."
 		default:
-			err := errors.New("Invalid notification type")
+			err := errors.New("invalid notification type")
 			log.Println(err)
 			return
 		}
