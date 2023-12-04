@@ -71,16 +71,12 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 		doctorResponse := web.DoctorAllResponseByAdmin{
 
 			ID:             doctor.ID,
-			ProfilePicture: doctor.ProfilePicture,
 			Fullname:       doctor.Fullname,
 			Gender:         doctor.Gender,
 			Email:          doctor.Email,
-			Status:         doctor.Status,
-			Price:          doctor.Price,
 			Specialist:     doctor.Specialist,
 			NoSTR:          doctor.NoSTR,
 			Experience:     doctor.Experience,
-			Alumnus:        doctor.Alumnus,
 		}
 
 		results = append(results, doctorResponse)

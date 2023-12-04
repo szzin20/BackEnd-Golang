@@ -278,7 +278,7 @@ func GetAllDoctorByAdminController(c echo.Context) error {
 
 	pagination := helper.Pagination(offset, limit, total)
 
-	response := response.ConvertToGetAllDoctorResponse(doctor)
+	response := response.ConvertToGetAllDoctorByAdminResponse(doctor)
 
 	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"doctor", response, pagination))
 }
