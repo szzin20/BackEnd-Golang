@@ -65,7 +65,8 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 	if existingDoctor := configs.DB.Where("email = ?", doctorRequest.Email).First(&doctorRequest).Error; existingDoctor == nil {
 		return c.JSON(http.StatusConflict, helper.ErrorResponse("email already exist"))
 	}
-	
+	// Save the plain password before hashing
+	plainPassword := doctorRequest.Password
 
 	// Hash kata sandi
 	doctorRequest.Password = helper.HashPassword(doctor.Password)
@@ -76,7 +77,7 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 	}
 
 	// Mengirim email pemberitahuan
-	err = helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "")
+	err = helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "", doctorRequest.Email, plainPassword)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
 	}
@@ -119,7 +120,7 @@ func LoginDoctorController(c echo.Context) error {
 	// Send login notification email
 	if doctor.Email != "" {
 		notificationType := "login"
-		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, ""); err != nil {
+		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "Login","",""); err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send notification email: "+err.Error()))
 		}
 	}
