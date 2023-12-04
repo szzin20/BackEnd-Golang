@@ -2,12 +2,6 @@ package web
 
 import "time"
 
-type MedicineDetailsResponse struct {
-	MedicineID         uint `json:"medicine_id"`
-	Quantity           int  `json:"quantity"`
-	TotalPriceMedicine int  `json:"total_price_medicine"`
-}
-
 type CheckoutResponse struct {
 	ID                       uint                     `json:"id"`
 	PaymentStatus            string                   `json:"payment_status"`

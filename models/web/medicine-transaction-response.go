@@ -24,3 +24,9 @@ type MedicineCheckoutResponse struct {
 	TotalPrice              int                       `json:"total_price"`
 	StatusTransaction       string                    `json:"status_transaction"`
 }
+
+type MedicineDetailsResponse struct {
+	MedicineID         uint `json:"medicine_id"`
+	Quantity           int  `json:"quantity"`
+	TotalPriceMedicine int  `json:"total_price_medicine"`
+}
