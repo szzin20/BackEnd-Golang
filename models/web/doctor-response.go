@@ -46,16 +46,12 @@ type DoctorAllResponse struct {
 
 type DoctorAllResponseByAdmin struct {
 	ID             uint   `json:"id" form:"id"`
-	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
 	Fullname       string `json:"fullname" form:"fullname"`
 	Gender         string `json:"gender" form:"gender"`
 	Email          string `json:"email" form:"email"`
-	Status         bool   `json:"status" form:"status"`
-	Price          int    `json:"price" form:"price"`
 	Specialist     string `json:"specialist" form:"specialist"`
 	Experience     string `json:"experience" form:"experience"`
 	NoSTR          int    `json:"no_str" form:"no_str"`
-	Alumnus        string `json:"alumnus" form:"alumnus"`
 	// DoctorTransaction []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
 }
 
