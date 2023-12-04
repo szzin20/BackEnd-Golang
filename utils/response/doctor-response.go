@@ -7,6 +7,7 @@ import (
 
 func ConvertToDoctorRegisterResponse(doctor *schema.Doctor) web.DoctorRegisterResponse {
 	return web.DoctorRegisterResponse{
+		ID:             doctor.ID,
 		Fullname:       doctor.Fullname,
 		Email:          doctor.Email,
 		Price:          doctor.Price,
@@ -33,27 +34,13 @@ func ConvertToDoctorUpdateResponse(doctor *schema.Doctor) web.DoctorUpdateRespon
 		Email:            doctor.Email,
 		Gender:           doctor.Gender,
 		Specialist:       doctor.Specialist,
-		AboutDoctor:      doctor.AboutDoctor,
-		LocationPractice: doctor.LocationPractice,
 		ProfilePicture:   doctor.ProfilePicture,
 		NoSTR:            doctor.NoSTR,
-		Status:           doctor.Status,
 		Experience:       doctor.Experience,
 		Alumnus:          doctor.Alumnus,
-	}
-}
-
-func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorProfile {
-	return web.DoctorProfile{
-		Fullname:       doctor.Fullname,
-		Email:          doctor.Email,
-		Gender:         doctor.Gender,
-		Specialist:     doctor.Specialist,
-		ProfilePicture: doctor.ProfilePicture,
-		NoSTR:          doctor.NoSTR,
-		Experience:     doctor.Experience,
-		Alumnus:        doctor.Alumnus,
-		AboutDoctor:    doctor.AboutDoctor,
+		AboutDoctor:      doctor.AboutDoctor,
+		LocationPractice: doctor.LocationPractice,
+		Status:           doctor.Status,
 	}
 }
 
@@ -92,7 +79,6 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 			Price:          doctor.Price,
 			Specialist:     doctor.Specialist,
 			NoSTR:          doctor.NoSTR,
-			Role:           doctor.Role,
 			Experience:     doctor.Experience,
 			Alumnus:        doctor.Alumnus,
 		}
@@ -103,7 +89,6 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 	return results
 }
 
-
 func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 	return web.DoctorIDResponse{
 		ID:               doctor.ID,
@@ -113,48 +98,29 @@ func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 		Specialist:       doctor.Specialist,
 		Price:            doctor.Price,
 		Experience:       doctor.Experience,
-		AboutDoctor:      doctor.AboutDoctor,
 		NoSTR:            doctor.NoSTR,
-		LocationPractice: doctor.LocationPractice,
 		Alumnus:          doctor.Alumnus,
+		AboutDoctor:      doctor.AboutDoctor,
+		LocationPractice: doctor.LocationPractice,
 	}
 }
-// ConvertToDoctorPatientResponses mengonversi daftar data pasien ke format respons kustom.
-// func ConvertToDoctorPatientResponses(transactions []schema.DoctorTransaction) []web.DoctorPatientResponse {
-// 	var patientResponses []web.DoctorPatientResponse
 
-// 	for _, transaction := range transactions {
-// 		var patient schema.User
-// 		err := configs.DB.First(&patient, transaction.UserID).Error
-// 		if err != nil {
-// 			continue
-// 		}
+func ConvertToManageUserResponse(managePatient schema.DoctorTransaction, user schema.User) web.ManageUserResponse {
+	return web.ManageUserResponse{
+		UserID:              user.ID,
+		Fullname:            user.Fullname,
+		DoctorTransactionID: managePatient.ID,
+		CreatedAt:           managePatient.CreatedAt,
+		HealthDetails:       managePatient.HealthDetails,
+		PatientStatus:       managePatient.PatientStatus,
+	}
+}
 
-// 		// Gunakan data pasien langsung untuk membuat objek respons kustom
-// 		patientResponse := web.DoctorPatientResponse{
-// 			UserID:              patient.ID,
-// 			Fullname:            patient.Fullname,
-// 			DoctorTransactionID: transaction.ID,
-// 			CreatedAt:           transaction.CreatedAt,
-// 			HealthDetails:       transaction.HealthDetails,
-// 			PatientStatus:       transaction.PatientStatus,
-// 		}
-
-// 		// Tambahkan ke daftar respons
-// 		patientResponses = append(patientResponses, patientResponse)
-// 	}
-
-// 	return patientResponses
-// }
-
-// func ConvertTopatientDoctorTransaksiResponse(patient schema.User, transaction schema.DoctorTransaction) web.DoctorPatientResponse {
-// 	return web.DoctorPatientResponse{
-// 		UserID:              patient.ID,
-// 		Fullname:            patient.Fullname,
-// 		DoctorTransactionID: transaction.ID,
-// 		CreatedAt:           transaction.CreatedAt,
-// 		HealthDetails:       transaction.HealthDetails,
-// 		PatientStatus:       transaction.PatientStatus,
-// 		// UpdatedAt:           transaction.UpdatedAt,
-// 	}
-// }
+func ConvertToConsultationResponse(Consultation schema.DoctorTransaction, user schema.User, doctor schema.Doctor) web.DoctorConsultationResponse {
+	return web.DoctorConsultationResponse{
+		UserID:              Consultation.ID,
+		Fullname:            user.Fullname,
+		DoctorTransactionID: Consultation.ID,
+		Price:               doctor.Price,
+	}
+}

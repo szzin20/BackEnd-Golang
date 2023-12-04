@@ -47,6 +47,19 @@ func ConvertToGetUserResponse(user *schema.User) web.UserUpdateResponse {
 		Weight:         user.Weight,
 	}
 }
+func ConvertToGetUserIDbyAdminResponse(user *schema.User) web.UserAllResponseByAdmin {
+	return web.UserAllResponseByAdmin{
+		ID:             user.ID,
+		Fullname:       user.Fullname,
+		Email:          user.Email,
+		ProfilePicture: user.ProfilePicture,
+		Gender:         user.Gender,
+		Birthdate:      user.Birthdate,
+		BloodType:      user.BloodType,
+		Height:         user.Height,
+		Weight:         user.Weight,
+	}
+}
 
 func ConvertToGetAllUsersResponse(users []schema.User) []web.UserUpdateResponse {
 	var results []web.UserUpdateResponse
@@ -63,5 +76,28 @@ func ConvertToGetAllUsersResponse(users []schema.User) []web.UserUpdateResponse 
 		}
 		results = append(results, userResponse)
 	}
+	return results
+}
+
+func ConvertToGetAllUserByAdminResponse(users []schema.User) []web.UserAllResponseByAdmin {
+	var results []web.UserAllResponseByAdmin
+
+	// Iterasi melalui setiap dokter dan konversi ke format respons
+	for _, user := range users {
+		userResponse := web.UserAllResponseByAdmin{
+			ID:             user.ID,
+			Fullname:       user.Fullname,
+			Email:          user.Email,
+			ProfilePicture: user.ProfilePicture,
+			Gender:         user.Gender,
+			Birthdate:      user.Birthdate,
+			BloodType:      user.BloodType,
+			Height:         user.Height,
+			Weight:         user.Weight,
+		}
+
+		results = append(results, userResponse)
+	}
+
 	return results
 }

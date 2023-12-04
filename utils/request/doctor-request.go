@@ -9,10 +9,10 @@ func ConvertToDoctorRegisterRequest(doctor web.DoctorRegisterRequest) *schema.Do
 	return &schema.Doctor{
 		Fullname:       doctor.Fullname,
 		Email:          doctor.Email,
+		Password:       doctor.Password,
 		Price:          doctor.Price,
 		Specialist:     doctor.Specialist,
 		ProfilePicture: doctor.ProfilePicture,
-		Password:       doctor.Password,
 		Gender:         doctor.Gender,
 		NoSTR:          doctor.NoSTR,
 		Experience:     doctor.Experience,
@@ -33,19 +33,24 @@ func ConvertToDoctorUpdateRequest(doctor web.DoctorUpdateRequest) *schema.Doctor
 		Email:            doctor.Email,
 		Specialist:       doctor.Specialist,
 		ProfilePicture:   doctor.ProfilePicture,
-		AboutDoctor:      doctor.AboutDoctor,
-		LocationPractice: doctor.LocationPractice,
 		Gender:           doctor.Gender,
 		Password:         doctor.Password,
-		Status:           doctor.Status,
 		Experience:       doctor.Experience,
 		Alumnus:          doctor.Alumnus,
+		AboutDoctor:      doctor.AboutDoctor,
+		LocationPractice: doctor.LocationPractice,
 	}
 }
 
-// func ConvertToDoctorTransactionRequest(updateRequest web.DoctorPatientRequest) *schema.DoctorTransaction {
-// 	return &schema.DoctorTransaction{
-// 		HealthDetails: updateRequest.HealthDetails,
-// 		PatientStatus: updateRequest.PatientStatus,
-// 	}
-// }
+func ConvertToManageUserUpdateRequest(managePatient web.UpdateManageUserRequest) *schema.DoctorTransaction {
+	return &schema.DoctorTransaction{
+		HealthDetails: managePatient.HealthDetails,
+		PatientStatus: managePatient.PatientStatus,
+	}
+}
+
+func ConvertToUpdateStatusRequest(doctors web.ChangeDoctorStatusRequest) *schema.Doctor {
+	return &schema.Doctor{
+		Status: doctors.Status,
+	}
+}
