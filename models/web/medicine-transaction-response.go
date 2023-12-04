@@ -14,3 +14,13 @@ type MedicineTransactionResponse struct {
 	StatusTransaction       string                    `json:"status_transaction"`
 	CreatedAt               time.Time                 `json:"created_at"`
 }
+
+type MedicineCheckoutResponse struct {
+	Name                    string                    `json:"name"`
+	Address                 string                    `json:"address"`
+	HP                      string                    `json:"hp"`
+	PaymentMethod           string                    `json:"payment_method"`
+	MedicineDetailsResponse []MedicineDetailsResponse `json:"medicine_details"`
+	TotalPrice              int                       `json:"total_price"`
+	StatusTransaction       string                    `json:"status_transaction"`
+}

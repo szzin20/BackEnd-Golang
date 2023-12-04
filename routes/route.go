@@ -31,6 +31,7 @@ func SetupRoutes(e *echo.Echo) {
 	gAdmins.PUT("/medicines/:id/image", controllers.UpdateImageMedicineController, AdminJWT)
 	gAdmins.DELETE("/medicines/:id/image", controllers.DeleteImageMedicineController, AdminJWT)
 	gAdmins.PUT("/medicines-payments/checkout/:id", controllers.UpdateCheckoutController, AdminJWT)
+	gAdmins.GET("/medicines-payments/checkout", controllers.GetCheckoutController, AdminJWT)
 
 	gUsers := e.Group("/users")
 	gUsers.POST("/register", controllers.RegisterUserController)

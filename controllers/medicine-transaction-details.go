@@ -72,8 +72,11 @@ func CreateCheckoutController(c echo.Context) error {
 
 	var existingCheckout schema.Checkout
 	if err := configs.DB.Where("medicine_transaction_id = ?", medicinetransactionID).First(&existingCheckout).Error; err == nil {
-		if existingCheckout.PaymentStatus == "pending" || existingCheckout.PaymentStatus == "success" {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Checkout already exists with status: "+existingCheckout.PaymentStatus))
+		if existingCheckout.PaymentStatus == "pending" {
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("checkout is still pending"))
+		}
+		if existingCheckout.PaymentStatus == "success" {
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("checkout is success"))
 		}
 	}
 
@@ -86,7 +89,12 @@ func CreateCheckoutController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to update MedicineTransaction status"))
 	}
 
-	response := response.ConvertToCheckoutResponse(checkoutRequest)
+	var created schema.Checkout
+	if err := configs.DB.Preload("MedicineTransaction.MedicineDetails").First(&created, checkoutRequest.ID).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Created Checkout"))
+	}
+
+	response := response.ConvertToGetCheckoutResponse(&created)
 
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("Checkout Created Successfully", response))
 }
@@ -94,7 +102,7 @@ func CreateCheckoutController(c echo.Context) error {
 // Get Checkout
 func GetCheckoutController(c echo.Context) error {
 	// Extract user ID from the context
-	userID, ok := c.Get("userID").(uint)
+	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid user ID"))
 	}
@@ -131,7 +139,7 @@ func GetCheckoutController(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Empty Checkout Data"))
 	}
 
-	response := response.ConvertToCheckoutListResponse(checkouts)
+	response := response.ConvertToGetAllCheckoutResponse(checkouts)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Checkout Data Successfully Retrieved", response))
 }
@@ -150,11 +158,6 @@ func UpdateCheckoutController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Checkout ID"))
 	}
 
-	medicineTransaction := existingCheckout.MedicineTransaction
-	if err := reduceStock(medicineTransaction.MedicineDetails); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
-	}
-
 	var updatedCheckoutRequest web.CheckoutUpdate
 	if err := c.Bind(&updatedCheckoutRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Checkout Data"))
@@ -162,20 +165,32 @@ func UpdateCheckoutController(c echo.Context) error {
 
 	updatedCheckout := request.ConvertToCheckoutUpdate(updatedCheckoutRequest)
 
+	if updatedCheckout.PaymentStatus == "success" {
+		medicineTransaction := existingCheckout.MedicineTransaction
+		if err := reduceStock(medicineTransaction.MedicineDetails); err != nil {
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+		}
+	}
+
+	if updatedCheckout.PaymentStatus == "cancelled" {
+		if err := configs.DB.Model(&existingCheckout.MedicineTransaction).Update("status_transaction", "belum dibayar").Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Update MedicineTransaction Status"))
+		}
+	}
+
 	// Update the existing Checkout
 	result = configs.DB.Table("checkouts").Where("id = ?", checkoutID).Updates(updatedCheckout)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Update Checkout"))
 	}
 
-	var hasil schema.Checkout
-
-	hasil = configs.DB.Preload("MedicineTransaction.MedicineDetails").First(&existingCheckout, checkoutID)
-	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Checkout ID"))
+	var updated schema.Checkout
+	if err := configs.DB.Preload("MedicineTransaction.MedicineDetails").First(&updated, checkoutID).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Updated Checkout"))
 	}
 
-	response := response.ConvertToCheckoutResponse(hasil)
+	response := response.ConvertToGetCheckoutResponse(&updated)
+
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Checkout Updated Successfully", response))
 }
 
