@@ -3,17 +3,17 @@ package web
 import "time"
 
 type DoctorRegisterResponse struct {
-	ID             uint   `json:"id" form:"id"`
-	Fullname       string `json:"fullname" form:"fullname" `
-	Email          string `json:"email" form:"email"`
-	Status         bool   `json:"status" form:"status"`
-	Price          int    `json:"price" form:"price"`
-	Gender         string `json:"gender" form:"gender"`
-	Specialist     string `json:"specialist" form:"specialist"`
-	ProfilePicture string `json:"profile_picture" form:"profile_picture"`
-	NoSTR          int    `json:"no_str" form:"no_str"`
-	Experience     string `json:"experience" form:"experience"`
-	Alumnus        string `json:"alumnus" form:"alumnus"`
+	ID             uint   `json:"id"`
+	Fullname       string `json:"fullname"`
+	Email          string `json:"email"`
+	Status         bool   `json:"status"`
+	Price          int    `json:"price"`
+	Gender         string `json:"gender"`
+	Specialist     string `json:"specialist"`
+	ProfilePicture string `json:"profile_picture"`
+	NoSTR          int    `json:"no_str"`
+	Experience     string `json:"experience"`
+	Alumnus        string `json:"alumnus"`
 }
 type DoctorLoginResponse struct {
 	Fullname string `json:"fullname"`
@@ -79,7 +79,7 @@ type ManageUserResponse struct {
 	PatientStatus       string    `json:"patient_status"`
 }
 
-type DoctorRoomchat struct {
+type DoctorProfileRoomchat struct {
 	ID             uint   `json:"id" form:"id"`
 	Fullname       string `json:"fullname" form:"fullname"`
 	Status         bool   `json:"status" form:"status"`

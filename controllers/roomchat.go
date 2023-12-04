@@ -82,7 +82,7 @@ func GetUserRoomchatController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
 	}
 
-	response := response.ConvertToRoomchatResponse(&roomchat, &doctor)
+	response := response.ConvertToRoomchatUserResponse(&roomchat, &doctor)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", response))
 }
@@ -115,12 +115,12 @@ func GetDoctorRoomchatController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve message data"))
 	}
 
-	var doctor schema.Doctor
-	if err := configs.DB.Where("id = ?", doctortransaction.DoctorID).First(&doctor).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
+	var user schema.User
+	if err := configs.DB.Where("id = ?", doctortransaction.UserID).First(&user).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
 	}
 
-	response := response.ConvertToRoomchatResponse(&roomchat, &doctor)
+	response := response.ConvertToRoomchatDoctorResponse(&roomchat, &user)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", response))
 }

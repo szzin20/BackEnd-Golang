@@ -17,6 +17,7 @@ func ConvertToGetCheckoutResponse(checkout *schema.Checkout) web.CheckoutRespons
 	}
 
 	MedicineCheckoutResponse := web.MedicineCheckoutResponse{
+		UserID:                  checkout.MedicineTransaction.UserID,
 		Name:                    checkout.MedicineTransaction.Name,
 		Address:                 checkout.MedicineTransaction.Address,
 		HP:                      checkout.MedicineTransaction.HP,

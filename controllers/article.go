@@ -151,7 +151,7 @@ func GetAllArticlesPagination(offset int, limit int, queryInput []schema.Article
 
 	query.Find(&queryAll).Count(&total)
 
-	query = query.Limit(limit).Offset(offset)
+	query = query.Order("created_at desc").Limit(limit).Offset(offset)
 
 	result := query.Find(&queryAll)
 
@@ -298,7 +298,7 @@ func DoctorGetAllArticles(c echo.Context) error {
 
 	query.Model(&articles).Count(&total)
 
-	query = query.Limit(limit).Offset(offset)
+	query = query.Order("created_at desc").Limit(limit).Offset(offset)
 
 	err = query.Find(&articles).Error
 	if err != nil {
