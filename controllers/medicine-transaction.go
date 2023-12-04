@@ -1,15 +1,18 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"healthcare/configs"
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
+	"healthcare/utils/helper/constanta"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func CreateMedicineTransaction(c echo.Context) error {
@@ -58,43 +61,43 @@ func CreateMedicineTransaction(c echo.Context) error {
 }
 
 // Get Medicine Transaction
-func GetMedicineTransactionController(c echo.Context) error {
-	userID, ok := c.Get("userID").(int)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
-	}
-
-	idStr := c.QueryParam("id")
-	status := c.QueryParam("status_transaction")
-
-	var medicineTransactions []schema.MedicineTransaction
-	var err error
-
-	if idStr != "" {
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Medicine Transaction ID"))
-		}
-
-		err = configs.DB.Preload("MedicineDetails").Where("user_id = ? AND id = ?", userID, id).Find(&medicineTransactions).Error
-	} else if status != "" {
-		err = configs.DB.Preload("MedicineDetails").Where("user_id = ? AND status_transaction = ?", userID, status).Find(&medicineTransactions).Error
-	} else {
-		err = configs.DB.Preload("MedicineDetails").Where("user_id = ?", userID).Find(&medicineTransactions).Error
-	}
-
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Medicine Transactions Data"))
-	}
-
-	if len(medicineTransactions) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Empty Medicine Transactions Data"))
-	}
-
-	response := response.ConvertToMedicineTransactionListResponse(medicineTransactions)
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Transactions Data Successfully Retrieved", response))
-}
+//func GetMedicineTransactionController(c echo.Context) error {
+//	userID, ok := c.Get("userID").(int)
+//	if !ok {
+//		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+//	}
+//
+//	idStr := c.QueryParam("id")
+//	status := c.QueryParam("status_transaction")
+//
+//	var medicineTransactions []schema.MedicineTransaction
+//	var err error
+//
+//	if idStr != "" {
+//		id, err := strconv.Atoi(idStr)
+//		if err != nil {
+//			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Medicine Transaction ID"))
+//		}
+//
+//		err = configs.DB.Preload("MedicineDetails").Where("user_id = ? AND id = ?", userID, id).Find(&medicineTransactions).Error
+//	} else if status != "" {
+//		err = configs.DB.Preload("MedicineDetails").Where("user_id = ? AND status_transaction = ?", userID, status).Find(&medicineTransactions).Error
+//	} else {
+//		err = configs.DB.Preload("MedicineDetails").Where("user_id = ?", userID).Find(&medicineTransactions).Error
+//	}
+//
+//	if err != nil {
+//		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Medicine Transactions Data"))
+//	}
+//
+//	if len(medicineTransactions) == 0 {
+//		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Empty Medicine Transactions Data"))
+//	}
+//
+//	response := response.ConvertToMedicineTransactionListResponse(medicineTransactions)
+//
+//	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Transactions Data Successfully Retrieved", response))
+//}
 
 // Get Medicine Transaction by ID
 func GetMedicineTransactionByIDController(c echo.Context) error {
@@ -141,4 +144,75 @@ func DeleteMedicineTransactionController(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("MedicineTransaction Deleted Successfully", nil))
+}
+
+func GetMedicineTransactionController(c echo.Context) error {
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+	}
+
+	params := c.QueryParams()
+	limit, err := strconv.Atoi(params.Get("limit"))
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+	}
+
+	offset, err := strconv.Atoi(params.Get("offset"))
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+	}
+
+	status := params.Get("status_transaction")
+
+	var medicinesTransaction []schema.MedicineTransaction
+
+	medicinesTransaction, total, err := GetMedicineTransactionPagination(userID, offset, limit, status)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("medicines "+constanta.ErrNotFound))
+		}
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+	}
+
+	pagination := helper.Pagination(offset, limit, total)
+
+	response := response.ConvertToMedicineTransactionListResponse(medicinesTransaction)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse("Medicine Transactions Data Successfully Retrieved", response, pagination))
+}
+
+func GetMedicineTransactionPagination(userID int, offset int, limit int, status string) ([]schema.MedicineTransaction, int64, error) {
+	if offset < 0 || limit < 0 {
+		return nil, 0, nil
+	}
+
+	var medicineTransactions []schema.MedicineTransaction
+	var total int64
+	query := configs.DB.Model(&medicineTransactions).Where("user_id = ?", userID)
+
+	if status != "" {
+		query = query.Where("status_transaction = ?", status)
+	}
+
+	query.Preload("MedicineDetails").
+		Order("created_at DESC").
+		Find(&medicineTransactions).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	result := query.Find(&medicineTransactions)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	if offset >= int(total) {
+		return nil, 0, fmt.Errorf("not found")
+	}
+
+	return medicineTransactions, total, nil
 }

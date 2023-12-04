@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"healthcare/configs"
 	"healthcare/models/schema"
@@ -9,11 +10,14 @@ import (
 	"healthcare/utils/helper"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
+// Create Checkout By User
 func CreateCheckoutController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
@@ -99,52 +103,112 @@ func CreateCheckoutController(c echo.Context) error {
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("Checkout Created Successfully", response))
 }
 
-// Get Checkout
-func GetCheckoutController(c echo.Context) error {
-	// Extract user ID from the context
+// Get Checkout By User
+func GetUserCheckoutController(c echo.Context) error {
+
 	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid user ID"))
 	}
 
-	checkoutIDStr := c.QueryParam("id")
-	paymentStatus := c.QueryParam("payment_status")
+	params := c.QueryParams()
+	limit, err := strconv.Atoi(params.Get("limit"))
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params limit not valid"))
+	}
+
+	offset, err := strconv.Atoi(params.Get("offset"))
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params offset not valid"))
+	}
+
+	paymentStatus := params.Get("payment_status")
 
 	var checkouts []schema.Checkout
-	var err error
 
-	// Join MedicineTransaction to get the user ID
-	query := configs.DB.
-		Joins("JOIN medicine_transactions ON checkouts.medicine_transaction_id = medicine_transactions.id").
-		Where("medicine_transactions.user_id = ?", userID)
+	checkouts, total, err := GetUserAllCheckoutPagination(offset, limit, paymentStatus, userID, []schema.Checkout{})
 
-	if checkoutIDStr != "" {
-		checkoutID, err := strconv.Atoi(checkoutIDStr)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Checkout ID"))
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Checkouts Not Found"))
 		}
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+	}
 
-		query = query.Where("checkouts.id = ?", checkoutID)
-	} else if paymentStatus != "" {
+	pagination := helper.Pagination(offset, limit, total)
+
+	response := response.ConvertToGetAllCheckoutResponse(checkouts)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse("Checkouts Data Successfully Retrieved", response, pagination))
+}
+
+func GetUserAllCheckoutPagination(offset int, limit int, paymentStatus string, userID int, queryInput []schema.Checkout) ([]schema.Checkout, int64, error) {
+	if offset < 0 || limit < 0 {
+		return nil, 0, nil
+	}
+
+	queryAll := queryInput
+	var total int64
+
+	query := configs.DB.Model(&queryAll).
+		Joins("JOIN medicine_transactions ON checkouts.medicine_transaction_id = medicine_transactions.id").
+		Where("medicine_transactions.user_id = ?", uint(userID))
+
+	if paymentStatus != "" {
 		query = query.Where("checkouts.payment_status = ?", paymentStatus)
 	}
 
-	err = query.Find(&checkouts).Error
+	query = query.Preload("MedicineTransaction.MedicineDetails").
+		Order("checkouts.created_at DESC")
 
+	query.Find(&queryAll).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	result := query.Find(&queryAll)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	if offset >= int(total) {
+		return nil, 0, fmt.Errorf("not found")
+	}
+
+	return queryAll, total, nil
+}
+
+func GetUserCheckoutByIDController(c echo.Context) error {
+
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid user ID"))
+	}
+
+	checkoutID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Checkout ID"))
+	}
+
+	var checkout schema.Checkout
+	result := configs.DB.
+		Joins("JOIN medicine_transactions ON checkouts.medicine_transaction_id = medicine_transactions.id").
+		Preload("MedicineTransaction.MedicineDetails").
+		Where("medicine_transactions.user_id = ? AND checkouts.id = ?", userID, checkoutID).
+		First(&checkout)
+
+	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Checkout Data"))
 	}
 
-	if len(checkouts) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Empty Checkout Data"))
-	}
-
-	response := response.ConvertToGetAllCheckoutResponse(checkouts)
+	response := response.ConvertToGetCheckoutResponse(&checkout)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Checkout Data Successfully Retrieved", response))
 }
 
-// UpdateCheckoutController function
+// UpdateCheckoutController By Admin
 func UpdateCheckoutController(c echo.Context) error {
 	checkoutID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -178,7 +242,6 @@ func UpdateCheckoutController(c echo.Context) error {
 		}
 	}
 
-	// Update the existing Checkout
 	result = configs.DB.Table("checkouts").Where("id = ?", checkoutID).Updates(updatedCheckout)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Update Checkout"))
@@ -212,4 +275,100 @@ func reduceStock(medicineDetails []schema.MedicineDetails) error {
 		}
 	}
 	return nil
+}
+
+// Get Checkout By Admin
+func GetAdminCheckoutController(c echo.Context) error {
+
+	params := c.QueryParams()
+	limit, err := strconv.Atoi(params.Get("limit"))
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params limit not valid"))
+	}
+
+	offset, err := strconv.Atoi(params.Get("offset"))
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params offset not valid"))
+	}
+
+	paymentStatus := params.Get("payment_status")
+
+	var checkouts []schema.Checkout
+
+	checkouts, total, err := GetAdminAllCheckoutPagination(offset, limit, paymentStatus, []schema.Checkout{})
+
+	if err != nil {
+		log.Println(err)
+		if strings.Contains(err.Error(), "not found") {
+
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Checkouts Not Found"))
+		}
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+	}
+
+	pagination := helper.Pagination(offset, limit, total)
+
+	response := response.ConvertToGetAllCheckoutResponse(checkouts)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse("Checkouts Data Successfully Retrieved", response, pagination))
+}
+
+func GetAdminAllCheckoutPagination(offset int, limit int, paymentStatus string, queryInput []schema.Checkout) ([]schema.Checkout, int64, error) {
+	if offset < 0 || limit < 0 {
+		return nil, 0, nil
+	}
+
+	queryAll := queryInput
+	var total int64
+
+	query := configs.DB.Model(&queryAll).
+		Joins("JOIN medicine_transactions ON checkouts.medicine_transaction_id = medicine_transactions.id")
+
+	if paymentStatus != "" {
+		query = query.Where("checkouts.payment_status = ?", paymentStatus)
+	}
+
+	query = query.Preload("MedicineTransaction.MedicineDetails").
+		Order("checkouts.created_at DESC")
+
+	query.Find(&queryAll).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	result := query.Find(&queryAll)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	if offset >= int(total) {
+		return nil, 0, fmt.Errorf("not found")
+	}
+
+	return queryAll, total, nil
+}
+
+func GetAdminCheckoutByIDController(c echo.Context) error {
+
+	checkoutID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Checkout ID"))
+	}
+
+	var checkout schema.Checkout
+	result := configs.DB.
+		Preload("MedicineTransaction.MedicineDetails").
+		Joins("JOIN medicine_transactions ON checkouts.medicine_transaction_id = medicine_transactions.id").
+		Where("checkouts.id = ?", checkoutID).
+		First(&checkout)
+
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Checkout Data"))
+	}
+
+	response := response.ConvertToGetCheckoutResponse(&checkout)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Checkout Data Successfully Retrieved", response))
 }

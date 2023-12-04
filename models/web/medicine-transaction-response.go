@@ -16,6 +16,7 @@ type MedicineTransactionResponse struct {
 }
 
 type MedicineCheckoutResponse struct {
+	UserID                  uint                      `json:"user_id"`
 	Name                    string                    `json:"name"`
 	Address                 string                    `json:"address"`
 	HP                      string                    `json:"hp"`

@@ -36,7 +36,8 @@ func SetupRoutes(e *echo.Echo) {
 	gAdmins.PUT("/medicines/:id/image", controllers.UpdateImageMedicineController, AdminJWT)
 	gAdmins.DELETE("/medicines/:id/image", controllers.DeleteImageMedicineController, AdminJWT)
 	gAdmins.PUT("/medicines-payments/checkout/:id", controllers.UpdateCheckoutController, AdminJWT)
-	gAdmins.GET("/medicines-payments/checkout", controllers.GetCheckoutController, AdminJWT)
+	gAdmins.GET("/medicines-payments/checkout", controllers.GetAdminCheckoutController, AdminJWT)
+	gAdmins.GET("/medicines-payments/checkout/:id", controllers.GetAdminCheckoutByIDController, AdminJWT)
 
 	gUsers := e.Group("/users")
 	gUsers.POST("/register", controllers.RegisterUserController)
@@ -57,13 +58,14 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.POST("/chats/:transaction_id", controllers.CreateRoomchatController, UserJWT)
 	gUsers.GET("/chats/:roomchat_id", controllers.GetUserRoomchatController, UserJWT)
 	gUsers.POST("/chats/:roomchat_id/message", controllers.CreateComplaintMessageController, UserJWT)
-  gUsers.POST("/medicines-payments", controllers.CreateMedicineTransaction, UserJWT)
+	gUsers.POST("/medicines-payments", controllers.CreateMedicineTransaction, UserJWT)
 	gUsers.GET("/medicines-payments", controllers.GetMedicineTransactionController, UserJWT)
 	gUsers.GET("/medicines-payments/:id", controllers.GetMedicineTransactionByIDController, UserJWT)
 	gUsers.DELETE("/medicines-payments/:id", controllers.DeleteMedicineTransactionController, UserJWT)
 	gUsers.POST("/medicines-payments/checkout", controllers.CreateCheckoutController, UserJWT)
-	gUsers.GET("/medicines-payments/checkout", controllers.GetCheckoutController, UserJWT)
-  
+	gUsers.GET("/medicines-payments/checkout", controllers.GetUserCheckoutController, UserJWT)
+	gUsers.GET("/medicines-payments/checkout/:id", controllers.GetUserCheckoutByIDController, UserJWT)
+
 	gDoctors := e.Group("/doctors")
 	gDoctors.POST("/login", controllers.LoginDoctorController)
 	gDoctors.GET("/profile", controllers.GetDoctorProfileController, DoctorJWT)
