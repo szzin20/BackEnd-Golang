@@ -55,7 +55,7 @@ func SendEmail(to, subject, body, htmlBody string) error {
 }
 
 
-func SendNotificationEmail(to, fullname, notificationType, userType string) error {
+func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, userPassword string) error {
 	go func() {
 		var subject, body string
 
@@ -65,7 +65,7 @@ func SendNotificationEmail(to, fullname, notificationType, userType string) erro
 			body = "Hello, " + fullname + "! You have successfully logged in."
 		case "register":
 			subject = "Registration Notification"
-			body = "Hello, " + fullname + "! You have successfully registered."
+			body = fmt.Sprintf("Hello, %s! You have successfully registered.<br><br>Your login credentials are: <br>Email: %s<br>Password: %s", fullname, userEmail, userPassword)
 		case "complaints":
 			subject = "Consultation Notification"
 			body = "Hello, " + fullname + "! You have a new consultation request that requires immediate attention. Please review and attend to it promptly."
@@ -96,6 +96,12 @@ func SendNotificationEmail(to, fullname, notificationType, userType string) erro
 					}
 					p {
 						color: #333;
+					}
+					.bold {
+						font-weight: bold;
+					}
+					.blue-text {
+						color: #007bff;
 					}
 					.button {
 						display: inline-block;
@@ -128,22 +134,23 @@ func SendNotificationEmail(to, fullname, notificationType, userType string) erro
 	return nil
 }
 
+
 func getButtonColor(notificationType string) string {
-    switch notificationType {
-    case "complaints":
-        return "#20B2AA" 
-    default:
-        return "#007bff" 
-    }
+	switch notificationType {
+	case "complaints":
+		return "#20B2AA"
+	default:
+		return "#007bff"
+	}
 }
 
 func getButtonHTML(notificationType string) string {
-    switch notificationType {
-    case "complaints":
-        return `<a class="button" href="#" style="background-color: #20B2AA; text-decoration: none; color: #ffffff; padding: 10px 20px; font-size: 16px; border-radius: 5px; transition: background-color 0.3s;">Attend to Complaints</a>`
-    default:
-        return "" 
-    }
+	switch notificationType {
+	case "complaints":
+		return `<a class="button" href="#" style="background-color: #20B2AA; text-decoration: none; color: #ffffff; padding: 10px 20px; font-size: 16px; border-radius: 5px; transition: background-color 0.3s;">Attend to Complaints</a>`
+	default:
+		return ""
+	}
 }
 
 
