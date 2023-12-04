@@ -6,6 +6,7 @@ import (
 	"healthcare/middlewares"
 	"healthcare/routes"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -29,10 +30,7 @@ func main() {
 	routes.SetupRoutes(e)
 
 	port := os.Getenv("SERVER_PORT")
-	if port == "" {
-		port = "8080"
-	}
+	ports, _ := strconv.Atoi(port)
 
-	setPort := fmt.Sprintf(":%s", port)
-	e.Logger.Fatal(e.Start(setPort))
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", ports)))
 }
