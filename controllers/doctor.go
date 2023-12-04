@@ -13,10 +13,39 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 
-	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
+
+func GetAllDoctorPagination(offset int, limit int, queryInput []schema.Doctor) ([]schema.Doctor, int64, error) {
+
+	if offset < 0 || limit < 0 {
+		return nil, 0, nil
+	}
+
+	queryAll := queryInput
+	var total int64
+
+	query := configs.DB.Model(&queryAll)
+
+	query.Find(&queryAll).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	result := query.Find(&queryAll)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	if offset >= int(total) {
+		return nil, 0, fmt.Errorf("not found")
+	}
+
+	return queryAll, total, nil
+}
 
 // RegisterDoctorController
 func RegisterDoctorByAdminController(c echo.Context) error {
@@ -121,7 +150,7 @@ func LoginDoctorController(c echo.Context) error {
 	// Send login notification email
 	if doctor.Email != "" {
 		notificationType := "login"
-		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "Login","",""); err != nil {
+		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "Login", "", ""); err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send notification email: "+err.Error()))
 		}
 	}
@@ -214,11 +243,7 @@ func GetDoctorProfileController(c echo.Context) error {
 
 	var doctor schema.Doctor
 	if err := configs.DB.First(&doctor, doctorID).Error; err != nil {
-		if gorm.IsRecordNotFoundError(err) {
-			return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
-		} else {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor profile"))
-		}
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor profile"))
 	}
 
 	response := response.ConvertToDoctorUpdateResponse(&doctor)
@@ -227,39 +252,35 @@ func GetDoctorProfileController(c echo.Context) error {
 }
 
 // Get All Doctors
-func GetAllDoctorController(c echo.Context) error {
-	var doctors []schema.Doctor
-
-	err := configs.DB.Find(&doctors).Error
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctors"))
-	}
-
-	if len(doctors) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrActionGet+"doctors"+constanta.ErrNotFound))
-	}
-
-	response := response.ConvertToGetAllDoctorResponse(doctors)
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"doctors", response))
-}
-
-// Get All Doctors by Admin
 func GetAllDoctorByAdminController(c echo.Context) error {
-	var Doctor []schema.Doctor
 
-	err := configs.DB.Find(&Doctor).Error
+	params := c.QueryParams()
+	limit, err := strconv.Atoi(params.Get("limit"))
+
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
-	if len(Doctor) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("data is empty"))
+	offset, err := strconv.Atoi(params.Get("offset"))
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
-	response := response.ConvertToGetAllDoctorByAdminResponse(Doctor)
+	var doctors []schema.Doctor
+	doctor, total, err := GetAllDoctorPagination(offset, limit, doctors)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
+		}
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("data successfully retrieved", response))
+	pagination := helper.Pagination(offset, limit, total)
+
+	response := response.ConvertToGetAllDoctorResponse(doctor)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"doctor", response, pagination))
 }
 
 // Update Doctor
@@ -460,24 +481,44 @@ func GetManageUserController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse((constanta.ErrActionGet + "doctor id")))
 	}
 
+	// Parse limit and offset from query parameters
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+	}
+
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+	}
+
 	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
 	patientStatus := c.QueryParam("patient_status")
 
 	var manageUser []schema.DoctorTransaction
+	var total int64
 
-	var err error
+	var query *gorm.DB
 
 	if transactionID != 0 {
 		// Get transaction by ID
-		err = configs.DB.First(&manageUser, "doctor_id = ? AND id = ? AND payment_status = 'success'", doctorID, transactionID).Error
+		query = configs.DB.Where("doctor_id = ? AND id = ? AND payment_status = 'success'", doctorID, transactionID)
 	} else if patientStatus != "" {
 		// Get transactions by patient status
-		err = configs.DB.Find(&manageUser, "doctor_id = ? AND patient_status = ? AND payment_status = 'success'", doctorID, patientStatus).Error
+		query = configs.DB.Where("doctor_id = ? AND patient_status = ? AND payment_status = 'success'", doctorID, patientStatus)
 	} else {
 		// Get all transactions
-		err = configs.DB.Where("deleted_at IS NULL AND payment_status = 'success'").Find(&manageUser, "doctor_id=?", doctorID).Error
+		query = configs.DB.Where("deleted_at IS NULL AND payment_status = 'success'").Where("doctor_id=?", doctorID)
 	}
 
+	// Count total number of records
+	query.Model(&manageUser).Count(&total)
+
+	// Apply limit and offset to the query
+	query = query.Limit(limit).Offset(offset)
+
+	// Execute the query
+	err = query.Find(&manageUser).Error
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor transaction"))
 	}
@@ -498,7 +539,9 @@ func GetManageUserController(c echo.Context) error {
 		responses = append(responses, response)
 	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"doctor transaction", responses))
+	pagination := helper.Pagination(offset, limit, total)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"doctor transaction", responses, pagination))
 }
 
 // Update manage user
@@ -565,41 +608,57 @@ func UpdateManageUserController(c echo.Context) error {
 	response := response.ConvertToManageUserResponse(doctorTransaction, user)
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"health details and patient status", response))
 }
-
+// Update manage user
 func GetAllDoctorConsultationController(c echo.Context) error {
-	var consultations []schema.DoctorTransaction
+    limit, err := strconv.Atoi(c.QueryParam("limit"))
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit" + constanta.ErrQueryParamRequired))
+    }
 
-	if err := configs.DB.Where("payment_status = ?", "success").Find(&consultations).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"consultations"))
-	}
+    offset, err := strconv.Atoi(c.QueryParam("offset"))
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset" + constanta.ErrQueryParamRequired))
+    }
 
-	// Membuat slice untuk menyimpan hasil konversi
-	var ConsultationResponses []web.DoctorConsultationResponse
-	for _, consultation := range consultations {
 
-		var user schema.User
-		if err := configs.DB.First(&user, consultation.UserID).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"user data"))
-		}
+    var consultations []schema.DoctorTransaction
+    var total int64
 
-		// Mengambil data dokter
-		var doctor schema.Doctor
-		if err := configs.DB.First(&doctor, consultation.DoctorID).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor data"))
-		}
 
-		Response := response.ConvertToConsultationResponse(consultation, user, doctor)
-		ConsultationResponses = append(ConsultationResponses, Response)
-	}
+    query := configs.DB.Where("payment_status = ?", "success")
 
-	// Memeriksa apakah tidak ada konsultasi yang berhasil diambil
-	if len(ConsultationResponses) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound+"consultations"))
-	}
+    query.Model(&consultations).Count(&total)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"consultations", ConsultationResponses))
+    query = query.Limit(limit).Offset(offset)
+
+    if err := query.Find(&consultations).Error; err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"consultations"))
+    }
+
+    var consultationResponses []web.DoctorConsultationResponse
+    for _, consultation := range consultations {
+        var user schema.User
+        if err := configs.DB.First(&user, consultation.UserID).Error; err != nil {
+            return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"user data"))
+        }
+
+        var doctor schema.Doctor
+        if err := configs.DB.First(&doctor, consultation.DoctorID).Error; err != nil {
+            return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor data"))
+        }
+
+        response := response.ConvertToConsultationResponse(consultation, user, doctor)
+        consultationResponses = append(consultationResponses, response)
+    }
+
+    if len(consultationResponses) == 0 {
+        return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound+"consultations"))
+    }
+
+    pagination := helper.Pagination(offset, limit, total)
+
+    return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"consultations", consultationResponses, pagination))
 }
-
 // Change Doctor Status
 func ChangeDoctorStatusController(c echo.Context) error {
 

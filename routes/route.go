@@ -71,7 +71,6 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.PUT("/profile", controllers.UpdateDoctorController, DoctorJWT)
 	gDoctors.PUT("/status", controllers.ChangeDoctorStatusController, DoctorJWT)
 	gDoctors.DELETE("", controllers.DeleteDoctorController, DoctorJWT)
-	gDoctors.GET("", controllers.GetAllDoctorController)
 	gDoctors.GET("/articles", controllers.DoctorGetAllArticles, DoctorJWT)
 	gDoctors.GET("/articles/:article_id", controllers.DoctorGetArticleByID, DoctorJWT)
 	gDoctors.POST("/articles", controllers.CreateArticle, DoctorJWT)
