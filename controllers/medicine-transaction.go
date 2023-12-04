@@ -24,7 +24,7 @@ func CreateMedicineTransaction(c echo.Context) error {
 	var medicineTransactionRequest web.MedicineTransactionRequest
 
 	if err := c.Bind(&medicineTransactionRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Medicine Transaction Data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
 	}
 
 	if err := helper.ValidateStruct(medicineTransactionRequest); err != nil {
@@ -37,11 +37,11 @@ func CreateMedicineTransaction(c echo.Context) error {
 	for i, md := range medicineTransaction.MedicineDetails {
 		medicine := schema.Medicine{}
 		if err := configs.DB.First(&medicine, md.MedicineID).Error; err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Medicine ID"))
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
 		}
 
 		if medicine.Stock < md.Quantity {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Insufficient stock"))
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("insufficient stock"))
 		}
 
 		medicineTransaction.MedicineDetails[i].TotalPriceMedicine = md.Quantity * medicine.Price
@@ -52,58 +52,19 @@ func CreateMedicineTransaction(c echo.Context) error {
 	medicineTransaction.TotalPrice = totalPrice
 
 	if err := configs.DB.Create(&medicineTransaction).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Create Medicine Transaction"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionCreated+"medicine transaction"))
 	}
 
 	response := response.ConvertToMedicineTransactionResponse(medicineTransaction)
 
-	return c.JSON(http.StatusCreated, helper.SuccessResponse("Medicine Transaction Created Successfully", response))
+	return c.JSON(http.StatusCreated, helper.SuccessResponse(constanta.SuccessActionCreated+"medicine transaction", response))
 }
-
-// Get Medicine Transaction
-//func GetMedicineTransactionController(c echo.Context) error {
-//	userID, ok := c.Get("userID").(int)
-//	if !ok {
-//		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
-//	}
-//
-//	idStr := c.QueryParam("id")
-//	status := c.QueryParam("status_transaction")
-//
-//	var medicineTransactions []schema.MedicineTransaction
-//	var err error
-//
-//	if idStr != "" {
-//		id, err := strconv.Atoi(idStr)
-//		if err != nil {
-//			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Medicine Transaction ID"))
-//		}
-//
-//		err = configs.DB.Preload("MedicineDetails").Where("user_id = ? AND id = ?", userID, id).Find(&medicineTransactions).Error
-//	} else if status != "" {
-//		err = configs.DB.Preload("MedicineDetails").Where("user_id = ? AND status_transaction = ?", userID, status).Find(&medicineTransactions).Error
-//	} else {
-//		err = configs.DB.Preload("MedicineDetails").Where("user_id = ?", userID).Find(&medicineTransactions).Error
-//	}
-//
-//	if err != nil {
-//		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Medicine Transactions Data"))
-//	}
-//
-//	if len(medicineTransactions) == 0 {
-//		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Empty Medicine Transactions Data"))
-//	}
-//
-//	response := response.ConvertToMedicineTransactionListResponse(medicineTransactions)
-//
-//	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Transactions Data Successfully Retrieved", response))
-//}
 
 // Get Medicine Transaction by ID
 func GetMedicineTransactionByIDController(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Medicine Transaction ID"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine transaction id"))
 	}
 
 	userID, ok := c.Get("userID").(int)
@@ -114,36 +75,36 @@ func GetMedicineTransactionByIDController(c echo.Context) error {
 	var medicineTransaction schema.MedicineTransaction
 
 	if err := configs.DB.Preload("MedicineDetails").Where("user_id = ?", userID).First(&medicineTransaction, id).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Medicine Transaction Data"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	response := response.ConvertToMedicineTransactionResponse(&medicineTransaction)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Transaction Data Successfully Retrieved", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"medicine transaction", response))
 }
 
 func DeleteMedicineTransactionController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(uint)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid user ID"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
 	}
 
 	medicineTransactionID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid MedicineTransaction ID"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}
 
 	var medicineTransaction schema.MedicineTransaction
 	if err := configs.DB.Where("id = ? AND user_id = ?", medicineTransactionID, userID).First(&medicineTransaction).Error; err != nil {
-		return c.JSON(http.StatusForbidden, helper.ErrorResponse("You do not have permission to delete this MedicineTransaction"))
+		return c.JSON(http.StatusForbidden, helper.ErrorResponse("permission denied"))
 	}
 
 	if err := configs.DB.Delete(&medicineTransaction).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to delete MedicineTransaction"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionDeleted+"medicine transaction"))
 	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("MedicineTransaction Deleted Successfully", nil))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionDeleted+"medicine transaction", nil))
 }
 
 func GetMedicineTransactionController(c echo.Context) error {
@@ -173,7 +134,7 @@ func GetMedicineTransactionController(c echo.Context) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("medicines "+constanta.ErrNotFound))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("medicines transaction "+constanta.ErrNotFound))
 		}
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
 	}
@@ -182,7 +143,7 @@ func GetMedicineTransactionController(c echo.Context) error {
 
 	response := response.ConvertToMedicineTransactionListResponse(medicinesTransaction)
 
-	return c.JSON(http.StatusOK, helper.PaginationResponse("Medicine Transactions Data Successfully Retrieved", response, pagination))
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"medicine transactions", response, pagination))
 }
 
 func GetMedicineTransactionPagination(userID int, offset int, limit int, status string) ([]schema.MedicineTransaction, int64, error) {

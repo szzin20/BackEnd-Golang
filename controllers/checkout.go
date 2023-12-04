@@ -8,6 +8,7 @@ import (
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
+	"healthcare/utils/helper/constanta"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"log"
@@ -22,7 +23,7 @@ func CreateCheckoutController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid user ID"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
 	}
 
 	medicinetransactionID, _ := strconv.Atoi(c.QueryParam("medicine_transaction_id"))
@@ -30,7 +31,7 @@ func CreateCheckoutController(c echo.Context) error {
 	var checkout web.CheckoutRequest
 
 	if err := c.Bind(&checkout); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Checkout Data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
 	}
 
 	if err := helper.ValidateStruct(checkout); err != nil {
@@ -45,7 +46,7 @@ func CreateCheckoutController(c echo.Context) error {
 
 	file, fileHeader, err := c.Request().FormFile("payment_confirmation")
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Image File is Required"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrImageFileRequired))
 	}
 	defer file.Close()
 
@@ -59,19 +60,19 @@ func CreateCheckoutController(c echo.Context) error {
 		}
 	}
 	if !allowed {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidImageFormat))
 	}
 
 	imageURL, err := helper.UploadFilesToGCS(c, fileHeader)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to Cloud Storage"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error upload image to cloud storage"))
 	}
 
 	checkout.PaymentConfirmation = imageURL
 
 	var medicineTransaction schema.MedicineTransaction
 	if err := configs.DB.Where("id = ? AND user_id = ?", medicinetransactionID, userID).First(&medicineTransaction).Error; err != nil {
-		return c.JSON(http.StatusForbidden, helper.ErrorResponse("You do not have permission to create a checkout for this MedicineTransaction"))
+		return c.JSON(http.StatusForbidden, helper.ErrorResponse("permission denied"))
 	}
 
 	var existingCheckout schema.Checkout
@@ -86,21 +87,21 @@ func CreateCheckoutController(c echo.Context) error {
 
 	checkoutRequest := request.ConvertToCheckoutRequest(checkout)
 	if err := configs.DB.Create(&checkoutRequest).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Create Checkout"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionCreated+"checkout"))
 	}
 
 	if err := configs.DB.Model(&medicineTransaction).Update("status_transaction", "sudah dibayar").Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to update MedicineTransaction status"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"medicine transaction status"))
 	}
 
 	var created schema.Checkout
 	if err := configs.DB.Preload("MedicineTransaction.MedicineDetails").First(&created, checkoutRequest.ID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Created Checkout"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"created checkout"))
 	}
 
 	response := response.ConvertToGetCheckoutResponse(&created)
 
-	return c.JSON(http.StatusCreated, helper.SuccessResponse("Checkout Created Successfully", response))
+	return c.JSON(http.StatusCreated, helper.SuccessResponse(constanta.SuccessActionCreated+"checkout", response))
 }
 
 // Get Checkout By User
@@ -108,20 +109,20 @@ func GetUserCheckoutController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid user ID"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
 	}
 
 	params := c.QueryParams()
 	limit, err := strconv.Atoi(params.Get("limit"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params limit not valid"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(params.Get("offset"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params offset not valid"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	paymentStatus := params.Get("payment_status")
@@ -132,7 +133,7 @@ func GetUserCheckoutController(c echo.Context) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Checkouts Not Found"))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
 		}
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
 	}
@@ -141,7 +142,7 @@ func GetUserCheckoutController(c echo.Context) error {
 
 	response := response.ConvertToGetAllCheckoutResponse(checkouts)
 
-	return c.JSON(http.StatusOK, helper.PaginationResponse("Checkouts Data Successfully Retrieved", response, pagination))
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"checkouts", response, pagination))
 }
 
 func GetUserAllCheckoutPagination(offset int, limit int, paymentStatus string, userID int, queryInput []schema.Checkout) ([]schema.Checkout, int64, error) {
@@ -184,12 +185,12 @@ func GetUserCheckoutByIDController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Invalid user ID"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
 	}
 
 	checkoutID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Checkout ID"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid checkout id"))
 	}
 
 	var checkout schema.Checkout
@@ -200,31 +201,31 @@ func GetUserCheckoutByIDController(c echo.Context) error {
 		First(&checkout)
 
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Checkout Data"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound+" checkout"))
 	}
 
 	response := response.ConvertToGetCheckoutResponse(&checkout)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Checkout Data Successfully Retrieved", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"checkout", response))
 }
 
 // UpdateCheckoutController By Admin
 func UpdateCheckoutController(c echo.Context) error {
 	checkoutID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Checkout ID"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid checkout id"))
 	}
 
 	var existingCheckout schema.Checkout
 
 	result := configs.DB.Preload("MedicineTransaction.MedicineDetails").First(&existingCheckout, checkoutID)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Checkout ID"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"checkout id"))
 	}
 
 	var updatedCheckoutRequest web.CheckoutUpdate
 	if err := c.Bind(&updatedCheckoutRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Input Checkout Data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
 	}
 
 	updatedCheckout := request.ConvertToCheckoutUpdate(updatedCheckoutRequest)
@@ -238,40 +239,40 @@ func UpdateCheckoutController(c echo.Context) error {
 
 	if updatedCheckout.PaymentStatus == "cancelled" {
 		if err := configs.DB.Model(&existingCheckout.MedicineTransaction).Update("status_transaction", "belum dibayar").Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Update MedicineTransaction Status"))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"medicine transaction status"))
 		}
 	}
 
 	result = configs.DB.Table("checkouts").Where("id = ?", checkoutID).Updates(updatedCheckout)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Update Checkout"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"checkout"))
 	}
 
 	var updated schema.Checkout
 	if err := configs.DB.Preload("MedicineTransaction.MedicineDetails").First(&updated, checkoutID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Updated Checkout"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"updated checkout"))
 	}
 
 	response := response.ConvertToGetCheckoutResponse(&updated)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Checkout Updated Successfully", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"checkout", response))
 }
 
 func reduceStock(medicineDetails []schema.MedicineDetails) error {
 	for _, md := range medicineDetails {
 		medicine := schema.Medicine{}
 		if err := configs.DB.First(&medicine, md.MedicineID).Error; err != nil {
-			return errors.New("Invalid Medicine ID")
+			return errors.New("invalid medicine id")
 		}
 
 		if medicine.Stock < md.Quantity {
-			return errors.New("Insufficient stock")
+			return errors.New("insufficient stock")
 		}
 
 		// Reduce stock in the Medicine table
 		newStock := medicine.Stock - md.Quantity
 		if err := configs.DB.Model(&medicine).Update("stock", newStock).Error; err != nil {
-			return errors.New("Failed to update Medicine stock")
+			return errors.New(constanta.ErrActionUpdated + "medicine stock")
 		}
 	}
 	return nil
@@ -284,13 +285,13 @@ func GetAdminCheckoutController(c echo.Context) error {
 	limit, err := strconv.Atoi(params.Get("limit"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params limit not valid"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(params.Get("offset"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params offset not valid"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	paymentStatus := params.Get("payment_status")
@@ -303,7 +304,7 @@ func GetAdminCheckoutController(c echo.Context) error {
 		log.Println(err)
 		if strings.Contains(err.Error(), "not found") {
 
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Checkouts Not Found"))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
 		}
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
 	}
@@ -312,7 +313,7 @@ func GetAdminCheckoutController(c echo.Context) error {
 
 	response := response.ConvertToGetAllCheckoutResponse(checkouts)
 
-	return c.JSON(http.StatusOK, helper.PaginationResponse("Checkouts Data Successfully Retrieved", response, pagination))
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"checkouts", response, pagination))
 }
 
 func GetAdminAllCheckoutPagination(offset int, limit int, paymentStatus string, queryInput []schema.Checkout) ([]schema.Checkout, int64, error) {
@@ -354,7 +355,7 @@ func GetAdminCheckoutByIDController(c echo.Context) error {
 
 	checkoutID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Checkout ID"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid checkout id"))
 	}
 
 	var checkout schema.Checkout
@@ -365,10 +366,10 @@ func GetAdminCheckoutByIDController(c echo.Context) error {
 		First(&checkout)
 
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Checkout Data"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"checkout"))
 	}
 
 	response := response.ConvertToGetCheckoutResponse(&checkout)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Checkout Data Successfully Retrieved", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"checkout", response))
 }
