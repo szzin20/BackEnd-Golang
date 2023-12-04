@@ -32,6 +32,5 @@ type UserAllResponseByAdmin struct {
 	BloodType      string `json:"blood_type" form:"blood_type"`
 	Height         int    `json:"height" form:"height"`
 	Weight         int    `json:"weight" form:"weight"`
-	Role           string `json:"role" form:"role"`
 	// DoctorTransaction []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
 }

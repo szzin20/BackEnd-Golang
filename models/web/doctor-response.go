@@ -3,6 +3,7 @@ package web
 import "time"
 
 type DoctorRegisterResponse struct {
+	ID             uint   `json:"id" form:"id"`
 	Fullname       string `json:"fullname" form:"fullname" `
 	Email          string `json:"email" form:"email"`
 	Status         bool   `json:"status" form:"status"`
@@ -54,7 +55,6 @@ type DoctorAllResponseByAdmin struct {
 	Specialist     string `json:"specialist" form:"specialist"`
 	Experience     string `json:"experience" form:"experience"`
 	NoSTR          int    `json:"no_str" form:"no_str"`
-	Role           string `json:"role" form:"role"`
 	Alumnus        string `json:"alumnus" form:"alumnus"`
 	// DoctorTransaction []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
 }
@@ -71,18 +71,6 @@ type DoctorIDResponse struct {
 	NoSTR            int    `json:"no_str"`
 	LocationPractice string `json:"location_practice"`
 	Alumnus          string `json:"alumnus"`
-}
-
-type DoctorProfile struct {
-	Fullname       string `json:"fullname"`
-	Email          string `json:"email"`
-	Gender         string `json:"gender"`
-	Specialist     string `json:"specialist"`
-	ProfilePicture string `json:"profile_picture"`
-	NoSTR          int    `json:"no_str"`
-	Experience     string `json:"experience"`
-	Alumnus        string `json:"alumnus"`
-	AboutDoctor    string `json:"about_doctor"`
 }
 
 // Manage Patient

@@ -29,15 +29,16 @@ func ConvertToDoctorLoginRequest(doctor web.DoctorLoginRequest) *schema.Doctor {
 
 func ConvertToDoctorUpdateRequest(doctor web.DoctorUpdateRequest) *schema.Doctor {
 	return &schema.Doctor{
-		Fullname:       doctor.Fullname,
-		Email:          doctor.Email,
-		Specialist:     doctor.Specialist,
-		ProfilePicture: doctor.ProfilePicture,
-		Gender:         doctor.Gender,
-		Password:       doctor.Password,
-		Status:         doctor.Status,
-		Experience:     doctor.Experience,
-		Alumnus:        doctor.Alumnus,
+		Fullname:         doctor.Fullname,
+		Email:            doctor.Email,
+		Specialist:       doctor.Specialist,
+		ProfilePicture:   doctor.ProfilePicture,
+		Gender:           doctor.Gender,
+		Password:         doctor.Password,
+		Experience:       doctor.Experience,
+		Alumnus:          doctor.Alumnus,
+		AboutDoctor:      doctor.AboutDoctor,
+		LocationPractice: doctor.LocationPractice,
 	}
 }
 
@@ -45,5 +46,11 @@ func ConvertToManageUserUpdateRequest(managePatient web.UpdateManageUserRequest)
 	return &schema.DoctorTransaction{
 		HealthDetails: managePatient.HealthDetails,
 		PatientStatus: managePatient.PatientStatus,
+	}
+}
+
+func ConvertToUpdateStatusRequest(doctors web.ChangeDoctorStatusRequest) *schema.Doctor {
+	return &schema.Doctor{
+		Status: doctors.Status,
 	}
 }

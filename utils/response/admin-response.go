@@ -24,3 +24,21 @@ func ConvertToGetProfileAdminResponse(admin *schema.Admin) web.AdminProfileRespo
 		Email: admin.Email,
 	}
 }
+
+func ConvertToAdminTransactionUsersResponse(transactions []schema.DoctorTransaction) []web.AdminTransactionUsersResponse {
+	var results []web.AdminTransactionUsersResponse
+	for _, transaction := range transactions {
+		adminsResponse := web.AdminTransactionUsersResponse{
+			TransactionID:       transaction.ID,
+			DoctorID:            transaction.DoctorID,
+			UserID:              transaction.UserID,
+			PaymentMethod:       transaction.PaymentMethod,
+			Price:               transaction.Price,
+			CreatedAt:           transaction.CreatedAt,
+			PaymentConfirmation: transaction.PaymentConfirmation,
+			PaymentStatus:       transaction.PaymentStatus,
+		}
+		results = append(results, adminsResponse)
+	}
+	return results
+}

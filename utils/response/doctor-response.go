@@ -7,6 +7,7 @@ import (
 
 func ConvertToDoctorRegisterResponse(doctor *schema.Doctor) web.DoctorRegisterResponse {
 	return web.DoctorRegisterResponse{
+		ID:             doctor.ID,
 		Fullname:       doctor.Fullname,
 		Email:          doctor.Email,
 		Price:          doctor.Price,
@@ -33,27 +34,13 @@ func ConvertToDoctorUpdateResponse(doctor *schema.Doctor) web.DoctorUpdateRespon
 		Email:            doctor.Email,
 		Gender:           doctor.Gender,
 		Specialist:       doctor.Specialist,
-		AboutDoctor:      doctor.AboutDoctor,
-		LocationPractice: doctor.LocationPractice,
 		ProfilePicture:   doctor.ProfilePicture,
 		NoSTR:            doctor.NoSTR,
-		Status:           doctor.Status,
 		Experience:       doctor.Experience,
 		Alumnus:          doctor.Alumnus,
-	}
-}
-
-func ConvertToGetDoctorResponse(doctor *schema.Doctor) web.DoctorProfile {
-	return web.DoctorProfile{
-		Fullname:       doctor.Fullname,
-		Email:          doctor.Email,
-		Gender:         doctor.Gender,
-		Specialist:     doctor.Specialist,
-		ProfilePicture: doctor.ProfilePicture,
-		NoSTR:          doctor.NoSTR,
-		Experience:     doctor.Experience,
-		Alumnus:        doctor.Alumnus,
-		AboutDoctor:    doctor.AboutDoctor,
+		AboutDoctor:      doctor.AboutDoctor,
+		LocationPractice: doctor.LocationPractice,
+		Status:           doctor.Status,
 	}
 }
 
@@ -92,7 +79,6 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 			Price:          doctor.Price,
 			Specialist:     doctor.Specialist,
 			NoSTR:          doctor.NoSTR,
-			Role:           doctor.Role,
 			Experience:     doctor.Experience,
 			Alumnus:        doctor.Alumnus,
 		}
@@ -112,10 +98,10 @@ func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 		Specialist:       doctor.Specialist,
 		Price:            doctor.Price,
 		Experience:       doctor.Experience,
-		AboutDoctor:      doctor.AboutDoctor,
 		NoSTR:            doctor.NoSTR,
-		LocationPractice: doctor.LocationPractice,
 		Alumnus:          doctor.Alumnus,
+		AboutDoctor:      doctor.AboutDoctor,
+		LocationPractice: doctor.LocationPractice,
 	}
 }
 

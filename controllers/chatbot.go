@@ -50,7 +50,7 @@ func Chatbot(c echo.Context) error {
 
 	aiResponse := response.Choices[0].Message.Content
 	if strings.Contains(strings.ToLower(aiResponse), "maaf") {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(aiResponse))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponseWithData(constanta.ErrActionGet+"recommendation", aiResponse))
 	} else {
 		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"recommendation", aiResponse))
 	}
