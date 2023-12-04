@@ -7,6 +7,7 @@ import (
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
+	"healthcare/utils/helper/constanta"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
@@ -54,7 +55,7 @@ func CreateMedicineController(c echo.Context) error {
 	var medicine web.MedicineRequest
 
 	if err := c.Bind(&medicine); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input medicine data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
 	}
 
 	if err := helper.ValidateStruct(medicine); err != nil {
@@ -69,7 +70,7 @@ func CreateMedicineController(c echo.Context) error {
 
 	file, fileHeader, err := c.Request().FormFile("image")
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("image file is required"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrImageFileRequired))
 	}
 	defer file.Close()
 
@@ -83,7 +84,7 @@ func CreateMedicineController(c echo.Context) error {
 		}
 	}
 	if !allowed {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidImageFormat))
 	}
 
 	imageURL, err := helper.UploadFilesToGCS(c, fileHeader)
@@ -96,32 +97,32 @@ func CreateMedicineController(c echo.Context) error {
 	medicineRequest := request.ConvertToMedicineRequest(medicine)
 
 	if err := configs.DB.Create(&medicineRequest).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to create medicine"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionCreated+"medicine"))
 	}
 
 	response := response.ConvertToAdminMedicineResponse(medicineRequest)
 
-	return c.JSON(http.StatusCreated, helper.SuccessResponse("medicine created successfully", response))
+	return c.JSON(http.StatusCreated, helper.SuccessResponse(constanta.SuccessActionCreated+"medicine", response))
 }
 
 // Update Medicine by ID
 func UpdateMedicineController(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("medicine_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}
 
 	var existingMedicine schema.Medicine
 
 	result := configs.DB.First(&existingMedicine, id)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve medicine id"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	var updatedMedicineRequest web.MedicineUpdateRequest
 
 	if err := c.Bind(&updatedMedicineRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input medicine data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
 	}
 
 	if err := helper.ValidateStruct(updatedMedicineRequest); err != nil {
@@ -131,24 +132,24 @@ func UpdateMedicineController(c echo.Context) error {
 	// Update data obat di database
 	result = configs.DB.Model(&existingMedicine).Updates(updatedMedicineRequest)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update medicine"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"medicine"))
 	}
 
 	response := response.ConvertToAdminMedicineUpdateResponse(&existingMedicine)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("medicine updated successfully", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"medicine", response))
 }
 
 // Update Image Medicine by ID
 func UpdateImageMedicineController(c echo.Context) error {
 	medicineID, err := strconv.Atoi(c.Param("medicine_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}
 
 	var existingMedicine schema.Medicine
 	if err := configs.DB.First(&existingMedicine, medicineID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve medicine id"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	err = c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
@@ -158,7 +159,7 @@ func UpdateImageMedicineController(c echo.Context) error {
 
 	file, fileHeader, err := c.Request().FormFile("image")
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("image file is required"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrImageFileRequired))
 	}
 	defer file.Close()
 
@@ -172,7 +173,7 @@ func UpdateImageMedicineController(c echo.Context) error {
 		}
 	}
 	if !allowed {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. Supported formats: jpg, jpeg, png"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidImageFormat))
 	}
 
 	newImage, err := helper.UploadFilesToGCS(c, fileHeader)
@@ -191,78 +192,78 @@ func UpdateImageMedicineController(c echo.Context) error {
 	existingMedicine.Image = newImage
 
 	if err := configs.DB.Save(&existingMedicine).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update medicine"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"image medicine"))
 	}
 
 	response := response.ConvertToAdminMedicineImageResponse(&existingMedicine)
-	return c.JSON(http.StatusOK, helper.SuccessResponse("medicine image updated successfully", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"image medicine", response))
 }
 
 // Delete Medicine by ID
 func DeleteMedicineController(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("medicine_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}
 
 	var medicine schema.Medicine
 
 	result := configs.DB.First(&medicine, id)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve medicine id"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	result = configs.DB.Delete(&medicine, id)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to delete medicine"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionDeleted+"medicine"))
 	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("medicine deleted successfully", nil))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionDeleted+"medicine", nil))
 }
 
 // Delete Image Medicine by ID
 func DeleteImageMedicineController(c echo.Context) error {
 	medicineID, err := strconv.Atoi(c.Param("medicine_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}
 
 	var medicine schema.Medicine
 	if err := configs.DB.First(&medicine, medicineID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve medicine id"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	if medicine.Image != "" {
 		filename := path.Base(medicine.Image)
 		if err := helper.DeleteFilesFromGCS(filename); err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to delete image"))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionDeleted+"image medicine"))
 		}
 	}
 
 	medicine.Image = ""
 
 	if err := configs.DB.Save(&medicine).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update medicine"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionDeleted+"image medicine"))
 	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("medicine image deleted successfully", nil))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.ErrActionDeleted+"image medicine", nil))
 }
 
 // Get Image Medicine by ID
 func GetImageMedicineController(c echo.Context) error {
 	medicineID, err := strconv.Atoi(c.Param("medicine_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}
 
 	var medicine schema.Medicine
 	if err := configs.DB.First(&medicine, medicineID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve medicine data"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	response := response.ConvertToAdminMedicineImageResponse(&medicine)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("medicine image data successfully retrieved", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"image medicine", response))
 }
 
 // Admin Get All Medicines Pagination
@@ -271,13 +272,13 @@ func GetMedicineAdminController(c echo.Context) error {
 	limit, err := strconv.Atoi(params.Get("limit"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params limit not valid"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(params.Get("offset"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params offset not valid"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	name := params.Get("name")
@@ -288,7 +289,7 @@ func GetMedicineAdminController(c echo.Context) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Medicines Not Found"))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("medicines "+constanta.ErrNotFound))
 		}
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
 	}
@@ -297,25 +298,25 @@ func GetMedicineAdminController(c echo.Context) error {
 
 	response := response.ConvertToAdminGetAllMedicinesResponse(medicine)
 
-	return c.JSON(http.StatusOK, helper.PaginationResponse("Medicines Data Successfully Retrieved", response, pagination))
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"medicines", response, pagination))
 }
 
 // Admin Get Medicine by ID
 func GetMedicineAdminByIDController(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid Medicine ID"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}
 
 	var medicine schema.Medicine
 
 	if err := configs.DB.First(&medicine, id).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Medicine Data"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	response := response.ConvertToAdminMedicineResponse(&medicine)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Medicine Data Successfully Retrieved", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"medicine", response))
 }
 
 // Admin Get Medicines
@@ -375,13 +376,13 @@ func GetMedicineUserController(c echo.Context) error {
 	limit, err := strconv.Atoi(params.Get("limit"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params limit not valid"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(params.Get("offset"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("params offset not valid"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	name := params.Get("name")
@@ -392,7 +393,7 @@ func GetMedicineUserController(c echo.Context) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Medicines Not Found"))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("medicines "+constanta.ErrNotFound))
 		}
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
 	}
@@ -401,7 +402,7 @@ func GetMedicineUserController(c echo.Context) error {
 
 	response := response.ConvertToUserGetAllMedicinesResponse(medicine)
 
-	return c.JSON(http.StatusOK, helper.PaginationResponse("Medicines Data Successfully Retrieved", response, pagination))
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"medicines", response, pagination))
 }
 
 // User Get Medicine
@@ -459,16 +460,16 @@ func GetMedicineUserController(c echo.Context) error {
 func GetMedicineUserByIDController(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("medicine_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}
 
 	var medicine schema.Medicine
 
 	if err := configs.DB.First(&medicine, id).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve medicine data"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	response := response.ConvertToUserMedicineResponse(&medicine)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("medicine data successfully retrieved", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"medicine", response))
 }
