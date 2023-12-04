@@ -620,8 +620,10 @@ func GetAllDoctorConsultationController(c echo.Context) error {
         return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset" + constanta.ErrQueryParamRequired))
     }
 
+
     var consultations []schema.DoctorTransaction
     var total int64
+
 
     query := configs.DB.Where("payment_status = ?", "success")
 
