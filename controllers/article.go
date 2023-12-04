@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"healthcare/configs"
 	"healthcare/models/schema"
 	"healthcare/models/web"
@@ -11,6 +12,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -136,21 +138,63 @@ func UpdateArticleById(c echo.Context) error {
 
 }
 
+func GetAllArticlesPagination(offset int, limit int, queryInput []schema.Article) ([]schema.Article, int64, error) {
+
+	if offset < 0 || limit < 0 {
+		return nil, 0, nil
+	}
+
+	queryAll := queryInput
+	var total int64
+
+	query := configs.DB.Model(&queryAll)
+
+	query.Find(&queryAll).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	result := query.Find(&queryAll)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	if offset >= int(total) {
+		return nil, 0, fmt.Errorf("not found")
+	}
+
+	return queryAll, total, nil
+}
+
 func GetAllArticles(c echo.Context) error {
+	params := c.QueryParams()
+	limit, err := strconv.Atoi(params.Get("limit"))
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+	}
+
+	offset, err := strconv.Atoi(params.Get("offset"))
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+	}
+
 	var articles []schema.Article
 
-	err := configs.DB.Find(&articles).Error
+	article, total, err := GetAllArticlesPagination(offset, limit, articles)
 	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
+		}
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
 	}
 
-	if len(articles) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
-	}
+	pagination := helper.Pagination(offset, limit, total)
 
-	response := response.ListConvertToArticleDoctors(articles)
+	response := response.ListConvertToArticleDoctors(article)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"article", response))
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"articles", response, pagination))
 }
 
 func GetArticleByID(c echo.Context) error {
