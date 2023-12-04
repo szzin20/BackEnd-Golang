@@ -17,3 +17,11 @@ type DoctorTransactionsResponse struct {
 	ID       uint   `json:"id"`
 	Fullname string `json:"fullname"`
 }
+
+type DoctorTransactionDetailsResponse struct {
+	ID            uint   `json:"id"`
+	Fullname      string `json:"fullname"`
+	Specialist    string `json:"specialist"`
+	PatientStatus string `json:"patient_status"`
+}
+

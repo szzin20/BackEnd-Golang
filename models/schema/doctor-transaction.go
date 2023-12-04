@@ -12,12 +12,13 @@ type DoctorTransaction struct {
 	UserID              uint   `gorm:"foreignKey:UserID"`
 	HealthDetails       string `gorm:"not null"`
 	Price               int    `gorm:"not null"`
-	PaymentMethod       string `gorm:"type:enum('manual transfer bca', 'manual transfer bri', 'manual transfer bni')"`
+	PaymentMethod       string `gorm:"type:enum('manual transfer bca', 'manual transfer bri', 'manual transfer bni');default:null"`
 	PaymentConfirmation string `gorm:"not null"`
 	PaymentStatus       string `gorm:"type:enum('pending', 'success', 'cancelled');default:'pending'"`
 	PatientStatus       string `gorm:"type:enum('pending', 'recovered', 'ongoing consultation', 'referred');default:'pending'"`
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
 	DeletedAt           *gorm.DeletedAt `gorm:"index"`
-	Complaint           Complaint       `gorm:"ForeignKey:TransactionID;references:ID"` // one to one
+	Roomchat            Roomchat        `gorm:"ForeignKey:TransactionID;references:ID"` // one to one
+
 }
