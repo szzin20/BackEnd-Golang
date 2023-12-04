@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"github.com/labstack/echo/v4"
 	"healthcare/configs"
 	"healthcare/models/schema"
@@ -135,7 +136,7 @@ func GetCheckoutController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Checkout Data Successfully Retrieved", response))
 }
 
-// Admin Update Checkout by ID
+// UpdateCheckoutController function
 func UpdateCheckoutController(c echo.Context) error {
 	checkoutID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -144,9 +145,14 @@ func UpdateCheckoutController(c echo.Context) error {
 
 	var existingCheckout schema.Checkout
 
-	result := configs.DB.First(&existingCheckout, checkoutID)
+	result := configs.DB.Preload("MedicineTransaction.MedicineDetails").First(&existingCheckout, checkoutID)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Checkout ID"))
+	}
+
+	medicineTransaction := existingCheckout.MedicineTransaction
+	if err := reduceStock(medicineTransaction.MedicineDetails); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
 	var updatedCheckoutRequest web.CheckoutUpdate
@@ -156,12 +162,39 @@ func UpdateCheckoutController(c echo.Context) error {
 
 	updatedCheckout := request.ConvertToCheckoutUpdate(updatedCheckoutRequest)
 
-	result = configs.DB.Model(&existingCheckout).Updates(updatedCheckout)
+	// Update the existing Checkout
+	result = configs.DB.Table("checkouts").Where("id = ?", checkoutID).Updates(updatedCheckout)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Update Checkout"))
 	}
 
-	response := response.ConvertToCheckoutResponse(&existingCheckout)
+	var hasil schema.Checkout
 
+	hasil = configs.DB.Preload("MedicineTransaction.MedicineDetails").First(&existingCheckout, checkoutID)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Failed to Retrieve Checkout ID"))
+	}
+
+	response := response.ConvertToCheckoutResponse(hasil)
 	return c.JSON(http.StatusOK, helper.SuccessResponse("Checkout Updated Successfully", response))
+}
+
+func reduceStock(medicineDetails []schema.MedicineDetails) error {
+	for _, md := range medicineDetails {
+		medicine := schema.Medicine{}
+		if err := configs.DB.First(&medicine, md.MedicineID).Error; err != nil {
+			return errors.New("Invalid Medicine ID")
+		}
+
+		if medicine.Stock < md.Quantity {
+			return errors.New("Insufficient stock")
+		}
+
+		// Reduce stock in the Medicine table
+		newStock := medicine.Stock - md.Quantity
+		if err := configs.DB.Model(&medicine).Update("stock", newStock).Error; err != nil {
+			return errors.New("Failed to update Medicine stock")
+		}
+	}
+	return nil
 }

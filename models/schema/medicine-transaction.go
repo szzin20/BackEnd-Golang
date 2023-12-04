@@ -18,5 +18,4 @@ type MedicineTransaction struct {
 	UpdatedAt         time.Time
 	CreatedAt         time.Time
 	DeletedAt         gorm.DeletedAt `gorm:"index"`
-	Checkout          Checkout       `gorm:"ForeignKey:MedicineTransactionID;references:ID"`
 }
