@@ -215,14 +215,31 @@ func GetArticleByID(c echo.Context) error {
 }
 
 func GetAllArticlesByTitle(c echo.Context) error {
-
 	param := c.QueryParam("title")
 	if param == "" {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("title"+constanta.ErrQueryParamRequired))
 	}
 
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+	}
+
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+	}
+
 	var articles []schema.Article
-	err := configs.DB.Where("title LIKE ?", "%"+param+"%").Find(&articles).Error
+	var total int64
+
+	query := configs.DB.Where("title LIKE ?", "%"+param+"%")
+
+	query.Model(&articles).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	err = query.Find(&articles).Error
 	if err != nil {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
@@ -231,9 +248,10 @@ func GetAllArticlesByTitle(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
+	pagination := helper.Pagination(offset, limit, total)
 	response := response.ListConvertToArticleDoctors(articles)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"article", response))
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"article", response, pagination))
 }
 
 func DeleteArticleById(c echo.Context) error {
@@ -263,9 +281,26 @@ func DeleteArticleById(c echo.Context) error {
 func DoctorGetAllArticles(c echo.Context) error {
 	userID := c.Get("userID").(int)
 
-	var articles []schema.Article
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+	}
 
-	err := configs.DB.Where("doctor_id = ?", userID).Find(&articles).Error
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+	}
+
+	var articles []schema.Article
+	var total int64
+
+	query := configs.DB.Where("doctor_id = ?", userID)
+
+	query.Model(&articles).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	err = query.Find(&articles).Error
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"articles"))
 	}
@@ -275,8 +310,9 @@ func DoctorGetAllArticles(c echo.Context) error {
 	}
 
 	response := response.ConvertToGetAllArticles(articles)
+	pagination := helper.Pagination(offset, limit, total)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"articles", response))
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"articles", response, pagination))
 }
 
 func DoctorGetArticleByID(c echo.Context) error {
