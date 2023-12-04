@@ -18,8 +18,16 @@ type RoomchatListResponse struct {
 	CreatedAt      time.Time `json:"created_at"`
 }
 
-type RoomchatDetailsResponse struct {
-	Doctor        DoctorRoomchat          `json:"doctor"`
+type RoomchatUserDetailsResponse struct {
+	Doctor        DoctorProfileRoomchat   `json:"doctor"`
+	ID            uint                    `json:"id"`
+	TransactionID uint                    `json:"transaction_id"`
+	CreatedAt     time.Time               `json:"created_at"`
+	Messages      []CreateMessageResponse `json:"messages"`
+}
+
+type RoomchatDoctorDetailsResponse struct {
+	User          UserProfileRoomchat     `json:"user"`
 	ID            uint                    `json:"id"`
 	TransactionID uint                    `json:"transaction_id"`
 	CreatedAt     time.Time               `json:"created_at"`

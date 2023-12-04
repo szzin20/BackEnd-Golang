@@ -14,8 +14,8 @@ func ConvertToCreateRoomchatResponse(roomchat *schema.Roomchat) web.CreateRoomch
 	}
 }
 
-func ConvertToRoomchatResponse(roomchat *schema.Roomchat, doctor *schema.Doctor) web.RoomchatDetailsResponse {
-	roomchats := web.RoomchatDetailsResponse{
+func ConvertToRoomchatUserResponse(roomchat *schema.Roomchat, doctor *schema.Doctor) web.RoomchatUserDetailsResponse {
+	roomchats := web.RoomchatUserDetailsResponse{
 		ID:            roomchat.ID,
 		TransactionID: roomchat.TransactionID,
 		CreatedAt:     roomchat.CreatedAt,
@@ -37,13 +37,46 @@ func ConvertToRoomchatResponse(roomchat *schema.Roomchat, doctor *schema.Doctor)
 	}
 	roomchats.Messages = results
 
-	doctorprofile := web.DoctorRoomchat{
+	doctorProfile := web.DoctorProfileRoomchat{
 		ID:             doctor.ID,
 		Fullname:       doctor.Fullname,
 		Status:         doctor.Status,
 		ProfilePicture: doctor.ProfilePicture,
 	}
-	roomchats.Doctor = doctorprofile
+	roomchats.Doctor = doctorProfile
+
+	return roomchats
+}
+
+func ConvertToRoomchatDoctorResponse(roomchat *schema.Roomchat, user *schema.User) web.RoomchatDoctorDetailsResponse {
+	roomchats := web.RoomchatDoctorDetailsResponse{
+		ID:            roomchat.ID,
+		TransactionID: roomchat.TransactionID,
+		CreatedAt:     roomchat.CreatedAt,
+	}
+
+	var results []web.CreateMessageResponse
+	for _, message := range roomchat.Message {
+		roomchatResponses := web.CreateMessageResponse{
+			ID:         message.ID,
+			UserID:     message.UserID,
+			DoctorID:   message.DoctorID,
+			RoomchatID: message.RoomchatID,
+			Message:    message.Message,
+			Image:      message.Image,
+			Audio:      message.Audio,
+			CreatedAt:  message.CreatedAt,
+		}
+		results = append(results, roomchatResponses)
+	}
+	roomchats.Messages = results
+
+	userProfile := web.UserProfileRoomchat{
+		ID:             user.ID,
+		Fullname:       user.Fullname,
+		ProfilePicture: user.ProfilePicture,
+	}
+	roomchats.User = userProfile
 
 	return roomchats
 }
