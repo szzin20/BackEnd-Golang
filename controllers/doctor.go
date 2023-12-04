@@ -94,6 +94,7 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 	if existingDoctor := configs.DB.Where("email = ?", doctorRequest.Email).First(&doctorRequest).Error; existingDoctor == nil {
 		return c.JSON(http.StatusConflict, helper.ErrorResponse("email already exist"))
 	}
+
 	// Save the plain password before hashing
 	plainPassword := doctorRequest.Password
 
@@ -158,44 +159,79 @@ func LoginDoctorController(c echo.Context) error {
 }
 
 func GetAvailableDoctor(c echo.Context) error {
-
-	var Doctor []schema.Doctor
-
-	err := configs.DB.Where("status = ?", true).Find(&Doctor).Error
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
-	if len(Doctor) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("data not found"))
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
-	response := response.ConvertToGetAllDoctorResponse(Doctor)
+	var doctors []schema.Doctor
+	var total int64
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("data successfully retrieved", response))
+	query := configs.DB.Where("status = ?", true)
+
+	query.Model(&doctors).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	err = query.Find(&doctors).Error
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctors"))
+	}
+
+	if len(doctors) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
+	}
+
+	response := response.ConvertToGetAllDoctorResponse(doctors)
+	pagination := helper.Pagination(offset, limit, total)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"doctors", response, pagination))
 }
 
 func GetSpecializeDoctor(c echo.Context) error {
 	specialist := c.QueryParam("specialist")
 
 	if specialist == "" {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("parameter specialist required!"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("specialist"+constanta.ErrQueryParamRequired))
+	}
+
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+	}
+
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	var doctors []schema.Doctor
-	err := configs.DB.Where("specialist LIKE ? AND status = ?", "%"+specialist+"%", true).Find(&doctors).Error
+	var total int64
 
+	query := configs.DB.Where("specialist LIKE ? AND status = ?", "%"+specialist+"%", true)
+
+	query.Model(&doctors).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	err = query.Find(&doctors).Error
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve data"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctors"))
 	}
 
 	if len(doctors) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("data not found"))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	response := response.ConvertToGetAllDoctorResponse(doctors)
+	pagination := helper.Pagination(offset, limit, total)
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("data successfully retrieved", response))
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"doctors", response, pagination))
 }
 
 // Get Doctor Profile
