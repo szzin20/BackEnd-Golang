@@ -8,7 +8,10 @@ import (
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
+
+	"sort"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -125,6 +128,7 @@ func GetDoctorRoomchatController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", response))
 }
 
+
 // Doctor Get All Roomchats
 func GetAllDoctorRoomchatController(c echo.Context) error {
 
@@ -134,36 +138,50 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 	}
 
 	var existingDoctorTransactions []schema.DoctorTransaction
-	if err := configs.DB.Find(&existingDoctorTransactions, "doctor_id = ?", doctorID).Error; err != nil {
+	if err := configs.DB.Preload("Roomchat.Message").Where("doctor_id = ? AND payment_status = ?", doctorID, "success").Find(&existingDoctorTransactions).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
 	}
 
-	var responses []web.RoomchatListResponse
+	sort.Slice(existingDoctorTransactions, func(i, j int) bool {
 
+		getLastMessageTimestamp := func(transaction schema.DoctorTransaction) time.Time {
+			if len(transaction.Roomchat.Message) > 0 {
+				return transaction.Roomchat.Message[len(transaction.Roomchat.Message)-1].CreatedAt
+			}
+
+			return time.Time{}
+		}
+
+		return getLastMessageTimestamp(existingDoctorTransactions[i]).After(getLastMessageTimestamp(existingDoctorTransactions[j]))
+	})
+
+	var responses []web.RoomchatListResponse
 	for _, doctorTransaction := range existingDoctorTransactions {
 
-		userID := doctorTransaction.UserID
+		if doctorTransaction.DoctorID != uint(doctorID) {
+			continue
+		}
+
+		if doctorTransaction.Roomchat.ID == 0 {
+			continue
+		}
+
+		if doctorTransaction.PaymentStatus != "success" {
+			continue
+		}
 
 		var user schema.User
-		if err := configs.DB.First(&user, "id = ?", userID).Error; err != nil {
+		if err := configs.DB.First(&user, "id = ?", doctorTransaction.UserID).Error; err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
 		}
 
-		var existingRoomchat schema.Roomchat
-		if err := configs.DB.Preload("Message").Where("transaction_id = ?", doctorTransaction.ID).Find(&existingRoomchat).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve roomchat data"))
+		var lastMessage schema.Message
+		if len(doctorTransaction.Roomchat.Message) > 0 {
+			lastMessage = doctorTransaction.Roomchat.Message[len(doctorTransaction.Roomchat.Message)-1]
 		}
 
-		var LastMessage schema.Message
-		lenghtMessage := len(existingRoomchat.Message) - 1
-		if lenghtMessage >= 0 {
-			LastMessage = existingRoomchat.Message[lenghtMessage]
-		}
-
-		response := response.ConvertToGetAllRoomchats(user, existingRoomchat, LastMessage)
-
+		response := response.ConvertToGetAllRoomchats(user, doctorTransaction.Roomchat, lastMessage)
 		responses = append(responses, response)
-
 	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", responses))
