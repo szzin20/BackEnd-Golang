@@ -61,13 +61,16 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 
 		switch notificationType {
 		case "login":
-			subject = "Login Notification"
+			subject = "Healthify Notification"
 			body = "Hello, " + fullname + "! You have successfully logged in."
 		case "register":
-			subject = "Registration Notification"
+			subject = "Healthify Notification"
 			body = fmt.Sprintf("Hello, %s! You have successfully registered.<br><br>Your login credentials are: <br>Email: %s<br>Password: %s", fullname, userEmail, userPassword)
+		case "userRegister":
+			subject = "Healthify Notification"
+			body = "Hello, " + fullname + "! You have successfully registered."
 		case "complaints":
-			subject = "Consultation Notification"
+			subject = "Healthify Notification"
 			body = "Hello, " + fullname + "! You have a new consultation request that requires immediate attention. Please review and attend to it promptly."
 		default:
 			err := errors.New("invalid notification type")
