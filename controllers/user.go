@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"log"
 
 	"github.com/labstack/echo/v4"
 )
@@ -42,11 +43,10 @@ func RegisterUserController(c echo.Context) error {
 	}
 
 	// send register notification email
-	if user.Email != "" {
-		notificationType := "register"
-		if err := helper.SendNotificationEmail(user.Email, user.Fullname, notificationType, "Login", "", ""); err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send notification email: "+err.Error()))
-		}
+	err := helper.SendNotificationEmail(userRequest.Email, userRequest.Fullname, "register", "", "", "")
+	if err != nil {
+		log.Println("Error sending notification email:", err)
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
 	}
 
 	response := response.ConvertToUserRegisterResponse(userRequest)
@@ -85,12 +85,10 @@ func LoginUserController(c echo.Context) error {
 	userLoginResponse.Token = token
 
 	// send login notification email
-	if user.Email != "" {
-		notificationType := "login"
-		if err := helper.SendNotificationEmail(user.Email, user.Fullname, notificationType, "Login", "", ""); err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send notification email: "+err.Error()))
+	err = helper.SendNotificationEmail(user.Email, user.Fullname, "login", "", "", "")
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
 		}
-	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("login successful", userLoginResponse))
 }
