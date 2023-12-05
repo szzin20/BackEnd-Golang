@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"healthcare/configs"
 	"healthcare/middlewares"
 	"healthcare/models/schema"
@@ -9,12 +10,40 @@ import (
 	"healthcare/utils/helper/constanta"
 	"healthcare/utils/response"
 	"log"
-	"strconv"
-	"sort"
 	"net/http"
+	"sort"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
+
+func GetAllAdminsPagination(offset int, limit int, queryInput []schema.Admin) ([]schema.Admin, int64, error) {
+
+	if offset < 0 || limit < 0 {
+		return nil, 0, nil
+	}
+
+	queryAll := queryInput
+	var total int64
+
+	query := configs.DB.Model(&queryAll)
+
+	query.Find(&queryAll).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	result := query.Find(&queryAll)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	if offset >= int(total) {
+		return nil, 0, fmt.Errorf("not found")
+	}
+
+	return queryAll, total, nil
+}
 
 // Admin Login
 func LoginAdminController(c echo.Context) error {
@@ -113,9 +142,8 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"payment status"))
 	}
 
-
 	if updateRequest.PaymentStatus == "success" {
-		
+
 		var doctor schema.Doctor
 		result := configs.DB.First(&doctor, "id = ?", existingTransaction.DoctorID)
 		if result.Error != nil {
@@ -123,12 +151,12 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 		}
 
 		// Send an email to the doctor
-		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "","","")
+		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "", "", "")
 		log.Printf(doctor.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
 		}
-	
+
 	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"payment status", nil))
@@ -153,44 +181,71 @@ func GetAdminProfileController(c echo.Context) error {
 
 // Get all transactions by doctors
 func GetAllDoctorsPaymentsByAdminsController(c echo.Context) error {
-    var doctorTransactions []schema.DoctorTransaction
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+	}
 
-    // "success" 
-    if err := configs.DB.Where("payment_status = ?", "success").Find(&doctorTransactions).Error; err != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet + "doctor transactions"))
-    }
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+	}
 
-    // "pending" 
-    var pending []schema.DoctorTransaction
-    if err := configs.DB.Where("payment_status = ?", "pending").Find(&pending).Error; err != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet + "pending doctor transactions"))
-    }
+	var doctorTransactions []schema.DoctorTransaction
+	var total int64
 
-    // "cancelled" 
-    var cancelled []schema.DoctorTransaction
-    if err := configs.DB.Where("payment_status = ?", "cancelled").Find(&cancelled).Error; err != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet + "cancelled doctor transactions"))
-    }
+	// Fetch all transactions with payment_status IN ('success', 'pending', 'cancelled')
+	query := configs.DB.Where("payment_status IN (?)", []string{"success", "pending", "cancelled"}).Find(&doctorTransactions)
+	if query.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor transactions"))
+	}
 
-    // Concatenate the results
-    doctorTransactions = append(doctorTransactions, pending...)
-    doctorTransactions = append(doctorTransactions, cancelled...)
+	sort.Slice(doctorTransactions, func(i, j int) bool {
+		order := map[string]int{"pending": 0, "success": 1, "cancelled": 2}
+		return order[doctorTransactions[i].PaymentStatus] < order[doctorTransactions[j].PaymentStatus]
+	})
 
-    // Sort by custom order: pending, success, cancelled
-    sort.Slice(doctorTransactions, func(i, j int) bool {
-        order := map[string]int{"pending": 0, "success": 1, "cancelled": 2}
-        return order[doctorTransactions[i].PaymentStatus] < order[doctorTransactions[j].PaymentStatus]
-    })
+	// Count total number of records
+	total = int64(len(doctorTransactions))
 
-    if len(doctorTransactions) == 0 {
-        return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.ErrNotFound + "doctor transactions", nil))
-    }
+	// Apply limit and offset to the result
+	start := offset
+	end := offset + limit
+	if start > len(doctorTransactions) {
+		start = len(doctorTransactions)
+	}
+	if end > len(doctorTransactions) {
+		end = len(doctorTransactions)
+	}
+	doctorTransactions = doctorTransactions[start:end]
 
-    Responses := response.ConvertToAdminTransactionUsersResponse(doctorTransactions)
+	if len(doctorTransactions) == 0 {
+		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.ErrNotFound+"doctor transactions", nil))
+	}
 
-    return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated + "doctor transactions", Responses))
+	pagination := helper.Pagination(offset, limit, total)
+	Responses := response.ConvertToAdminTransactionUsersResponse(doctorTransactions)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionCreated+"doctor transactions", Responses, pagination))
 }
 
+func GetDoctorTransactionByIDController(c echo.Context) error {
 
+	var doctorTransaction schema.DoctorTransaction
 
+	transactionID := c.QueryParam("transaction_id")
 
+	if transactionID == "" {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Transaction ID is required"))
+	}
+	if err := configs.DB.Where("id = ?", transactionID).First(&doctorTransaction).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor transaction by ID"))
+	}
+
+	if doctorTransaction.ID == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound+"doctor transaction by ID"))
+	}
+
+	response := response.ConvertToAdminTransactionUsersResponse([]schema.DoctorTransaction{doctorTransaction})
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"doctor transaction by ID", response))
+}
