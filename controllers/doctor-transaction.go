@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"fmt"
 	"healthcare/configs"
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
+	"healthcare/utils/helper/constanta"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
@@ -13,6 +15,38 @@ import (
 
 	"github.com/labstack/echo/v4"
 )
+
+func GetAllDoctorTransactionPagination(userID int, offset int, limit int, paymentStatus string, queryInput []schema.DoctorTransaction) ([]schema.DoctorTransaction, int64, error) {
+
+	if offset < 0 || limit < 0 {
+		return nil, 0, nil
+	}
+
+	queryAll := queryInput
+	var total int64
+
+	query := configs.DB.Model(&queryAll)
+
+	if paymentStatus != "" {
+		query = query.Where("payment_status = ?", paymentStatus)
+	}
+
+	query.Find(&queryAll).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	result := query.Find(&queryAll)
+
+	if result.Error != nil {
+		return nil, 0, result.Error 
+	}
+
+	if offset >= int(total) {
+		return nil, 0, fmt.Errorf("not found")
+	}
+
+	return queryAll, total, nil
+}
 
 // Create Doctor Transaction
 func CreateDoctorTransactionController(c echo.Context) error {
@@ -91,75 +125,6 @@ func CreateDoctorTransactionController(c echo.Context) error {
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("doctor transaction created successful", response))
 }
 
-// Get All Doctor Transactions or Get Doctor Transaction by Status
-func GetAllDoctorTransactionsController(c echo.Context) error {
-
-	userID, ok := c.Get("userID").(int)
-	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
-	}
-
-	paymentStatus := c.QueryParam("payment_status")
-
-
-	if !helper.PaymentStatusIsValid(paymentStatus) {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input payment status data ('pending', 'success', 'cancelled')"))
-	}
-
-
-	if paymentStatus == "" {
-
-		var doctorTransaction []schema.DoctorTransaction
-
-		err := configs.DB.Find(&doctorTransaction, "user_id=?", userID).Error
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
-		}
-
-		var responses []web.DoctorTransactionsResponse
-		for _, doctorTransactions := range doctorTransaction {
-
-			var doctor schema.Doctor
-			err := configs.DB.Find(&doctor, "id=?",  doctorTransactions.DoctorID).Error
-			if err != nil {
-				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
-			}
-
-			responses = append(responses, response.ConvertToGetAllDoctorTransactionsResponse(doctorTransactions, doctor))
-		}
-
-		if len(doctorTransaction) == 0 {
-			return c.JSON(http.StatusNotFound, helper.ErrorResponse("empty doctor transaction data"))
-		}
-
-		return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction data successfully retrieved", responses))
-	}
-
-	var doctorTransaction []schema.DoctorTransaction
-	if err := configs.DB.Find(&doctorTransaction, "user_id = ? AND payment_status = ?", userID, paymentStatus).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
-	}
-
-	var responses []web.CreateDoctorTransactionResponse
-	for _, doctorTransactions := range doctorTransaction {
-		
-		var doctor schema.Doctor
-		err := configs.DB.Find(&doctor, "id=?", doctorTransactions.DoctorID).Error
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
-		}
-
-		responses = append(responses, response.ConvertToGetDoctorTransactionResponse(doctorTransactions, doctor))
-	}
-
-	if len(doctorTransaction) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("empty doctor transaction data"))
-	}
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction data successfully retrieved", responses))
-
-}
-
 // Get Doctor Transaction by ID
 func GetDoctorTransactionController(c echo.Context) error {
 
@@ -188,4 +153,96 @@ func GetDoctorTransactionController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor transaction data successfully retrieved", response))
 
+}
+
+// Get All Doctor Transactions or Get Doctor Transaction by Status
+func GetAllDoctorTransactionsController(c echo.Context) error {
+
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+	}
+
+	var total int64
+
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+	}
+
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+	}
+
+	paymentStatus := c.QueryParam("payment_status")
+
+	if !helper.PaymentStatusIsValid(paymentStatus) {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input payment status data ('pending', 'success', 'cancelled')"))
+	}
+
+	// Get All Doctor Transactions
+	if paymentStatus == "" {
+
+		var doctorTransaction []schema.DoctorTransaction
+
+		doctorTransactions, total, err := GetAllDoctorTransactionPagination(userID, offset, limit, paymentStatus, doctorTransaction)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("doctor transaction data not found"))
+		}
+
+		err = configs.DB.Find(&doctorTransaction, "user_id=?", userID).Error
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+		}
+
+		var responses []web.DoctorTransactionsResponse
+		for _, doctorTransaction := range doctorTransactions {
+
+			var doctor schema.Doctor
+			err := configs.DB.Find(&doctor, "id=?", doctorTransaction.DoctorID).Error
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
+			}
+
+			responses = append(responses, response.ConvertToGetAllDoctorTransactionsResponse(doctorTransaction, doctor))
+		}
+
+		if len(doctorTransaction) == 0 {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("empty doctor transaction data"))
+		}
+
+		pagination := helper.Pagination(offset, limit, total)
+
+		return c.JSON(http.StatusOK, helper.PaginationResponse("doctor transaction data successfully retrieved", responses, pagination))
+	}
+
+	// Get Doctor Transactions by Status
+
+	var doctorTransaction []schema.DoctorTransaction
+
+	doctorTransactions, total, err := GetAllDoctorTransactionPagination(userID, offset, limit, paymentStatus, doctorTransaction)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor transaction data"))
+	}
+
+	var responses []web.CreateDoctorTransactionResponse
+	for _, doctorTransaction := range doctorTransactions {
+
+		var doctor schema.Doctor
+		err := configs.DB.Find(&doctor, "id=?", doctorTransaction.DoctorID).Error
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
+		}
+
+		responses = append(responses, response.ConvertToGetDoctorTransactionResponse(doctorTransaction, doctor))
+	}
+
+	if len(doctorTransactions) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("empty doctor transaction data"))
+	}
+
+	pagination := helper.Pagination(offset, limit, total)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse("doctor transaction data successfully retrieved", responses, pagination))
 }
