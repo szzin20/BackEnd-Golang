@@ -14,6 +14,7 @@ func ConvertToCreateDoctorTransactionResponse(doctorTransaction *schema.DoctorTr
 		PaymentMethod:       doctorTransaction.PaymentMethod,
 		PaymentStatus:       doctorTransaction.PaymentStatus,
 		PaymentConfirmation: doctorTransaction.PaymentConfirmation,
+		CreatedAt:           doctorTransaction.CreatedAt,
 	}
 }
 
@@ -26,6 +27,7 @@ func ConvertToGetDoctorTransactionResponse(doctorTransaction schema.DoctorTransa
 		PaymentMethod:       doctorTransaction.PaymentMethod,
 		PaymentStatus:       doctorTransaction.PaymentStatus,
 		PaymentConfirmation: doctorTransaction.PaymentConfirmation,
+		CreatedAt:           doctorTransaction.CreatedAt,
 	}
 }
 
