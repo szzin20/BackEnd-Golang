@@ -43,7 +43,7 @@ func RegisterUserController(c echo.Context) error {
 	}
 
 	// send register notification email
-	err := helper.SendNotificationEmail(userRequest.Email, userRequest.Fullname, "register", "", "", "")
+	err := helper.SendNotificationEmail(userRequest.Email, userRequest.Fullname, "userRegister", "", "", "")
 	if err != nil {
 		log.Println("Error sending notification email:", err)
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
