@@ -39,6 +39,7 @@ func ConvertToDoctorUpdateRequest(doctor web.DoctorUpdateRequest) *schema.Doctor
 		Experience:     doctor.Experience,
 		Alumnus:        doctor.Alumnus,
 		NoSTR:          doctor.NoSTR,
+		Status:         doctor.Status,
 	}
 }
 

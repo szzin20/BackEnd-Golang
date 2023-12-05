@@ -31,6 +31,7 @@ type DoctorUpdateResponse struct {
 	Experience     string `json:"experience"`
 	Alumnus        string `json:"alumnus"`
 	NoSTR          int    `json:"no_str"`
+	Status         bool   `json:"status"`
 }
 
 type DoctorAllResponse struct {

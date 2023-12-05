@@ -29,6 +29,7 @@ type DoctorUpdateRequest struct {
 	Experience     string `json:"experience" form:"experience" validate:"omitempty"`
 	Alumnus        string `json:"alumnus" form:"alumnus" validate:"omitempty"`
 	NoSTR          int    `json:"no_str" form:"no_str" validate:"omitempty"`
+	Status         bool   `json:"status" form:"status" validate:"omitempty"`
 }
 
 // Manage Patient
