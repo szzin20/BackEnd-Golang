@@ -29,16 +29,16 @@ func ConvertToDoctorLoginRequest(doctor web.DoctorLoginRequest) *schema.Doctor {
 
 func ConvertToDoctorUpdateRequest(doctor web.DoctorUpdateRequest) *schema.Doctor {
 	return &schema.Doctor{
-		Fullname:         doctor.Fullname,
-		Email:            doctor.Email,
-		Specialist:       doctor.Specialist,
-		ProfilePicture:   doctor.ProfilePicture,
-		Gender:           doctor.Gender,
-		Password:         doctor.Password,
-		Experience:       doctor.Experience,
-		Alumnus:          doctor.Alumnus,
-		AboutDoctor:      doctor.AboutDoctor,
-		LocationPractice: doctor.LocationPractice,
+		ProfilePicture: doctor.ProfilePicture,
+		Fullname:       doctor.Fullname,
+		Email:          doctor.Email,
+		Password:       doctor.Password,
+		Price:          doctor.Price,
+		Specialist:     doctor.Specialist,
+		Gender:         doctor.Gender,
+		Experience:     doctor.Experience,
+		Alumnus:        doctor.Alumnus,
+		NoSTR:          doctor.NoSTR,
 	}
 }
 

@@ -30,17 +30,15 @@ func ConvertToDoctorLoginResponse(doctor *schema.Doctor) web.DoctorLoginResponse
 
 func ConvertToDoctorUpdateResponse(doctor *schema.Doctor) web.DoctorUpdateResponse {
 	return web.DoctorUpdateResponse{
-		Fullname:         doctor.Fullname,
-		Email:            doctor.Email,
-		Gender:           doctor.Gender,
-		Specialist:       doctor.Specialist,
-		ProfilePicture:   doctor.ProfilePicture,
-		NoSTR:            doctor.NoSTR,
-		Experience:       doctor.Experience,
-		Alumnus:          doctor.Alumnus,
-		AboutDoctor:      doctor.AboutDoctor,
-		LocationPractice: doctor.LocationPractice,
-		Status:           doctor.Status,
+		ProfilePicture: doctor.ProfilePicture,
+		Fullname:       doctor.Fullname,
+		Gender:         doctor.Gender,
+		Email:          doctor.Email,
+		Price:          doctor.Price,
+		Specialist:     doctor.Specialist,
+		Experience:     doctor.Experience,
+		Alumnus:        doctor.Alumnus,
+		NoSTR:          doctor.NoSTR,
 	}
 }
 
@@ -70,13 +68,13 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 	for _, doctor := range doctors {
 		doctorResponse := web.DoctorAllResponseByAdmin{
 
-			ID:             doctor.ID,
-			Fullname:       doctor.Fullname,
-			Gender:         doctor.Gender,
-			Email:          doctor.Email,
-			Specialist:     doctor.Specialist,
-			NoSTR:          doctor.NoSTR,
-			Experience:     doctor.Experience,
+			ID:         doctor.ID,
+			Fullname:   doctor.Fullname,
+			Gender:     doctor.Gender,
+			Email:      doctor.Email,
+			Specialist: doctor.Specialist,
+			NoSTR:      doctor.NoSTR,
+			Experience: doctor.Experience,
 		}
 
 		results = append(results, doctorResponse)
@@ -87,17 +85,29 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 
 func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 	return web.DoctorIDResponse{
-		ID:               doctor.ID,
-		ProfilePicture:   doctor.ProfilePicture,
-		Fullname:         doctor.Fullname,
-		Status:           doctor.Status,
-		Specialist:       doctor.Specialist,
-		Price:            doctor.Price,
-		Experience:       doctor.Experience,
-		NoSTR:            doctor.NoSTR,
-		Alumnus:          doctor.Alumnus,
-		AboutDoctor:      doctor.AboutDoctor,
-		LocationPractice: doctor.LocationPractice,
+		ID:             doctor.ID,
+		ProfilePicture: doctor.ProfilePicture,
+		Fullname:       doctor.Fullname,
+		Status:         doctor.Status,
+		Specialist:     doctor.Specialist,
+		Price:          doctor.Price,
+		Experience:     doctor.Experience,
+		NoSTR:          doctor.NoSTR,
+		Alumnus:        doctor.Alumnus,
+	}
+}
+func ConvertToGetDoctorbyAdminResponse(doctor *schema.Doctor) web.DoctorIDResponseByAdmin {
+	return web.DoctorIDResponseByAdmin{
+		ID:             doctor.ID,
+		ProfilePicture: doctor.ProfilePicture,
+		Fullname:       doctor.Fullname,
+		Gender:         doctor.Gender,
+		Email:          doctor.Email,
+		Price:          doctor.Price,
+		Specialist:     doctor.Specialist,
+		Alumnus:        doctor.Alumnus,
+		Experience:     doctor.Experience,
+		NoSTR:          doctor.NoSTR,
 	}
 }
 
