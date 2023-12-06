@@ -20,6 +20,7 @@ type User struct {
 	Role                string `gorm:"type:enum('user');default:'user'"`
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
-	DeletedAt           gorm.DeletedAt      `gorm:"index"`
-	MedicineTransaction MedicineTransaction `gorm:"ForeignKey:UserID;references:ID"`
+	DeletedAt           gorm.DeletedAt        `gorm:"index"`
+	MedicineTransaction []MedicineTransaction `gorm:"foreignKey:UserID;references:ID"`
+	DoctorTransaction   []DoctorTransaction   `gorm:"foreignKey:UserID;references:ID"`
 }

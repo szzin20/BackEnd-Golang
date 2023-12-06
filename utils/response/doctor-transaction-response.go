@@ -31,6 +31,27 @@ func ConvertToGetDoctorTransactionResponse(doctorTransaction schema.DoctorTransa
 	}
 }
 
+func ConvertToGetUserTransactionbyAdminResponse(doctorTransaction schema.DoctorTransaction) web.GetUserTransactionbyAdminResponse {
+	return web.GetUserTransactionbyAdminResponse{
+		ID:                  doctorTransaction.ID,
+		DoctorID:            doctorTransaction.DoctorID,
+		PaymentMethod:       doctorTransaction.PaymentMethod,
+		Price:               doctorTransaction.Price,
+		CreatedAt:           doctorTransaction.CreatedAt,
+		PaymentConfirmation: doctorTransaction.PaymentConfirmation,
+		PaymentStatus:       doctorTransaction.PaymentStatus,
+	}
+}
+
+func ListConvertToGetUserTransactionbyAdminResponse(data []schema.DoctorTransaction) []web.GetUserTransactionbyAdminResponse {
+    response := []web.GetUserTransactionbyAdminResponse{}
+    for _, v := range data {
+        responseDetail := ConvertToGetUserTransactionbyAdminResponse(v)
+        response = append(response, responseDetail)
+    }
+    return response
+}
+
 func ConvertToGetAllDoctorTransactionsResponse(doctorTransaction schema.DoctorTransaction, doctor schema.Doctor) web.DoctorTransactionsResponse {
 	return web.DoctorTransactionsResponse{
 		ID:       doctorTransaction.ID,

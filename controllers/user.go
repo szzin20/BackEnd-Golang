@@ -141,7 +141,8 @@ func GetUserIDbyAdminController(c echo.Context) error {
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
 	}
-	response := response.ConvertToGetUserIDbyAdminResponse(&user)
+	// response := response.ConvertToGetUserIDbyAdminResponse(&user)
+	response := response.ConvertToGetUserbyAdmin(user)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("users data successfully retrieved", response))
 }

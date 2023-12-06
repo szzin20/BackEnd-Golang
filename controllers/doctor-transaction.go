@@ -110,7 +110,7 @@ func CreateDoctorTransactionController(c echo.Context) error {
 
 	var doctor schema.Doctor
 
-	if err := configs.DB.First(&doctor, "id = ? AND status = true ", doctorID).Error; err != nil {
+	if err := configs.DB.First(&doctor, "id = ? AND status = true", doctorID).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
 	}
 
