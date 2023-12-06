@@ -64,12 +64,18 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 			subject = "Healthify Notification"
 			body = "Hello, " + fullname + "! You have successfully logged in."
 		case "register":
-			subject = "Registration Notification"
+			subject = "Healthify Notification"
 			body = fmt.Sprintf("Hello, %s! You have successfully registered.", fullname)
 			if userType == "doctor" && includeCredentials {
 				credentialsInfo = fmt.Sprintf("<br><br>Your login credentials are: <br>Email: %s<br>Password: %s", userEmail, userPassword)
 			}
-			body += fmt.Sprintf("<br>Please log in to your account to access our services.%s", credentialsInfo)
+			// Include login message only for doctors
+			if userType == "doctor" {
+				body += fmt.Sprintf("<br>Please log in to your account to access our services.%s", credentialsInfo)
+			} else {
+				// Include different message for non-doctors
+				body += "<br>Thank you for registering with Healthify!"
+			}
 		case "complaints":
 			subject = "Healthify Notification"
 			body = "Hello, " + fullname + "! You have a new consultation request that requires immediate attention. Please review and attend to it promptly."
