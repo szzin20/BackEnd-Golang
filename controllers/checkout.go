@@ -23,7 +23,7 @@ func CreateCheckoutController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
 	medicinetransactionID, _ := strconv.Atoi(c.QueryParam("medicine_transaction_id"))
@@ -109,20 +109,20 @@ func GetUserCheckoutController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
 	params := c.QueryParams()
 	limit, err := strconv.Atoi(params.Get("limit"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(params.Get("offset"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	paymentStatus := params.Get("payment_status")
@@ -133,9 +133,9 @@ func GetUserCheckoutController(c echo.Context) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
 		}
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
 	pagination := helper.Pagination(offset, limit, total)
@@ -185,7 +185,7 @@ func GetUserCheckoutByIDController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
 	checkoutID, err := strconv.Atoi(c.Param("id"))
@@ -285,13 +285,13 @@ func GetAdminCheckoutController(c echo.Context) error {
 	limit, err := strconv.Atoi(params.Get("limit"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(params.Get("offset"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	paymentStatus := params.Get("payment_status")
@@ -304,9 +304,9 @@ func GetAdminCheckoutController(c echo.Context) error {
 		log.Println(err)
 		if strings.Contains(err.Error(), "not found") {
 
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
 		}
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
 	pagination := helper.Pagination(offset, limit, total)

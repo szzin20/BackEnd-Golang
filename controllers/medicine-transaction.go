@@ -18,13 +18,22 @@ import (
 func CreateMedicineTransaction(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
 	var medicineTransactionRequest web.MedicineTransactionRequest
 
 	if err := c.Bind(&medicineTransactionRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
+	}
+
+	for _, md := range medicineTransactionRequest.MedicineDetails {
+		if md.MedicineID == 0 {
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("medicine id cannot be empty"))
+		}
+		if md.Quantity == 0 {
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("quantity cannot be empty"))
+		}
 	}
 
 	if err := helper.ValidateStruct(medicineTransactionRequest); err != nil {
@@ -69,7 +78,7 @@ func GetMedicineTransactionByIDController(c echo.Context) error {
 
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
 	var medicineTransaction schema.MedicineTransaction
@@ -85,9 +94,9 @@ func GetMedicineTransactionByIDController(c echo.Context) error {
 
 func DeleteMedicineTransactionController(c echo.Context) error {
 
-	userID, ok := c.Get("userID").(uint)
+	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
 	medicineTransactionID, err := strconv.Atoi(c.Param("id"))
@@ -110,20 +119,20 @@ func DeleteMedicineTransactionController(c echo.Context) error {
 func GetMedicineTransactionController(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid user id"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
 	params := c.QueryParams()
 	limit, err := strconv.Atoi(params.Get("limit"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(params.Get("offset"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	status := params.Get("status_transaction")
