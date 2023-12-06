@@ -22,17 +22,16 @@ type DoctorLoginResponse struct {
 }
 
 type DoctorUpdateResponse struct {
-	Fullname         string `json:"fullname"`
-	Email            string `json:"email"`
-	Gender           string `json:"gender"`
-	Specialist       string `json:"specialist"`
-	ProfilePicture   string `json:"profile_picture"`
-	NoSTR            int    `json:"no_str"`
-	Experience       string `json:"experience"`
-	Alumnus          string `json:"alumnus"`
-	Status           bool   `json:"status"`
-	AboutDoctor      string `json:"about_doctor"`
-	LocationPractice string `json:"location_practice"`
+	ProfilePicture string `json:"profile_picture"`
+	Fullname       string `json:"fullname"`
+	Gender         string `json:"gender"`
+	Email          string `json:"email"`
+	Price          int    `json:"price"`
+	Specialist     string `json:"specialist"`
+	Experience     string `json:"experience"`
+	Alumnus        string `json:"alumnus"`
+	NoSTR          int    `json:"no_str"`
+	Status         bool   `json:"status"`
 }
 
 type DoctorAllResponse struct {
@@ -45,28 +44,39 @@ type DoctorAllResponse struct {
 }
 
 type DoctorAllResponseByAdmin struct {
+	ID         uint   `json:"id"`
+	Fullname   string `json:"fullname"`
+	Gender     string `json:"gender"`
+	Email      string `json:"email"`
+	Specialist string `json:"specialist"`
+	Experience string `json:"experience"`
+	NoSTR      int    `json:"no_str"`
+	// DoctorTransaction []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
+}
+type DoctorIDResponseByAdmin struct {
 	ID             uint   `json:"id" form:"id"`
-	Fullname       string `json:"fullname" form:"fullname"`
-	Gender         string `json:"gender" form:"gender"`
-	Email          string `json:"email" form:"email"`
-	Specialist     string `json:"specialist" form:"specialist"`
-	Experience     string `json:"experience" form:"experience"`
-	NoSTR          int    `json:"no_str" form:"no_str"`
+	ProfilePicture string `json:"profilePicture"`
+	Fullname       string `json:"fullname"`
+	Gender         string `json:"gender"`
+	Email          string `json:"email"`
+	Price          int    `json:"price"`
+	Specialist     string `json:"specialist"`
+	Alumnus        string `json:"alumnus"`
+	Experience     string `json:"experience"`
+	NoSTR          int    `json:"no_str"`
 	// DoctorTransaction []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
 }
 
 type DoctorIDResponse struct {
-	ID               uint   `json:"id"`
-	ProfilePicture   string `json:"profile_picture"`
-	Status           bool   `json:"status"`
-	Fullname         string `json:"fullname"`
-	Specialist       string `json:"specialist"`
-	Price            int    `json:"price"`
-	Experience       string `json:"experience"`
-	AboutDoctor      string `json:"about_doctor"`
-	NoSTR            int    `json:"no_str"`
-	LocationPractice string `json:"location_practice"`
-	Alumnus          string `json:"alumnus"`
+	ID             uint   `json:"id"`
+	ProfilePicture string `json:"profile_picture"`
+	Status         bool   `json:"status"`
+	Fullname       string `json:"fullname"`
+	Specialist     string `json:"specialist"`
+	Price          int    `json:"price"`
+	Alumnus        string `json:"alumnus"`
+	Experience     string `json:"experience"`
+	NoSTR          int    `json:"no_str"`
 }
 
 // Manage Patient
