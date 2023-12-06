@@ -79,7 +79,7 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 			return
 		}
 
-		imageURL := "https://i.pinimg.com/originals/b5/00/a0/b500a05f7c91d4fbbf3384c7c80763ad.png"
+		imageURL := "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjAfO1adC7X4vJbrrL32Y-50nSyTIRi0X9GZg38xX8Pp7wLQaGhUAActrcIXOflN7mc8Q6vlodQl21TieiybFKuDY1XOrcznX_tDyvwr7vimXxHv80ijlFyTHeiyXmYuYUB77UlBU3PbuvKNsC2FHsdtXH6_W4I-XmtWHThHf4TwMUFjQY2CMbMwxcMK-Fr/s328/Frame%202.png"
 		htmlBody := fmt.Sprintf(`
 			<!DOCTYPE html>
 			<html>
