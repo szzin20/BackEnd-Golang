@@ -149,8 +149,8 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
 		}
 
-		// send an email to the doctor
-		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "", "", "")
+		// Send an email to the doctor
+		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "", "", "",false)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
 		}
