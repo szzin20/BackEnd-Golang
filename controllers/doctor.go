@@ -696,6 +696,7 @@ func ChangeDoctorStatusController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"doctor status", response))
 }
 
+
 // reset password dan mengirimkan OTP ke email
 func GetOTPForPasswordReset(c echo.Context) error {
 	var OTPRequest web.PasswordResetRequest
@@ -717,7 +718,7 @@ func GetOTPForPasswordReset(c echo.Context) error {
 func VerifyOTP(c echo.Context) error {
 	var verificationRequest web.OTPVerificationRequest
 	if err := c.Bind(&verificationRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid request"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid request"))
 	}
 
 	if err := helper.ValidateStruct(verificationRequest); err != nil {
@@ -729,13 +730,13 @@ func VerifyOTP(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP not found"))
 	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("OTP verification successful", nil))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"OTP verification", nil))
 }
 
 func ResetDoctorPassword(c echo.Context) error {
 	var resetRequest web.ResetRequest
 	if err := c.Bind(&resetRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Permintaan tidak valid"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid request"))
 	}
 
 	if err := helper.ValidateStruct(resetRequest); err != nil {
@@ -747,14 +748,15 @@ func ResetDoctorPassword(c echo.Context) error {
 	// Update password
 	err := helper.UpdatePasswordInDatabase(configs.DB, "doctors", resetRequest.Email, hashedPassword, resetRequest.OTP)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal memperbarui password"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"update password"))
 	}
 
 	// Delete OTP from the database
 	err = helper.DeleteOTPFromDatabase(configs.DB, "doctors", resetRequest.Email)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal menghapus OTP"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"delete OTP"))
 	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Berhasil memperbarui password dokter", nil))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"doctor's password", nil))
 }
+
