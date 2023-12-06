@@ -8,11 +8,11 @@ import (
 	"healthcare/utils/helper"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"log"
 
 	"github.com/labstack/echo/v4"
 )
@@ -42,9 +42,14 @@ func RegisterUserController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to register"))
 	}
 
-	response := response.ConvertToUserRegisterResponse(userRequest)
+	// send register notification email
+	err := helper.SendNotificationEmail(userRequest.Email, userRequest.Fullname, "userRegister", "", "", "")
+	if err != nil {
+		log.Println("Error sending notification email:", err)
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
+	}
 
-	log.Println(response)
+	response := response.ConvertToUserRegisterResponse(userRequest)
 
 	return c.JSON(http.StatusCreated, helper.SuccessResponse("registered successful", response))
 }
@@ -78,6 +83,12 @@ func LoginUserController(c echo.Context) error {
 	}
 
 	userLoginResponse.Token = token
+
+	// send login notification email
+	err = helper.SendNotificationEmail(user.Email, user.Fullname, "login", "", "", "")
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
+		}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("login successful", userLoginResponse))
 }
@@ -164,7 +175,6 @@ func UpdateUserController(c echo.Context) error {
 	if err := helper.ValidateStruct(userUpdated); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
-
 
 	err := c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
 	if err != nil {

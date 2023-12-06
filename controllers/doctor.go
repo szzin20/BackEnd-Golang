@@ -363,7 +363,7 @@ func UpdateDoctorController(c echo.Context) error {
 
 // Update Doctor by Admin
 func UpdateDoctorByAdminController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("doctor_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid doctor id"))
 	}
@@ -470,7 +470,7 @@ func GetDoctorIDbyAdminController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to fetch doctor data"))
 	}
 
-	response := response.ConvertToGetIDDoctorResponse(&doctor)
+	response := response.ConvertToGetDoctorbyAdminResponse(&doctor)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("data successfully retrieved", response))
 }

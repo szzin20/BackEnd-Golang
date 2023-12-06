@@ -47,7 +47,7 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.PUT("/profile", controllers.UpdateUserController, UserJWT)
 	gUsers.DELETE("", controllers.DeleteUserController, UserJWT)
 	gUsers.GET("/medicines", controllers.GetMedicineUserController)
-	gUsers.GET("/medicines/:medicine_id", controllers.GetMedicineUserByIDController)
+	gUsers.GET("/medicines/:id", controllers.GetMedicineUserByIDController)
 	gUsers.GET("/doctors/available", controllers.GetAvailableDoctor)
 	gUsers.GET("/doctors", controllers.GetSpecializeDoctor)
 	gUsers.GET("/articles", controllers.GetAllArticles)

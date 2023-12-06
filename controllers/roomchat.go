@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"fmt"
 	"healthcare/configs"
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
+	"healthcare/utils/helper/constanta"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
 	"net/http"
@@ -15,6 +17,34 @@ import (
 
 	"github.com/labstack/echo/v4"
 )
+
+func GetAllRoomchatPagination(doctorID int, offset int, limit int, queryInput []schema.DoctorTransaction) ([]schema.DoctorTransaction, int64, error) {
+
+	if offset < 0 || limit < 0 {
+		return nil, 0, nil
+	}
+
+	queryAll := queryInput
+	var total int64
+
+	query := configs.DB.Model(&queryAll)
+
+	query.Preload("Roomchat.Message").Where("doctor_id = ? AND payment_status = ?", doctorID, "success").Find(&queryAll).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	result := query.Preload("Roomchat.Message").Where("doctor_id = ? AND payment_status = ?", doctorID, "success").Find(&queryAll)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	if offset >= int(total) {
+		return nil, 0, fmt.Errorf("not found")
+	}
+
+	return queryAll, total, nil
+}
 
 // User Create Roomchat
 func CreateRoomchatController(c echo.Context) error {
@@ -128,9 +158,8 @@ func GetDoctorRoomchatController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", response))
 }
 
-
 // Doctor Get All Roomchats
-func GetAllDoctorRoomchatController(c echo.Context) error {
+func GetAllDoctorsRoomchatController(c echo.Context) error {
 
 	doctorID, ok := c.Get("userID").(int)
 	if !ok {
@@ -185,4 +214,76 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", responses))
+}
+
+// Doctor Get All Roomchats Pagination
+func GetAllDoctorRoomchatController(c echo.Context) error {
+
+	doctorID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid doctor id"))
+	}
+
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+	}
+
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+	}
+
+	var DoctorTransactions []schema.DoctorTransaction
+
+	existingDoctorTransactions, total, err := GetAllRoomchatPagination(doctorID, offset, limit, DoctorTransactions)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse("doctor transaction data not found"))
+	}
+
+	sort.Slice(existingDoctorTransactions, func(i, j int) bool {
+
+		getLastMessageTimestamp := func(transaction schema.DoctorTransaction) time.Time {
+			if len(transaction.Roomchat.Message) > 0 {
+				return transaction.Roomchat.Message[len(transaction.Roomchat.Message)-1].CreatedAt
+			}
+
+			return time.Time{}
+		}
+
+		return getLastMessageTimestamp(existingDoctorTransactions[i]).After(getLastMessageTimestamp(existingDoctorTransactions[j]))
+	})
+
+	var responses []web.RoomchatListResponse
+	for _, doctorTransaction := range existingDoctorTransactions {
+
+		if doctorTransaction.DoctorID != uint(doctorID) {
+			continue
+		}
+
+		if doctorTransaction.Roomchat.ID == 0 {
+			continue
+		}
+
+		if doctorTransaction.PaymentStatus != "success" {
+			continue
+		}
+
+		var user schema.User
+		if err := configs.DB.First(&user, "id = ?", doctorTransaction.UserID).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
+		}
+
+		var lastMessage schema.Message
+		if len(doctorTransaction.Roomchat.Message) > 0 {
+			lastMessage = doctorTransaction.Roomchat.Message[len(doctorTransaction.Roomchat.Message)-1]
+		}
+
+		response := response.ConvertToGetAllRoomchats(user, doctorTransaction.Roomchat, lastMessage)
+		responses = append(responses, response)
+	}
+
+	pagination := helper.Pagination(offset, limit, total)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse("roomchat data successfully retrieved", responses, pagination))
 }

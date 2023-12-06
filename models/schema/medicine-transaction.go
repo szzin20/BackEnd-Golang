@@ -19,3 +19,11 @@ type MedicineTransaction struct {
 	CreatedAt         time.Time
 	DeletedAt         gorm.DeletedAt `gorm:"index"`
 }
+
+type MedicineDetails struct {
+	MedicineTransactionID uint     `gorm:"not null"`
+	MedicineID            uint     `gorm:"not null"`
+	Medicine              Medicine `gorm:"ForeignKey:MedicineID"`
+	Quantity              int      `gorm:"not null"`
+	TotalPriceMedicine    int      `gorm:"not null"`
+}
