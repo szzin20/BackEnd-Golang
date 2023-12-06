@@ -17,7 +17,6 @@ func ConvertToDoctorRegisterResponse(doctor *schema.Doctor) web.DoctorRegisterRe
 		NoSTR:          doctor.NoSTR,
 		Experience:     doctor.Experience,
 		Alumnus:        doctor.Alumnus,
-		Status:         doctor.Status,
 	}
 }
 

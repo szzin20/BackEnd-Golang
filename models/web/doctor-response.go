@@ -6,7 +6,6 @@ type DoctorRegisterResponse struct {
 	ID             uint   `json:"id"`
 	Fullname       string `json:"fullname"`
 	Email          string `json:"email"`
-	Status         bool   `json:"status"`
 	Price          int    `json:"price"`
 	Gender         string `json:"gender"`
 	Specialist     string `json:"specialist"`
