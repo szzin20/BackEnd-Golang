@@ -84,7 +84,7 @@ func GetMedicineTransactionByIDController(c echo.Context) error {
 	var medicineTransaction schema.MedicineTransaction
 
 	if err := configs.DB.Preload("MedicineDetails").Where("user_id = ?", userID).First(&medicineTransaction, id).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	response := response.ConvertToMedicineTransactionResponse(&medicineTransaction)
@@ -143,9 +143,9 @@ func GetMedicineTransactionController(c echo.Context) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("medicines transaction "+constanta.ErrNotFound))
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("medicines transaction "+constanta.ErrNotFound))
 		}
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(err.Error()))
 	}
 
 	pagination := helper.Pagination(offset, limit, total)

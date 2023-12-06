@@ -133,9 +133,9 @@ func GetUserCheckoutController(c echo.Context) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
 		}
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(err.Error()))
 	}
 
 	pagination := helper.Pagination(offset, limit, total)
@@ -201,7 +201,7 @@ func GetUserCheckoutByIDController(c echo.Context) error {
 		First(&checkout)
 
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound+" checkout"))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound+" checkout"))
 	}
 
 	response := response.ConvertToGetCheckoutResponse(&checkout)
@@ -304,9 +304,9 @@ func GetAdminCheckoutController(c echo.Context) error {
 		log.Println(err)
 		if strings.Contains(err.Error(), "not found") {
 
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
 		}
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(err.Error()))
 	}
 
 	pagination := helper.Pagination(offset, limit, total)
@@ -366,7 +366,7 @@ func GetAdminCheckoutByIDController(c echo.Context) error {
 		First(&checkout)
 
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"checkout"))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrActionGet+"checkout"))
 	}
 
 	response := response.ConvertToGetCheckoutResponse(&checkout)
