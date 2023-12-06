@@ -53,7 +53,7 @@ func getStoredOTP(email string) (string, error) {
 	var doctor schema.Doctor
 
 	if configs.DB.Where("email = ?", email).First(&user).Error == nil {
-		// return user.OTP, nil
+		return user.OTP, nil
 	} else if configs.DB.Where("email = ?", email).First(&doctor).Error == nil {
 		return doctor.OTP, nil
 	}
