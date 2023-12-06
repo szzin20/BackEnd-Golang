@@ -43,11 +43,16 @@ type ChangeDoctorStatusRequest struct {
 }
 
 type PasswordResetRequest struct {
+	Email string `json:"email" form:"email" validate:"required,email" `
+}
+
+type OTPVerificationRequest struct {
+	OTP   string `json:"otp" `
 	Email string `json:"email" form:"email" validate:"required,email"`
 }
 
-// type VerifyPasswordResetRequest struct {
-// 	OTP         int    `json:"otp" form:"otp" validate:"required"`
-// 	Email       string `json:"email" form:"email" validate:"required,email"`
-// 	NewPassword string `json:"new_password" form:"new_password" validate:"omitempty,min=10,max=15"`
-// }
+type ResetRequest struct {
+	OTP      string `json:"otp" `
+	Email    string `json:"email" form:"email" validate:"required,email" `
+	Password string `json:"password" form:"password" validate:"omitempty,min=10,max=15"`
+}

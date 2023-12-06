@@ -107,7 +107,8 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 	}
 
 	// Mengirim email pemberitahuan
-	err = helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "", doctorRequest.Email, plainPassword)
+	includeCredentials := true
+	err = helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "doctor", doctorRequest.Email, plainPassword, includeCredentials)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
 	}
@@ -150,7 +151,7 @@ func LoginDoctorController(c echo.Context) error {
 	// Send login notification email
 	if doctor.Email != "" {
 		notificationType := "login"
-		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "Login", "", ""); err != nil {
+		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "Login", "", "", false); err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send notification email: "+err.Error()))
 		}
 	}
@@ -608,57 +609,57 @@ func UpdateManageUserController(c echo.Context) error {
 	response := response.ConvertToManageUserResponse(doctorTransaction, user)
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"health details and patient status", response))
 }
+
 // Update manage user
 func GetAllDoctorConsultationController(c echo.Context) error {
-    limit, err := strconv.Atoi(c.QueryParam("limit"))
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit" + constanta.ErrQueryParamRequired))
-    }
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+	}
 
-    offset, err := strconv.Atoi(c.QueryParam("offset"))
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset" + constanta.ErrQueryParamRequired))
-    }
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+	}
 
+	var consultations []schema.DoctorTransaction
+	var total int64
 
-    var consultations []schema.DoctorTransaction
-    var total int64
+	query := configs.DB.Where("payment_status = ?", "success")
 
+	query.Model(&consultations).Count(&total)
 
-    query := configs.DB.Where("payment_status = ?", "success")
+	query = query.Limit(limit).Offset(offset)
 
-    query.Model(&consultations).Count(&total)
+	if err := query.Find(&consultations).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"consultations"))
+	}
 
-    query = query.Limit(limit).Offset(offset)
+	var consultationResponses []web.DoctorConsultationResponse
+	for _, consultation := range consultations {
+		var user schema.User
+		if err := configs.DB.First(&user, consultation.UserID).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"user data"))
+		}
 
-    if err := query.Find(&consultations).Error; err != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"consultations"))
-    }
+		var doctor schema.Doctor
+		if err := configs.DB.First(&doctor, consultation.DoctorID).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor data"))
+		}
 
-    var consultationResponses []web.DoctorConsultationResponse
-    for _, consultation := range consultations {
-        var user schema.User
-        if err := configs.DB.First(&user, consultation.UserID).Error; err != nil {
-            return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"user data"))
-        }
+		response := response.ConvertToConsultationResponse(consultation, user, doctor)
+		consultationResponses = append(consultationResponses, response)
+	}
 
-        var doctor schema.Doctor
-        if err := configs.DB.First(&doctor, consultation.DoctorID).Error; err != nil {
-            return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor data"))
-        }
+	if len(consultationResponses) == 0 {
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound+"consultations"))
+	}
 
-        response := response.ConvertToConsultationResponse(consultation, user, doctor)
-        consultationResponses = append(consultationResponses, response)
-    }
+	pagination := helper.Pagination(offset, limit, total)
 
-    if len(consultationResponses) == 0 {
-        return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound+"consultations"))
-    }
-
-    pagination := helper.Pagination(offset, limit, total)
-
-    return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"consultations", consultationResponses, pagination))
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"consultations", consultationResponses, pagination))
 }
+
 // Change Doctor Status
 func ChangeDoctorStatusController(c echo.Context) error {
 
@@ -696,55 +697,64 @@ func ChangeDoctorStatusController(c echo.Context) error {
 }
 
 // reset password dan mengirimkan OTP ke email
-func OTPPasswordReset(c echo.Context) error {
-
-	var reset web.PasswordResetRequest
-	if err := c.Bind(&reset); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionCreated+"password reset"))
+func GetOTPForPasswordReset(c echo.Context) error {
+	var OTPRequest web.PasswordResetRequest
+	if err := c.Bind(&OTPRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
 	}
 
-	if err := helper.ValidateStruct(reset); err != nil {
+	if err := helper.ValidateStruct(OTPRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	// Generate dan kirim OTP
-	err := helper.SendOTPViaEmail(reset.Email)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionCreated+"send OTP"))
+	if err := helper.SendOTPViaEmail(OTPRequest.Email); err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"send OTP"))
 	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"sent OTP ", nil))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"OTP", nil))
 }
 
-// func ChangePasswordAfterOTP(c echo.Context) error {
-//     var verify web.VerifyPasswordResetRequest
+func VerifyOTP(c echo.Context) error {
+	var verificationRequest web.OTPVerificationRequest
+	if err := c.Bind(&verificationRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid request"))
+	}
 
-//     // Parse request body for VerifyPasswordResetRequest
-//     if err := c.Bind(&verify); err != nil {
-//         return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input data for verification"))
-//     }
+	if err := helper.ValidateStruct(verificationRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
 
-//     // Validate input data for both requests
-//     if err := helper.ValidateStruct(verify); err != nil {
-//         return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
-//     }
+	// Verify OTP and handle errors
+	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP not found"))
+	}
 
-//     // Verify OTP
-//     err := helper.VerifyOTPByEmail(verify.Email, verify.OTP)
-//     if err != nil {
-//         return c.JSON(http.StatusUnauthorized, helper.ErrorResponse("invalid OTP"))
-//     }
+	return c.JSON(http.StatusOK, helper.SuccessResponse("OTP verification successful", nil))
+}
 
-//     // Update Password
-//     newPassword := verify.NewPassword
-//     if newPassword == "" {
-//         return c.JSON(http.StatusBadRequest, helper.ErrorResponse("New password is required"))
-//     }
+func ResetDoctorPassword(c echo.Context) error {
+	var resetRequest web.ResetRequest
+	if err := c.Bind(&resetRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Permintaan tidak valid"))
+	}
 
-//     if err := helper.HashPassword(verify.Email, newPassword); err != nil {
-//         return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update password"))
-//     }
+	if err := helper.ValidateStruct(resetRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
 
-//     // Respond successfully
-//     return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"Password changed", nil))
-// }
+	hashedPassword := helper.HashPassword(resetRequest.Password)
+
+	// Update password
+	err := helper.UpdatePasswordInDatabase(configs.DB, "doctors", resetRequest.Email, hashedPassword, resetRequest.OTP)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal memperbarui password"))
+	}
+
+	// Delete OTP from the database
+	err = helper.DeleteOTPFromDatabase(configs.DB, "doctors", resetRequest.Email)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal menghapus OTP"))
+	}
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse("Berhasil memperbarui password dokter", nil))
+}

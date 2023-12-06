@@ -55,20 +55,21 @@ func SendEmail(to, subject, body, htmlBody string) error {
 }
 
 
-func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, userPassword string) error {
+func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, userPassword string, includeCredentials bool) error {
 	go func() {
-		var subject, body string
+		var subject, body, credentialsInfo string
 
 		switch notificationType {
 		case "login":
 			subject = "Healthify Notification"
 			body = "Hello, " + fullname + "! You have successfully logged in."
 		case "register":
-			subject = "Healthify Notification"
-			body = fmt.Sprintf("Hello, %s! You have successfully registered.<br><br>Your login credentials are: <br>Email: %s<br>Password: %s", fullname, userEmail, userPassword)
-		case "userRegister":
-			subject = "Healthify Notification"
-			body = "Hello, " + fullname + "! You have successfully registered."
+			subject = "Registration Notification"
+			body = fmt.Sprintf("Hello, %s! You have successfully registered.", fullname)
+			if userType == "doctor" && includeCredentials {
+				credentialsInfo = fmt.Sprintf("<br><br>Your login credentials are: <br>Email: %s<br>Password: %s", userEmail, userPassword)
+			}
+			body += fmt.Sprintf("<br>Please log in to your account to access our services.%s", credentialsInfo)
 		case "complaints":
 			subject = "Healthify Notification"
 			body = "Hello, " + fullname + "! You have a new consultation request that requires immediate attention. Please review and attend to it promptly."
@@ -137,7 +138,6 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 	return nil
 }
 
-
 func getButtonColor(notificationType string) string {
 	switch notificationType {
 	case "complaints":
@@ -156,13 +156,18 @@ func getButtonHTML(notificationType string) string {
 	}
 }
 
-
 // SendOTPViaEmail sends a one-time password (OTP) via email.
 func SendOTPViaEmail(email string) error {
 	// Generate OTP
 	otp, err := GenerateRandomCode()
 	if err != nil {
 		log.Printf("Failed to generate OTP: %v\n", err)
+		return err
+	}
+
+	// Save OTP to the database
+	if err := SaveOTP(email, otp); err != nil {
+		log.Printf("Failed to save OTP to the database: %v\n", err)
 		return err
 	}
 
