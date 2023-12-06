@@ -151,7 +151,7 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 		}
 
 		// Send an email to the doctor
-		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "", "", "")
+		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "", "", "",false)
 		log.Printf(doctor.Email)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
