@@ -238,7 +238,9 @@ func UpdateCheckoutController(c echo.Context) error {
 	}
 
 	if updatedCheckout.PaymentStatus == "cancelled" {
-		if err := configs.DB.Model(&existingCheckout.MedicineTransaction).Update("status_transaction", "belum dibayar").Error; err != nil {
+		if err := configs.DB.Table("medicine_transactions").
+			Where("id = ?", existingCheckout.MedicineTransactionID).
+			Update("status_transaction", "belum dibayar").Error; err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"medicine transaction status"))
 		}
 	}
