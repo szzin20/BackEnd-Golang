@@ -66,6 +66,9 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.POST("/medicines-payments/checkout", controllers.CreateCheckoutController, UserJWT)
 	gUsers.GET("/medicines-payments/checkout", controllers.GetUserCheckoutController, UserJWT)
 	gUsers.GET("/medicines-payments/checkout/:id", controllers.GetUserCheckoutByIDController, UserJWT)
+	gUsers.POST("/get-otp", controllers.GetOTPForPasswordReset)
+	gUsers.POST("/verify-otp", controllers.VerifyOTP)
+	gUsers.POST("/change-password", controllers.ResetPassword)
 
 	gDoctors := e.Group("/doctors")
 	gDoctors.POST("/login", controllers.LoginDoctorController)
