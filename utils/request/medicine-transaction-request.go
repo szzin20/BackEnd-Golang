@@ -7,9 +7,9 @@ import (
 
 func ConvertToMedicineTransactionRequest(mt web.MedicineTransactionRequest, userID uint) *schema.MedicineTransaction {
 
-	medicineDetails := make([]schema.MedicineDetails, len(mt.MedicineDetailsRequest))
+	medicineDetails := make([]schema.MedicineDetails, len(mt.MedicineDetails))
 
-	for i, mdReq := range mt.MedicineDetailsRequest {
+	for i, mdReq := range mt.MedicineDetails {
 		medicineDetails[i] = schema.MedicineDetails{
 			MedicineID: mdReq.MedicineID,
 			Quantity:   mdReq.Quantity,
