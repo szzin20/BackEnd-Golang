@@ -6,7 +6,6 @@ type DoctorRegisterResponse struct {
 	ID             uint   `json:"id"`
 	Fullname       string `json:"fullname"`
 	Email          string `json:"email"`
-	Status         bool   `json:"status"`
 	Price          int    `json:"price"`
 	Gender         string `json:"gender"`
 	Specialist     string `json:"specialist"`
@@ -31,7 +30,6 @@ type DoctorUpdateResponse struct {
 	Experience     string `json:"experience"`
 	Alumnus        string `json:"alumnus"`
 	NoSTR          int    `json:"no_str"`
-	Status         bool   `json:"status"`
 }
 
 type DoctorAllResponse struct {
@@ -40,17 +38,19 @@ type DoctorAllResponse struct {
 	Fullname       string `json:"fullname"`
 	Specialist     string `json:"specialist"`
 	Price          int    `json:"price"`
-	Status         bool   `json:"status"`
 }
 
 type DoctorAllResponseByAdmin struct {
-	ID         uint   `json:"id"`
-	Fullname   string `json:"fullname"`
-	Gender     string `json:"gender"`
-	Email      string `json:"email"`
-	Specialist string `json:"specialist"`
-	Experience string `json:"experience"`
-	NoSTR      int    `json:"no_str"`
+	ID             uint   `json:"id"`
+	ProfilePicture string `json:"profile_picture"`
+	Fullname       string `json:"fullname"`
+	Gender         string `json:"gender"`
+	Email          string `json:"email"`
+	Price          int    `json:"price"`
+	Specialist     string `json:"specialist"`
+	Experience     string `json:"experience"`
+	Alumnus        string `json:"alumnus"`
+	NoSTR          int    `json:"no_str"`
 	// DoctorTransaction []DoctorTransaction `gorm:"ForeignKey:DoctorID;references:ID"`
 }
 type DoctorIDResponseByAdmin struct {
