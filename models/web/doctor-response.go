@@ -83,6 +83,7 @@ type DoctorIDResponse struct {
 type ManageUserResponse struct {
 	UserID              uint      `json:"user_id"`
 	Fullname            string    `json:"fullname"`
+	ProfilePicture      string    `json:"profile_picture"`
 	DoctorTransactionID uint      `json:"transaction_id"`
 	CreatedAt           time.Time `json:"created_at"`
 	HealthDetails       string    `json:"health_details"`
