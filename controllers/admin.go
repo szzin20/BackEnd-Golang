@@ -98,7 +98,7 @@ func UpdateAdminController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("admin updated data successful", response))
 }
 
-// Admin Update Payment Status and Send Notification to Doctor
+// Admin Update Payment Status 
 func UpdatePaymentStatusByAdminController(c echo.Context) error {
 	// Parse transaction ID from the request parameters
 	transaction_id, err := strconv.Atoi(c.Param("transaction_id"))
@@ -139,22 +139,6 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 	result = configs.DB.Model(&existingTransaction).Updates(updateRequest)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"payment status"))
-	}
-
-	if updateRequest.PaymentStatus == "success" {
-
-		var doctor schema.Doctor
-		result := configs.DB.First(&doctor, "id = ?", existingTransaction.DoctorID)
-		if result.Error != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
-		}
-
-		// send an email to the doctor
-		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "", "", "")
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
-		}
-
 	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"payment status", nil))

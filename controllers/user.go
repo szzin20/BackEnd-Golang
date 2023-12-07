@@ -6,13 +6,14 @@ import (
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
+	"healthcare/utils/helper/constanta"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"log"
 
 	"github.com/labstack/echo/v4"
 )
@@ -43,7 +44,7 @@ func RegisterUserController(c echo.Context) error {
 	}
 
 	// send register notification email
-	err := helper.SendNotificationEmail(userRequest.Email, userRequest.Fullname, "userRegister", "", "", "")
+	err := helper.SendNotificationEmail(userRequest.Email, userRequest.Fullname, "register", "", "", "", false)
 	if err != nil {
 		log.Println("Error sending notification email:", err)
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
@@ -85,10 +86,10 @@ func LoginUserController(c echo.Context) error {
 	userLoginResponse.Token = token
 
 	// send login notification email
-	err = helper.SendNotificationEmail(user.Email, user.Fullname, "login", "", "", "")
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
-		}
+	err = helper.SendNotificationEmail(user.Email, user.Fullname, "login", "", "", "", false)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
+	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("login successful", userLoginResponse))
 }
@@ -272,4 +273,29 @@ func DeleteUserByAdminController(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("user deleted data successful  ", nil))
+}
+
+func ResetPassword(c echo.Context) error {
+	var resetRequest web.ResetRequest
+	if err := c.Bind(&resetRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid request"))
+	}
+
+	if err := helper.ValidateStruct(resetRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	hashedPassword := helper.HashPassword(resetRequest.Password)
+
+	// Update password
+	if err := helper.UpdatePasswordInDatabase(configs.DB, "users", resetRequest.Email, hashedPassword, resetRequest.OTP); err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"update password"))
+	}
+
+	// Delete OTP from the database
+	if err := helper.DeleteOTPFromDatabase(configs.DB, "users", resetRequest.Email); err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"delete OTP"))
+	}
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"user's password", nil))
 }

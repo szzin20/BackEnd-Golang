@@ -55,7 +55,7 @@ func SendEmail(to, subject, body, htmlBody string) error {
 }
 
 
-func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, userPassword string) error {
+func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, userPassword string, includeCredentials bool) error {
 	go func() {
 		var subject, body string
 
@@ -65,10 +65,11 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 			body = "Hello, " + fullname + "! You have successfully logged in."
 		case "register":
 			subject = "Healthify Notification"
-			body = fmt.Sprintf("Hello, %s! You have successfully registered.<br><br>Your login credentials are: <br>Email: %s<br>Password: %s", fullname, userEmail, userPassword)
-		case "userRegister":
-			subject = "Healthify Notification"
-			body = "Hello, " + fullname + "! You have successfully registered."
+			if userType == "doctor" {
+				body = fmt.Sprintf("Hallo %s,\n\n<br>Selamat! Akun Anda telah berhasil dibuat di platform kami. Sekarang Anda memiliki akses penuh untuk menjelajahi layanan kami yang memudahkan manajemen pasien dan informasi medis.\n<br><br>Dengan akun ini, Anda dapat dengan mudah mengelola konsultasi pasien, melacak riwayat pasien, mengelola artikel kesehatan, dan mengakses obat-obatan yang tersedia untuk dijadikan rekomendasi obat pada pasien.\n<br><br>Langkah berikutnya, silakan masuk dengan email dan password yang terdaftar dibawah ini :\n<br><br>Email : %s\n<br>Password : %s\n<br><br>Email dan password ini bersifat rahasia, jangan berikan kepada siapapun, agar tidak ada penyalah gunaan akun.\n\n<br><br>Terima kasih atas kepercayaan Anda pada layanan kami. Semoga akun baru ini membantu meningkatkan efisiensi dan kualitas layanan medis Anda.", fullname, userEmail, userPassword)
+			} else {
+				body = fmt.Sprintf("Hallo %s,\n<br>Kamu berhasil daftar di aplikasi Healthify Care System!\n<br><br>Kami mengarahkan kamu untuk langsung mulai pada halaman beranda, agar kamu dapat memulai perjalanan menuju hidup sehat bersama Healthify.\n<br><br>Dengan mendaftar, Kamu menyetujui Kebijakan Privasi Kesehatan Healthify.", fullname)
+			}
 		case "complaints":
 			subject = "Healthify Notification"
 			body = "Hello, " + fullname + "! You have a new consultation request that requires immediate attention. Please review and attend to it promptly."
@@ -78,6 +79,7 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 			return
 		}
 
+		imageURL := "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjAfO1adC7X4vJbrrL32Y-50nSyTIRi0X9GZg38xX8Pp7wLQaGhUAActrcIXOflN7mc8Q6vlodQl21TieiybFKuDY1XOrcznX_tDyvwr7vimXxHv80ijlFyTHeiyXmYuYUB77UlBU3PbuvKNsC2FHsdtXH6_W4I-XmtWHThHf4TwMUFjQY2CMbMwxcMK-Fr/s328/Frame%202.png"
 		htmlBody := fmt.Sprintf(`
 			<!DOCTYPE html>
 			<html>
@@ -120,13 +122,13 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 			</head>
 			<body>
 				<div class="container">
-					<h1>%s</h1>
+					<h1><img src="%s" alt="Healthify Notification"></h1>
 					<p>%s</p>
 					%s <!-- Button -->
 				</div>
 			</body>
 			</html>
-		`, getButtonColor(notificationType), subject, body, getButtonHTML(notificationType))
+		`, getButtonColor(notificationType), imageURL, body, getButtonHTML(notificationType))
 
 		err := SendEmail(to, subject, body, htmlBody)
 		if err != nil {
@@ -156,13 +158,18 @@ func getButtonHTML(notificationType string) string {
 	}
 }
 
-
 // SendOTPViaEmail sends a one-time password (OTP) via email.
 func SendOTPViaEmail(email string) error {
 	// Generate OTP
 	otp, err := GenerateRandomCode()
 	if err != nil {
 		log.Printf("Failed to generate OTP: %v\n", err)
+		return err
+	}
+
+	// Save OTP to the database
+	if err := SaveOTP(email, otp); err != nil {
+		log.Printf("Failed to save OTP to the database: %v\n", err)
 		return err
 	}
 

@@ -116,7 +116,7 @@ func UpdateMedicineController(c echo.Context) error {
 
 	result := configs.DB.First(&existingMedicine, id)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	var updatedMedicineRequest web.MedicineUpdateRequest
@@ -149,7 +149,7 @@ func UpdateImageMedicineController(c echo.Context) error {
 
 	var existingMedicine schema.Medicine
 	if err := configs.DB.First(&existingMedicine, medicineID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	err = c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
@@ -210,7 +210,7 @@ func DeleteMedicineController(c echo.Context) error {
 
 	result := configs.DB.First(&medicine, id)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	result = configs.DB.Delete(&medicine, id)
@@ -230,7 +230,7 @@ func DeleteImageMedicineController(c echo.Context) error {
 
 	var medicine schema.Medicine
 	if err := configs.DB.First(&medicine, medicineID).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	if medicine.Image != "" {
@@ -258,7 +258,7 @@ func GetImageMedicineController(c echo.Context) error {
 
 	var medicine schema.Medicine
 	if err := configs.DB.First(&medicine, id).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	response := response.ConvertToAdminMedicineImageResponse(&medicine)
@@ -272,13 +272,13 @@ func GetMedicineAdminController(c echo.Context) error {
 	limit, err := strconv.Atoi(params.Get("limit"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(params.Get("offset"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	name := params.Get("name")
@@ -289,9 +289,9 @@ func GetMedicineAdminController(c echo.Context) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("medicines "+constanta.ErrNotFound))
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("medicines "+constanta.ErrNotFound))
 		}
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(err.Error()))
 	}
 
 	pagination := helper.Pagination(offset, limit, total)
@@ -311,7 +311,7 @@ func GetMedicineAdminByIDController(c echo.Context) error {
 	var medicine schema.Medicine
 
 	if err := configs.DB.First(&medicine, id).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	response := response.ConvertToAdminMedicineResponse(&medicine)
@@ -325,13 +325,13 @@ func GetMedicineUserController(c echo.Context) error {
 	limit, err := strconv.Atoi(params.Get("limit"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(params.Get("offset"))
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	name := params.Get("name")
@@ -342,9 +342,9 @@ func GetMedicineUserController(c echo.Context) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("medicines "+constanta.ErrNotFound))
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("medicines "+constanta.ErrNotFound))
 		}
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(err.Error()))
 	}
 
 	pagination := helper.Pagination(offset, limit, total)
@@ -364,7 +364,7 @@ func GetMedicineUserByIDController(c echo.Context) error {
 	var medicine schema.Medicine
 
 	if err := configs.DB.First(&medicine, id).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	response := response.ConvertToUserMedicineResponse(&medicine)
