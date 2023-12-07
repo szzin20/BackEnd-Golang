@@ -126,7 +126,7 @@ func ConvertToManageUserResponse(managePatient schema.DoctorTransaction, user sc
 
 func ConvertToConsultationResponse(Consultation schema.DoctorTransaction, user schema.User, doctor schema.Doctor) web.DoctorConsultationResponse {
 	return web.DoctorConsultationResponse{
-		UserID:              Consultation.ID,
+		UserID:              user.ID,
 		Fullname:            user.Fullname,
 		DoctorTransactionID: Consultation.ID,
 		Price:               doctor.Price,
