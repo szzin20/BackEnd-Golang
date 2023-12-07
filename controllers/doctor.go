@@ -610,41 +610,54 @@ func UpdateManageUserController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"health details and patient status", response))
 }
 
-// Update manage user
 func GetAllDoctorConsultationController(c echo.Context) error {
+	doctorID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet + "doctor id"))
+	}
+
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid limit parameter"))
 	}
 
 	offset, err := strconv.Atoi(c.QueryParam("offset"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid offset parameter"))
 	}
 
 	var consultations []schema.DoctorTransaction
 	var total int64
 
-	query := configs.DB.Where("payment_status = ?", "success")
+	// Bangun query database untuk mengambil konsultasi dokter
+	query := configs.DB.
+		Joins("INNER JOIN roomchats ON doctor_transactions.id = roomchats.transaction_id").
+		Joins("LEFT JOIN messages ON roomchats.id = messages.roomchat_id").
+		Where("doctor_transactions.payment_status = ?", "success").
+		Where("roomchats.transaction_id IS NOT NULL").
+		Where("doctor_transactions.doctor_id = ?", doctorID).
+		Where("messages.ID IS NULL")
 
 	query.Model(&consultations).Count(&total)
 
 	query = query.Limit(limit).Offset(offset)
 
+	// Ambil konsultasi berdasarkan query akhir
 	if err := query.Find(&consultations).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"consultations"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet +"consultations"))
 	}
 
 	var consultationResponses []web.DoctorConsultationResponse
+	// Iterasi melalui konsultasi yang diambil 
 	for _, consultation := range consultations {
 		var user schema.User
 		if err := configs.DB.First(&user, consultation.UserID).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"user data"))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet +"user"))
 		}
 
 		var doctor schema.Doctor
 		if err := configs.DB.First(&doctor, consultation.DoctorID).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor data"))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet +"doctor"))
 		}
 
 		response := response.ConvertToConsultationResponse(consultation, user, doctor)
@@ -656,7 +669,6 @@ func GetAllDoctorConsultationController(c echo.Context) error {
 	}
 
 	pagination := helper.Pagination(offset, limit, total)
-
 	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"consultations", consultationResponses, pagination))
 }
 
@@ -695,7 +707,6 @@ func ChangeDoctorStatusController(c echo.Context) error {
 	response := response.ConvertToDoctorUpdateResponse(&existingDoctor)
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"doctor status", response))
 }
-
 
 // reset password dan mengirimkan OTP ke email
 func GetOTPForPasswordReset(c echo.Context) error {
@@ -759,4 +770,3 @@ func ResetDoctorPassword(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"doctor's password", nil))
 }
-
