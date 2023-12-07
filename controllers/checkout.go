@@ -11,7 +11,6 @@ import (
 	"healthcare/utils/helper/constanta"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -285,27 +284,24 @@ func GetAdminCheckoutController(c echo.Context) error {
 
 	params := c.QueryParams()
 	limit, err := strconv.Atoi(params.Get("limit"))
-
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(params.Get("offset"))
-
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	paymentStatus := params.Get("payment_status")
+	userID, err := strconv.Atoi(params.Get("user_id"))
 
 	var checkouts []schema.Checkout
 
-	checkouts, total, err := GetAdminAllCheckoutPagination(offset, limit, paymentStatus, []schema.Checkout{})
+	checkouts, total, err := GetAdminAllCheckoutPagination(offset, limit, userID, paymentStatus, []schema.Checkout{})
 
 	if err != nil {
-		log.Println(err)
 		if strings.Contains(err.Error(), "not found") {
-
 			return c.JSON(http.StatusNotFound, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
 		}
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse(err.Error()))
@@ -318,7 +314,7 @@ func GetAdminCheckoutController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"checkouts", response, pagination))
 }
 
-func GetAdminAllCheckoutPagination(offset int, limit int, paymentStatus string, queryInput []schema.Checkout) ([]schema.Checkout, int64, error) {
+func GetAdminAllCheckoutPagination(offset, limit, userID int, paymentStatus string, queryInput []schema.Checkout) ([]schema.Checkout, int64, error) {
 	if offset < 0 || limit < 0 {
 		return nil, 0, nil
 	}
@@ -327,7 +323,12 @@ func GetAdminAllCheckoutPagination(offset int, limit int, paymentStatus string, 
 	var total int64
 
 	query := configs.DB.Model(&queryAll).
-		Joins("JOIN medicine_transactions ON checkouts.medicine_transaction_id = medicine_transactions.id")
+		Joins("JOIN medicine_transactions ON checkouts.medicine_transaction_id = medicine_transactions.id").
+		Joins("JOIN users ON medicine_transactions.user_id = users.id")
+
+	if userID != 0 {
+		query = query.Where("users.id = ?", userID)
+	}
 
 	if paymentStatus != "" {
 		query = query.Where("checkouts.payment_status = ?", paymentStatus)
