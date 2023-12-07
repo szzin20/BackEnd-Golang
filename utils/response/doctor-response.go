@@ -116,6 +116,7 @@ func ConvertToManageUserResponse(managePatient schema.DoctorTransaction, user sc
 	return web.ManageUserResponse{
 		UserID:              user.ID,
 		Fullname:            user.Fullname,
+		ProfilePicture:      user.ProfilePicture,
 		DoctorTransactionID: managePatient.ID,
 		CreatedAt:           managePatient.CreatedAt,
 		HealthDetails:       managePatient.HealthDetails,
