@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"healthcare/configs"
 	"healthcare/middlewares"
 	"healthcare/models/schema"
@@ -94,23 +95,66 @@ func LoginUserController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("login successful", userLoginResponse))
 }
 
+func GetAllUserPagination(offset int, limit int, queryInput []schema.User) ([]schema.User, int64, error) {
+
+	if offset < 0 || limit < 0 {
+		return nil, 0, nil
+	}
+
+	queryAll := queryInput
+	var total int64
+
+	query := configs.DB.Model(&queryAll)
+
+	query.Find(&queryAll).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	result := query.Find(&queryAll)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	if offset >= int(total) {
+		return nil, 0, fmt.Errorf("not found")
+	}
+
+	return queryAll, total, nil
+}
+
 // Get All Doctors by Admin
 func GetAllUserByAdminController(c echo.Context) error {
-	var User []schema.User
 
-	err := configs.DB.Find(&User).Error
+	params := c.QueryParams()
+	limit, err := strconv.Atoi(params.Get("limit"))
+
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Pengguna"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
-	if len(User) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data Pengguna Kosong"))
+	offset, err := strconv.Atoi(params.Get("offset"))
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
-	response := response.ConvertToGetAllUserByAdminResponse(User)
+	var users []schema.User
+	user, total, err := GetAllUserPagination(offset, limit, users)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
+		}
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Data Pengguna Berhasil Diambil", response))
+	pagination := helper.Pagination(offset, limit, total)
+
+	response := response.ConvertToGetAllUserByAdminResponse(user)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"user", response, pagination))
 }
+
 
 // Get User Profile
 func GetUserController(c echo.Context) error {
