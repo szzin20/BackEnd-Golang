@@ -23,7 +23,7 @@ func ConvertToGetCheckoutResponse(checkout *schema.Checkout) web.CheckoutRespons
 		HP:                      checkout.MedicineTransaction.HP,
 		PaymentMethod:           checkout.MedicineTransaction.PaymentMethod,
 		MedicineDetailsResponse: medicineDetailsResponse,
-		TotalPrice:              checkout.MedicineTransaction.TotalPrice, // Assuming MedicineTransaction has a TotalPrice field
+		TotalPrice:              checkout.MedicineTransaction.TotalPrice,
 		StatusTransaction:       checkout.MedicineTransaction.StatusTransaction,
 	}
 
