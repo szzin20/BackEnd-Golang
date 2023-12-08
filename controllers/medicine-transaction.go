@@ -46,7 +46,7 @@ func CreateMedicineTransaction(c echo.Context) error {
 	for i, md := range medicineTransaction.MedicineDetails {
 		medicine := schema.Medicine{}
 		if err := configs.DB.First(&medicine, md.MedicineID).Error; err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("medicine id "+constanta.ErrNotFound))
 		}
 
 		if medicine.Stock < md.Quantity {

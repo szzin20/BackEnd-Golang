@@ -270,7 +270,6 @@ func reduceStock(medicineDetails []schema.MedicineDetails) error {
 			return errors.New("insufficient stock")
 		}
 
-		// Reduce stock in the Medicine table
 		newStock := medicine.Stock - md.Quantity
 		if err := configs.DB.Model(&medicine).Update("stock", newStock).Error; err != nil {
 			return errors.New(constanta.ErrActionUpdated + "medicine stock")
