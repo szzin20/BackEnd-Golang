@@ -98,9 +98,11 @@ type DoctorProfileRoomchat struct {
 }
 
 type DoctorConsultationResponse struct {
-	RoomchatID          uint   `json:"room_chat_id"`
-	UserID              uint   `json:"user_id"`
-	Fullname            string `json:"fullname"`
-	DoctorTransactionID uint   `json:"transaction_id"`
-	Price               int    `json:"price"`
+	RoomchatID          uint      `json:"room_chat_id"`
+	UserID              uint      `json:"user_id"`
+	Fullname            string    `json:"fullname"`
+	ProfilePicture      string    `json:"profile_picture"`
+	DoctorTransactionID uint      `json:"transaction_id"`
+	Price               int       `json:"price"`
+	CreatedAt           time.Time `json:"created_at"`
 }

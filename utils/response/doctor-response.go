@@ -129,7 +129,9 @@ func ConvertToConsultationResponse(consultation schema.DoctorTransaction, user s
 		RoomchatID:          room.ID,
 		UserID:              user.ID,
 		Fullname:            user.Fullname,
+		ProfilePicture:      user.ProfilePicture,
 		DoctorTransactionID: consultation.ID,
 		Price:               consultation.Price,
+		CreatedAt:           consultation.CreatedAt,
 	}
 }
