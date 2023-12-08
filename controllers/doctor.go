@@ -509,7 +509,7 @@ func GetManageUserController(c echo.Context) error {
 		query = configs.DB.Where("doctor_id = ? AND patient_status = ? AND payment_status = 'success'", doctorID, patientStatus)
 	} else {
 		// Get all transactions
-		query = configs.DB.Where("deleted_at IS NULL AND payment_status = 'success'").Where("doctor_id=?", doctorID)
+		query = configs.DB.Where("deleted_at IS NULL AND payment_status = 'success'").Where("doctor_id=?", doctorID).Order("created_at desc")
 	}
 
 	// Count total number of records
