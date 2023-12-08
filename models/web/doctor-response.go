@@ -98,6 +98,7 @@ type DoctorProfileRoomchat struct {
 }
 
 type DoctorConsultationResponse struct {
+	RoomchatID          uint   `json:"room_chat_id"`
 	UserID              uint   `json:"user_id"`
 	Fullname            string `json:"fullname"`
 	DoctorTransactionID uint   `json:"transaction_id"`
