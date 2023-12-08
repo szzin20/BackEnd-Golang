@@ -71,7 +71,7 @@ func CreateMedicineTransaction(c echo.Context) error {
 
 // Get Medicine Transaction by ID
 func GetMedicineTransactionByIDController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("medtrans_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine transaction id"))
 	}
@@ -99,7 +99,7 @@ func DeleteMedicineTransactionController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
-	medicineTransactionID, err := strconv.Atoi(c.Param("id"))
+	medicineTransactionID, err := strconv.Atoi(c.Param("medtrans_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}

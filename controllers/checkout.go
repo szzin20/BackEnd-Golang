@@ -187,7 +187,7 @@ func GetUserCheckoutByIDController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
-	checkoutID, err := strconv.Atoi(c.Param("id"))
+	checkoutID, err := strconv.Atoi(c.Param("checkout_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid checkout id"))
 	}
@@ -210,7 +210,7 @@ func GetUserCheckoutByIDController(c echo.Context) error {
 
 // UpdateCheckoutController By Admin
 func UpdateCheckoutController(c echo.Context) error {
-	checkoutID, err := strconv.Atoi(c.Param("id"))
+	checkoutID, err := strconv.Atoi(c.Param("checkout_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid checkout id"))
 	}
@@ -356,7 +356,7 @@ func GetAdminAllCheckoutPagination(offset, limit, userID int, paymentStatus stri
 
 func GetAdminCheckoutByIDController(c echo.Context) error {
 
-	checkoutID, err := strconv.Atoi(c.Param("id"))
+	checkoutID, err := strconv.Atoi(c.Param("checkout_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid checkout id"))
 	}
