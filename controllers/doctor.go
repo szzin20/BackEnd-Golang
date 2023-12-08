@@ -613,7 +613,7 @@ func UpdateManageUserController(c echo.Context) error {
 func GetAllDoctorConsultationController(c echo.Context) error {
 	doctorID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet + "doctor id"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor id"))
 	}
 
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
@@ -644,18 +644,22 @@ func GetAllDoctorConsultationController(c echo.Context) error {
 
 	// Ambil konsultasi berdasarkan query akhir
 	if err := query.Find(&consultations).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet +"consultations"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"consultations"))
 	}
 
 	var consultationResponses []web.DoctorConsultationResponse
-	// Iterasi melalui konsultasi yang diambil 
 	for _, consultation := range consultations {
 		var user schema.User
 		if err := configs.DB.First(&user, consultation.UserID).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet +"user"))
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"user"))
 		}
 
-		response := response.ConvertToConsultationResponse(consultation, user)
+		// Use Preload to fetch the associated Roomchat
+		if err := configs.DB.Preload("Roomchat").First(&consultation, consultation.ID).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"room"))
+		}
+
+		response := response.ConvertToConsultationResponse(consultation, user, consultation.Roomchat)
 		consultationResponses = append(consultationResponses, response)
 	}
 
