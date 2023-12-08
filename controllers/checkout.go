@@ -219,7 +219,7 @@ func UpdateCheckoutController(c echo.Context) error {
 
 	result := configs.DB.Preload("MedicineTransaction.MedicineDetails").First(&existingCheckout, checkoutID)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"checkout id"))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrActionGet+"checkout id"))
 	}
 
 	var updatedCheckoutRequest web.CheckoutUpdate
@@ -294,7 +294,16 @@ func GetAdminCheckoutController(c echo.Context) error {
 	}
 
 	paymentStatus := params.Get("payment_status")
-	userID, err := strconv.Atoi(params.Get("user_id"))
+
+	userIDStr := params.Get("user_id")
+
+	var userID int
+	if userIDStr != "" {
+		userID, err = strconv.Atoi(userIDStr)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
+		}
+	}
 
 	var checkouts []schema.Checkout
 
