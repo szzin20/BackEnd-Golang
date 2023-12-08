@@ -636,7 +636,8 @@ func GetAllDoctorConsultationController(c echo.Context) error {
 		Where("doctor_transactions.payment_status = ?", "success").
 		Where("roomchats.transaction_id IS NOT NULL").
 		Where("doctor_transactions.doctor_id = ?", doctorID).
-		Where("messages.ID IS NULL")
+		Where("messages.ID IS NULL").
+		Order("doctor_transactions.created_at DESC")
 
 	query.Model(&consultations).Count(&total)
 
