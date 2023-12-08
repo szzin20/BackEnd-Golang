@@ -485,12 +485,12 @@ func GetManageUserController(c echo.Context) error {
 	// Parse limit and offset from query parameters
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(c.QueryParam("offset"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
@@ -618,12 +618,12 @@ func GetAllDoctorConsultationController(c echo.Context) error {
 
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid limit parameter"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid limit parameter"))
 	}
 
 	offset, err := strconv.Atoi(c.QueryParam("offset"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("invalid offset parameter"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid offset parameter"))
 	}
 
 	var consultations []schema.DoctorTransaction

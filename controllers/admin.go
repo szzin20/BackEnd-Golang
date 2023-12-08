@@ -165,12 +165,12 @@ func GetAdminProfileController(c echo.Context) error {
 func GetAllDoctorsPaymentsByAdminsController(c echo.Context) error {
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(c.QueryParam("offset"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	var doctorTransactions []schema.DoctorTransaction
