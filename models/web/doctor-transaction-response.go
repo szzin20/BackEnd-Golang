@@ -24,4 +24,3 @@ type DoctorTransactionDetailsResponse struct {
 	Specialist    string `json:"specialist"`
 	PatientStatus string `json:"patient_status"`
 }
-

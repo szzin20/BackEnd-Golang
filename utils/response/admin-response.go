@@ -42,3 +42,20 @@ func ConvertToAdminTransactionUsersResponse(transactions []schema.DoctorTransact
 	}
 	return results
 }
+
+func ConvertToAdminDoctorPaymentsResponse(transactions []schema.DoctorTransaction) []web.AdminDoctorPaymentsResponse { 
+	var results []web.AdminDoctorPaymentsResponse 
+	for _, transaction := range transactions { 
+	 adminsResponse := web.AdminDoctorPaymentsResponse{ 
+	  TransactionID:       transaction.ID, 
+	  DoctorID:            transaction.DoctorID, 
+	  PaymentMethod:       transaction.PaymentMethod, 
+	  Price:               transaction.Price, 
+	  CreatedAt:           transaction.CreatedAt, 
+	  PaymentConfirmation: transaction.PaymentConfirmation, 
+	  PaymentStatus:       transaction.PaymentStatus, 
+	 } 
+	 results = append(results, adminsResponse) 
+	} 
+	return results 
+   }
