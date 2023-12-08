@@ -655,12 +655,7 @@ func GetAllDoctorConsultationController(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet +"user"))
 		}
 
-		var doctor schema.Doctor
-		if err := configs.DB.First(&doctor, consultation.DoctorID).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet +"doctor"))
-		}
-
-		response := response.ConvertToConsultationResponse(consultation, user, doctor)
+		response := response.ConvertToConsultationResponse(consultation, user)
 		consultationResponses = append(consultationResponses, response)
 	}
 
