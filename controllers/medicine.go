@@ -311,7 +311,7 @@ func GetMedicineAdminByIDController(c echo.Context) error {
 	var medicine schema.Medicine
 
 	if err := configs.DB.First(&medicine, id).Error; err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrNotFound))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	response := response.ConvertToAdminMedicineResponse(&medicine)
