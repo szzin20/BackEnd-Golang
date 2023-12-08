@@ -187,7 +187,7 @@ func GetUserCheckoutByIDController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
-	checkoutID, err := strconv.Atoi(c.Param("id"))
+	checkoutID, err := strconv.Atoi(c.Param("checkout_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid checkout id"))
 	}
@@ -210,7 +210,7 @@ func GetUserCheckoutByIDController(c echo.Context) error {
 
 // UpdateCheckoutController By Admin
 func UpdateCheckoutController(c echo.Context) error {
-	checkoutID, err := strconv.Atoi(c.Param("id"))
+	checkoutID, err := strconv.Atoi(c.Param("checkout_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid checkout id"))
 	}
@@ -219,7 +219,7 @@ func UpdateCheckoutController(c echo.Context) error {
 
 	result := configs.DB.Preload("MedicineTransaction.MedicineDetails").First(&existingCheckout, checkoutID)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"checkout id"))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrActionGet+"checkout id"))
 	}
 
 	var updatedCheckoutRequest web.CheckoutUpdate
@@ -270,7 +270,6 @@ func reduceStock(medicineDetails []schema.MedicineDetails) error {
 			return errors.New("insufficient stock")
 		}
 
-		// Reduce stock in the Medicine table
 		newStock := medicine.Stock - md.Quantity
 		if err := configs.DB.Model(&medicine).Update("stock", newStock).Error; err != nil {
 			return errors.New(constanta.ErrActionUpdated + "medicine stock")
@@ -294,7 +293,16 @@ func GetAdminCheckoutController(c echo.Context) error {
 	}
 
 	paymentStatus := params.Get("payment_status")
-	userID, err := strconv.Atoi(params.Get("user_id"))
+
+	userIDStr := params.Get("user_id")
+
+	var userID int
+	if userIDStr != "" {
+		userID, err = strconv.Atoi(userIDStr)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
+		}
+	}
 
 	var checkouts []schema.Checkout
 
@@ -356,7 +364,7 @@ func GetAdminAllCheckoutPagination(offset, limit, userID int, paymentStatus stri
 
 func GetAdminCheckoutByIDController(c echo.Context) error {
 
-	checkoutID, err := strconv.Atoi(c.Param("id"))
+	checkoutID, err := strconv.Atoi(c.Param("checkout_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid checkout id"))
 	}
