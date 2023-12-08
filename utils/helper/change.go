@@ -2,6 +2,8 @@ package helper
 
 import (
 	"fmt"
+	"healthcare/configs"
+	"healthcare/models/schema"
 
 	"gorm.io/gorm"
 )
@@ -21,15 +23,14 @@ func UpdatePasswordInDatabase(db *gorm.DB, tableName, email, hashedPassword, otp
 	return nil
 }
 
-// DeleteOTPFromDatabase
-func DeleteOTPFromDatabase(db *gorm.DB, tableName, email string) error {
-	if db == nil {
-		return fmt.Errorf("database connection is nil")
+func UpdateUserVerificationStatus(email string, isVerified bool) error {
+	var user schema.User
+	if err := configs.DB.Where("email = ? AND deleted_at IS NULL", email).First(&user).Error; err != nil {
+		return err
 	}
 
-	// Delete the OTP entry based on email
-	err := db.Table(tableName).Where("email = ?", email).Update("OTP", "").Error
-	if err != nil {
+	// Update user verification status without modifying 'gender'
+	if err := configs.DB.Model(&user).Select("is_verified").Updates(map[string]interface{}{"is_verified": isVerified}).Error; err != nil {
 		return err
 	}
 

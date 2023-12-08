@@ -19,6 +19,7 @@ type User struct {
 	Weight              int
 	OTP                 string `gorm:"not null"`
 	Role                string `gorm:"type:enum('user');default:'user'"`
+	IsVerified          bool   `gorm:"not null;default:false"`
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
 	DeletedAt           gorm.DeletedAt        `gorm:"index"`
