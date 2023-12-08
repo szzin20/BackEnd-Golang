@@ -101,25 +101,3 @@ func ConvertToGetAllUserByAdminResponse(users []schema.User) []web.UserAllRespon
 
 	return results
 }
-
-func ConvertToGetUserbyAdmin(user schema.User) web.UserGetResponsebyAdmin {
-    response := web.UserGetResponsebyAdmin{
-        ID:         user.ID,
-		ProfilePicture: user.ProfilePicture,
-        Fullname:       user.Fullname,
-        Email:  user.Email,
-		Gender:         user.Gender,
-		Birthdate:      user.Birthdate,
-		BloodType:      user.BloodType,
-		Height:         user.Height,
-		Weight:         user.Weight,
-
-    }
-
-    doctorTransaction := ListConvertToGetUserTransactionbyAdminResponse(user.DoctorTransaction)
-    response.DoctorTransaction = doctorTransaction
-    medicineTransaction := ListConvertToGetUserMedicineTransactionbyAdminResponse(user.MedicineTransaction)
-    response.MedicineTransaction = medicineTransaction
-
-    return response
-}

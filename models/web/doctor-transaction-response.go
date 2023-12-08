@@ -24,13 +24,3 @@ type DoctorTransactionDetailsResponse struct {
 	Specialist    string `json:"specialist"`
 	PatientStatus string `json:"patient_status"`
 }
-
-type GetUserTransactionbyAdminResponse struct {
-	ID                  uint      `json:"id"`
-	DoctorID            uint      `json:"doctor_id"`
-	PaymentMethod       string    `json:"payment_method"`
-	Price               int       `json:"price"`
-	CreatedAt           time.Time `json:"created_at"`
-	PaymentConfirmation string    `json:"payment_confirmation"`
-	PaymentStatus       string    `json:"payment_status"`
-}

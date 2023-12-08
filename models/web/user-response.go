@@ -40,17 +40,3 @@ type UserProfileRoomchat struct {
 	Fullname       string `json:"fullname"`
 	ProfilePicture string `json:"profile_picture"`
 }
-
-type UserGetResponsebyAdmin struct {
-	ID                  uint                                `json:"id"`
-	Fullname            string                              `json:"fullname"`
-	Email               string                              `json:"email"`
-	ProfilePicture      string                              `json:"profile_picture"`
-	Gender              string                              `json:"gender"`
-	Birthdate           string                              `json:"birthdate"`
-	BloodType           string                              `json:"blood_type"`
-	Height              int                                 `json:"height"`
-	Weight              int                                 `json:"weight"`
-	DoctorTransaction   []GetUserTransactionbyAdminResponse `json:"doctor_transaction"`
-	MedicineTransaction []GetUserMedicinebyAdminResponse    `json:"medicine_transaction"`
-}

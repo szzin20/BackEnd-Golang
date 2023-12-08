@@ -57,22 +57,3 @@ func ConvertToMedicineTransactionListResponse(medicineTransactions []schema.Medi
 	}
 	return results
 }
-
-func ConvertToUserMedicineTransactionResponse(medicineTransaction schema.MedicineTransaction) web.GetUserMedicinebyAdminResponse {
-	return web.GetUserMedicinebyAdminResponse{
-		ID:                  medicineTransaction.ID,
-		PaymentMethod:       medicineTransaction.PaymentMethod,
-		// TotalPrice:          checkout.MedicineTransaction.TotalPrice,
-		// PaymentConfirmation: checkout.PaymentConfirmation,
-		StatusTransaction:   medicineTransaction.StatusTransaction,
-	}
-}
-
-func ListConvertToGetUserMedicineTransactionbyAdminResponse(data []schema.MedicineTransaction) []web.GetUserMedicinebyAdminResponse {
-	response := []web.GetUserMedicinebyAdminResponse{}
-	for _, v := range data {
-		responseDetail := ConvertToUserMedicineTransactionResponse(v)
-		response = append(response, responseDetail)
-	}
-	return response
-}

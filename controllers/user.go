@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -142,10 +143,65 @@ func GetUserIDbyAdminController(c echo.Context) error {
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
 	}
-	// response := response.ConvertToGetUserIDbyAdminResponse(&user)
-	response := response.ConvertToGetUserbyAdmin(user)
+	response := response.ConvertToGetUserIDbyAdminResponse(&user)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("users data successfully retrieved", response))
+}
+
+// Get User Transaction by Admin
+func GetUserPaymentsByAdminsController(c echo.Context) error {
+	// Mendapatkan ID pengguna dari URL
+	userID, err := strconv.Atoi(c.Param("user_id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user_id"))
+	}
+
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+	}
+
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+	}
+
+	var doctorTransactions []schema.DoctorTransaction
+	var total int64
+
+	// Fetch transactions for the specified user with payment_status IN ('success', 'pending', 'cancelled')
+	query := configs.DB.Where("user_id = ? AND payment_status IN (?)", userID, []string{"success", "pending", "cancelled"}).Find(&doctorTransactions)
+	if query.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor transactions"))
+	}
+
+	sort.Slice(doctorTransactions, func(i, j int) bool {
+		order := map[string]int{"pending": 0, "success": 1, "cancelled": 2}
+		return order[doctorTransactions[i].PaymentStatus] < order[doctorTransactions[j].PaymentStatus]
+	})
+
+	// Count total number of records
+	total = int64(len(doctorTransactions))
+
+	// Apply limit and offset to the result
+	start := offset
+	end := offset + limit
+	if start > len(doctorTransactions) {
+		start = len(doctorTransactions)
+	}
+	if end > len(doctorTransactions) {
+		end = len(doctorTransactions)
+	}
+	doctorTransactions = doctorTransactions[start:end]
+
+	if len(doctorTransactions) == 0 {
+		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.ErrNotFound+"doctor transactions", nil))
+	}
+
+	pagination := helper.Pagination(offset, limit, total)
+	responses := response.ConvertToAdminDoctorPaymentsResponse(doctorTransactions)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionCreated+"doctor transactions", responses, pagination))
 }
 
 // Update User Profile

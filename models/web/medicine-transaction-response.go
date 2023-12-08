@@ -31,12 +31,3 @@ type MedicineDetailsResponse struct {
 	Quantity           int  `json:"quantity"`
 	TotalPriceMedicine int  `json:"total_price_medicine"`
 }
-
-type GetUserMedicinebyAdminResponse struct {
-	ID                  uint      `json:"id"`
-	PaymentMethod       string    `json:"payment_method"`
-	// PaymentConfirmation string    `json:"payment_confirmation"`
-	// TotalPrice          int       `json:"total_price"`
-	CreatedAt           time.Time `json:"created_at"`
-	StatusTransaction   string    `json:"status_transaction"`
-}
