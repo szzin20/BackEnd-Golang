@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"healthcare/configs"
 	"healthcare/middlewares"
@@ -108,7 +109,7 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 
 	// Mengirim email pemberitahuan
 	includeCredentials := true
-	err = helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "doctor", doctorRequest.Email, plainPassword, includeCredentials,0)
+	err = helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "doctor", doctorRequest.Email, plainPassword, includeCredentials, 0)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
 	}
@@ -151,7 +152,7 @@ func LoginDoctorController(c echo.Context) error {
 	// Send login notification email
 	if doctor.Email != "" {
 		notificationType := "login"
-		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "Login", "", "", false,0); err != nil {
+		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "Login", "", "", false, 0); err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send notification email: "+err.Error()))
 		}
 	}
@@ -485,16 +486,17 @@ func GetManageUserController(c echo.Context) error {
 	// Parse limit and offset from query parameters
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired+": "+err.Error()))
 	}
 
 	offset, err := strconv.Atoi(c.QueryParam("offset"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired+": "+err.Error()))
 	}
 
 	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
 	patientStatus := c.QueryParam("patient_status")
+	fullname := c.QueryParam("fullname")
 
 	var manageUser []schema.DoctorTransaction
 	var total int64
@@ -506,22 +508,28 @@ func GetManageUserController(c echo.Context) error {
 		query = configs.DB.Where("doctor_id = ? AND id = ? AND payment_status = 'success'", doctorID, transactionID)
 	} else if patientStatus != "" {
 		// Get transactions by patient status
-		query = configs.DB.Where("doctor_id = ? AND patient_status = ? AND payment_status = 'success'", doctorID, patientStatus)
+		query = configs.DB.Where("doctor_id = ? AND patient_status = ? AND payment_status = 'success'", doctorID, patientStatus).Order("created_at desc")
+	} else if fullname != "" {
+		// Get transactions by fullname
+		query = configs.DB.
+			Joins("JOIN users ON doctor_transactions.user_id = users.id").
+			Where("doctor_transactions.doctor_id = ? AND users.fullname = ? AND doctor_transactions.payment_status = 'success'", doctorID, fullname).Order("created_at desc")
 	} else {
 		// Get all transactions
 		query = configs.DB.Where("deleted_at IS NULL AND payment_status = 'success'").Where("doctor_id=?", doctorID).Order("created_at desc")
 	}
 
 	// Count total number of records
-	query.Model(&manageUser).Count(&total)
+	if err := query.Model(&manageUser).Count(&total).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"count doctor transaction: "+err.Error()))
+	}
 
 	// Apply limit and offset to the query
 	query = query.Limit(limit).Offset(offset)
 
 	// Execute the query
-	err = query.Find(&manageUser).Error
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor transaction"))
+	if err := query.Find(&manageUser).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor transaction: "+err.Error()))
 	}
 
 	if len(manageUser) == 0 {
@@ -531,9 +539,12 @@ func GetManageUserController(c echo.Context) error {
 	var responses []web.ManageUserResponse
 	for _, doctorTransaction := range manageUser {
 		var user schema.User
-		err := configs.DB.First(&user, "id=?", doctorTransaction.UserID).Error
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"user"))
+		userID := doctorTransaction.UserID
+		if err := configs.DB.First(&user, "id=?", userID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+			} else {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"user: "+err.Error()))
+			}
 		}
 
 		response := response.ConvertToManageUserResponse(doctorTransaction, user)
