@@ -55,7 +55,7 @@ func SendEmail(to, subject, body, htmlBody string) error {
 }
 
 
-func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, userPassword string, includeCredentials bool) error {
+func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, userPassword string, includeCredentials bool, roomNumber int) error {
 	go func() {
 		var subject, body string
 
@@ -128,7 +128,7 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 				</div>
 			</body>
 			</html>
-		`, getButtonColor(notificationType), imageURL, body, getButtonHTML(notificationType))
+		`, getButtonColor(notificationType), imageURL, body, getButtonHTML(notificationType, roomNumber))
 
 		err := SendEmail(to, subject, body, htmlBody)
 		if err != nil {
@@ -139,7 +139,6 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 	return nil
 }
 
-
 func getButtonColor(notificationType string) string {
 	switch notificationType {
 	case "complaints":
@@ -149,14 +148,17 @@ func getButtonColor(notificationType string) string {
 	}
 }
 
-func getButtonHTML(notificationType string) string {
+// Update the getButtonHTML function to include the room number
+func getButtonHTML(notificationType string, roomNumber int) string {
 	switch notificationType {
 	case "complaints":
-		return `<a class="button" href="#" style="background-color: #20B2AA; text-decoration: none; color: #ffffff; padding: 10px 20px; font-size: 16px; border-radius: 5px; transition: background-color 0.3s;">Attend to Complaints</a>`
+		link := fmt.Sprintf("https://healthify-doctor.vercel.app/chat/user?status=all&room=%d", roomNumber)
+		return fmt.Sprintf(`<a class="button" href="%s" style="background-color: #20B2AA; text-decoration: none; color: #ffffff; padding: 10px 20px; font-size: 16px; border-radius: 5px; transition: background-color 0.3s;">Attend to Complaints</a>`, link)
 	default:
 		return ""
 	}
 }
+
 
 // SendOTPViaEmail sends a one-time password (OTP) via email.
 func SendOTPViaEmail(email string) error {

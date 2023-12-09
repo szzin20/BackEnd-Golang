@@ -78,7 +78,7 @@ func CreateRoomchatController(c echo.Context) error {
 	}
 
 	response := response.ConvertToCreateRoomchatResponse(&roomchat)
-
+	roomNumber := int(roomchat.ID)
 	if err == nil {
 
 		var doctor schema.Doctor
@@ -87,7 +87,7 @@ func CreateRoomchatController(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
 		}
 
-		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "", "", "",false)
+		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "", "", "", false, roomNumber)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
 		}
@@ -173,8 +173,7 @@ func GetDoctorRoomchatController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("roomchat data successfully retrieved", response))
 }
 
-
-// Doctor Get All Roomchats 
+// Doctor Get All Roomchats
 func GetAllDoctorRoomchatController(c echo.Context) error {
 
 	doctorID, ok := c.Get("userID").(int)

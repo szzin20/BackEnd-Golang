@@ -44,6 +44,7 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers := e.Group("/users")
 	gUsers.POST("/register", controllers.RegisterUserController)
 	gUsers.POST("/login", controllers.LoginUserController)
+	gUsers.POST("/OTP-verification", controllers.VerifyOTPRegister)
 	gUsers.GET("/profile", controllers.GetUserController, UserJWT)
 	gUsers.PUT("/profile", controllers.UpdateUserController, UserJWT)
 	gUsers.DELETE("", controllers.DeleteUserController, UserJWT)
