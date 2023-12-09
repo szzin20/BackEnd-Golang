@@ -98,7 +98,7 @@ func UpdateAdminController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("admin updated data successful", response))
 }
 
-// Admin Update Payment Status and Send Notification to Doctor
+// Admin Update Payment Status 
 func UpdatePaymentStatusByAdminController(c echo.Context) error {
 	// Parse transaction ID from the request parameters
 	transaction_id, err := strconv.Atoi(c.Param("transaction_id"))
@@ -141,22 +141,6 @@ func UpdatePaymentStatusByAdminController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"payment status"))
 	}
 
-	if updateRequest.PaymentStatus == "success" {
-
-		var doctor schema.Doctor
-		result := configs.DB.First(&doctor, "id = ?", existingTransaction.DoctorID)
-		if result.Error != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
-		}
-
-		// send an email to the doctor
-		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "", "", "")
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
-		}
-
-	}
-
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"payment status", nil))
 }
 
@@ -181,12 +165,12 @@ func GetAdminProfileController(c echo.Context) error {
 func GetAllDoctorsPaymentsByAdminsController(c echo.Context) error {
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(c.QueryParam("offset"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	var doctorTransactions []schema.DoctorTransaction

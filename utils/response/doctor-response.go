@@ -17,7 +17,6 @@ func ConvertToDoctorRegisterResponse(doctor *schema.Doctor) web.DoctorRegisterRe
 		NoSTR:          doctor.NoSTR,
 		Experience:     doctor.Experience,
 		Alumnus:        doctor.Alumnus,
-		Status:         doctor.Status,
 	}
 }
 
@@ -39,7 +38,6 @@ func ConvertToDoctorUpdateResponse(doctor *schema.Doctor) web.DoctorUpdateRespon
 		Experience:     doctor.Experience,
 		Alumnus:        doctor.Alumnus,
 		NoSTR:          doctor.NoSTR,
-		Status:         doctor.Status,
 	}
 }
 
@@ -51,7 +49,6 @@ func ConvertToGetAllDoctorResponse(doctors []schema.Doctor) []web.DoctorAllRespo
 			ID:             doctor.ID,
 			ProfilePicture: doctor.ProfilePicture,
 			Fullname:       doctor.Fullname,
-			Status:         doctor.Status,
 			Price:          doctor.Price,
 			Specialist:     doctor.Specialist,
 		}
@@ -69,13 +66,16 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 	for _, doctor := range doctors {
 		doctorResponse := web.DoctorAllResponseByAdmin{
 
-			ID:         doctor.ID,
-			Fullname:   doctor.Fullname,
-			Gender:     doctor.Gender,
-			Email:      doctor.Email,
-			Specialist: doctor.Specialist,
-			NoSTR:      doctor.NoSTR,
-			Experience: doctor.Experience,
+			ID:             doctor.ID,
+			ProfilePicture: doctor.ProfilePicture,
+			Fullname:       doctor.Fullname,
+			Gender:         doctor.Gender,
+			Email:          doctor.Email,
+			Price:          doctor.Price,
+			Specialist:     doctor.Specialist,
+			Experience:     doctor.Experience,
+			Alumnus:        doctor.Alumnus,
+			NoSTR:          doctor.NoSTR,
 		}
 
 		results = append(results, doctorResponse)
@@ -116,6 +116,7 @@ func ConvertToManageUserResponse(managePatient schema.DoctorTransaction, user sc
 	return web.ManageUserResponse{
 		UserID:              user.ID,
 		Fullname:            user.Fullname,
+		ProfilePicture:      user.ProfilePicture,
 		DoctorTransactionID: managePatient.ID,
 		CreatedAt:           managePatient.CreatedAt,
 		HealthDetails:       managePatient.HealthDetails,
@@ -123,11 +124,14 @@ func ConvertToManageUserResponse(managePatient schema.DoctorTransaction, user sc
 	}
 }
 
-func ConvertToConsultationResponse(Consultation schema.DoctorTransaction, user schema.User, doctor schema.Doctor) web.DoctorConsultationResponse {
+func ConvertToConsultationResponse(consultation schema.DoctorTransaction, user schema.User, room schema.Roomchat) web.DoctorConsultationResponse {
 	return web.DoctorConsultationResponse{
-		UserID:              Consultation.ID,
+		RoomchatID:          room.ID,
+		UserID:              user.ID,
 		Fullname:            user.Fullname,
-		DoctorTransactionID: Consultation.ID,
-		Price:               doctor.Price,
+		ProfilePicture:      user.ProfilePicture,
+		DoctorTransactionID: consultation.ID,
+		Price:               consultation.Price,
+		CreatedAt:           consultation.CreatedAt,
 	}
 }

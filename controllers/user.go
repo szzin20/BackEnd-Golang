@@ -1,18 +1,21 @@
 package controllers
 
 import (
+	"fmt"
 	"healthcare/configs"
 	"healthcare/middlewares"
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
+	"healthcare/utils/helper/constanta"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
+	"log"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
-	"log"
 
 	"github.com/labstack/echo/v4"
 )
@@ -43,7 +46,7 @@ func RegisterUserController(c echo.Context) error {
 	}
 
 	// send register notification email
-	err := helper.SendNotificationEmail(userRequest.Email, userRequest.Fullname, "userRegister", "", "", "")
+	err := helper.SendNotificationEmail(userRequest.Email, userRequest.Fullname, "register", "", "", "", false)
 	if err != nil {
 		log.Println("Error sending notification email:", err)
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
@@ -85,31 +88,74 @@ func LoginUserController(c echo.Context) error {
 	userLoginResponse.Token = token
 
 	// send login notification email
-	err = helper.SendNotificationEmail(user.Email, user.Fullname, "login", "", "", "")
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
-		}
+	err = helper.SendNotificationEmail(user.Email, user.Fullname, "login", "", "", "", false)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
+	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("login successful", userLoginResponse))
 }
 
+func GetAllUserPagination(offset int, limit int, queryInput []schema.User) ([]schema.User, int64, error) {
+
+	if offset < 0 || limit < 0 {
+		return nil, 0, nil
+	}
+
+	queryAll := queryInput
+	var total int64
+
+	query := configs.DB.Model(&queryAll)
+
+	query.Find(&queryAll).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	result := query.Find(&queryAll)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	if offset >= int(total) {
+		return nil, 0, fmt.Errorf("not found")
+	}
+
+	return queryAll, total, nil
+}
+
 // Get All Doctors by Admin
 func GetAllUserByAdminController(c echo.Context) error {
-	var User []schema.User
 
-	err := configs.DB.Find(&User).Error
+	params := c.QueryParams()
+	limit, err := strconv.Atoi(params.Get("limit"))
+
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("Gagal Mengambil Data Pengguna"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
-	if len(User) == 0 {
-		return c.JSON(http.StatusNotFound, helper.ErrorResponse("Data Pengguna Kosong"))
+	offset, err := strconv.Atoi(params.Get("offset"))
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
-	response := response.ConvertToGetAllUserByAdminResponse(User)
+	var users []schema.User
+	user, total, err := GetAllUserPagination(offset, limit, users)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
+		}
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse("Data Pengguna Berhasil Diambil", response))
+	pagination := helper.Pagination(offset, limit, total)
+
+	response := response.ConvertToGetAllUserByAdminResponse(user)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"user", response, pagination))
 }
+
 
 // Get User Profile
 func GetUserController(c echo.Context) error {
@@ -144,6 +190,62 @@ func GetUserIDbyAdminController(c echo.Context) error {
 	response := response.ConvertToGetUserIDbyAdminResponse(&user)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("users data successfully retrieved", response))
+}
+
+// Get User Transaction by Admin
+func GetUserPaymentsByAdminsController(c echo.Context) error {
+	// Mendapatkan ID pengguna dari URL
+	userID, err := strconv.Atoi(c.Param("user_id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user_id"))
+	}
+
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
+	}
+
+	offset, err := strconv.Atoi(c.QueryParam("offset"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
+	}
+
+	var doctorTransactions []schema.DoctorTransaction
+	var total int64
+
+	// Fetch transactions for the specified user with payment_status IN ('success', 'pending', 'cancelled')
+	query := configs.DB.Where("user_id = ? AND payment_status IN (?)", userID, []string{"success", "pending", "cancelled"}).Find(&doctorTransactions)
+	if query.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor transactions"))
+	}
+
+	sort.Slice(doctorTransactions, func(i, j int) bool {
+		order := map[string]int{"pending": 0, "success": 1, "cancelled": 2}
+		return order[doctorTransactions[i].PaymentStatus] < order[doctorTransactions[j].PaymentStatus]
+	})
+
+	// Count total number of records
+	total = int64(len(doctorTransactions))
+
+	// Apply limit and offset to the result
+	start := offset
+	end := offset + limit
+	if start > len(doctorTransactions) {
+		start = len(doctorTransactions)
+	}
+	if end > len(doctorTransactions) {
+		end = len(doctorTransactions)
+	}
+	doctorTransactions = doctorTransactions[start:end]
+
+	if len(doctorTransactions) == 0 {
+		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.ErrNotFound+"doctor transactions", nil))
+	}
+
+	pagination := helper.Pagination(offset, limit, total)
+	responses := response.ConvertToAdminDoctorPaymentsResponse(doctorTransactions)
+
+	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionCreated+"doctor transactions", responses, pagination))
 }
 
 // Update User Profile
@@ -271,4 +373,29 @@ func DeleteUserByAdminController(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse("user deleted data successful  ", nil))
+}
+
+func ResetPassword(c echo.Context) error {
+	var resetRequest web.ResetRequest
+	if err := c.Bind(&resetRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid request"))
+	}
+
+	if err := helper.ValidateStruct(resetRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	hashedPassword := helper.HashPassword(resetRequest.Password)
+
+	// Update password
+	if err := helper.UpdatePasswordInDatabase(configs.DB, "users", resetRequest.Email, hashedPassword, resetRequest.OTP); err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"update password"))
+	}
+
+	// Delete OTP from the database
+	if err := helper.DeleteOTPFromDatabase(configs.DB, "users", resetRequest.Email); err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"delete OTP"))
+	}
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"user's password", nil))
 }

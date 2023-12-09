@@ -11,7 +11,6 @@ import (
 	"healthcare/utils/helper/constanta"
 	"healthcare/utils/request"
 	"healthcare/utils/response"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -133,9 +132,9 @@ func GetUserCheckoutController(c echo.Context) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
 		}
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(err.Error()))
 	}
 
 	pagination := helper.Pagination(offset, limit, total)
@@ -188,7 +187,7 @@ func GetUserCheckoutByIDController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
-	checkoutID, err := strconv.Atoi(c.Param("id"))
+	checkoutID, err := strconv.Atoi(c.Param("checkout_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid checkout id"))
 	}
@@ -201,7 +200,7 @@ func GetUserCheckoutByIDController(c echo.Context) error {
 		First(&checkout)
 
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound+" checkout"))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound+" checkout"))
 	}
 
 	response := response.ConvertToGetCheckoutResponse(&checkout)
@@ -211,7 +210,7 @@ func GetUserCheckoutByIDController(c echo.Context) error {
 
 // UpdateCheckoutController By Admin
 func UpdateCheckoutController(c echo.Context) error {
-	checkoutID, err := strconv.Atoi(c.Param("id"))
+	checkoutID, err := strconv.Atoi(c.Param("checkout_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid checkout id"))
 	}
@@ -220,7 +219,7 @@ func UpdateCheckoutController(c echo.Context) error {
 
 	result := configs.DB.Preload("MedicineTransaction.MedicineDetails").First(&existingCheckout, checkoutID)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"checkout id"))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrActionGet+"checkout id"))
 	}
 
 	var updatedCheckoutRequest web.CheckoutUpdate
@@ -238,7 +237,9 @@ func UpdateCheckoutController(c echo.Context) error {
 	}
 
 	if updatedCheckout.PaymentStatus == "cancelled" {
-		if err := configs.DB.Model(&existingCheckout.MedicineTransaction).Update("status_transaction", "belum dibayar").Error; err != nil {
+		if err := configs.DB.Table("medicine_transactions").
+			Where("id = ?", existingCheckout.MedicineTransactionID).
+			Update("status_transaction", "belum dibayar").Error; err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"medicine transaction status"))
 		}
 	}
@@ -269,7 +270,6 @@ func reduceStock(medicineDetails []schema.MedicineDetails) error {
 			return errors.New("insufficient stock")
 		}
 
-		// Reduce stock in the Medicine table
 		newStock := medicine.Stock - md.Quantity
 		if err := configs.DB.Model(&medicine).Update("stock", newStock).Error; err != nil {
 			return errors.New(constanta.ErrActionUpdated + "medicine stock")
@@ -283,30 +283,36 @@ func GetAdminCheckoutController(c echo.Context) error {
 
 	params := c.QueryParams()
 	limit, err := strconv.Atoi(params.Get("limit"))
-
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(params.Get("offset"))
-
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
 	paymentStatus := params.Get("payment_status")
 
+	userIDStr := params.Get("user_id")
+
+	var userID int
+	if userIDStr != "" {
+		userID, err = strconv.Atoi(userIDStr)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
+		}
+	}
+
 	var checkouts []schema.Checkout
 
-	checkouts, total, err := GetAdminAllCheckoutPagination(offset, limit, paymentStatus, []schema.Checkout{})
+	checkouts, total, err := GetAdminAllCheckoutPagination(offset, limit, userID, paymentStatus, []schema.Checkout{})
 
 	if err != nil {
-		log.Println(err)
 		if strings.Contains(err.Error(), "not found") {
-
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("checkouts "+constanta.ErrNotFound))
 		}
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(err.Error()))
 	}
 
 	pagination := helper.Pagination(offset, limit, total)
@@ -316,7 +322,7 @@ func GetAdminCheckoutController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"checkouts", response, pagination))
 }
 
-func GetAdminAllCheckoutPagination(offset int, limit int, paymentStatus string, queryInput []schema.Checkout) ([]schema.Checkout, int64, error) {
+func GetAdminAllCheckoutPagination(offset, limit, userID int, paymentStatus string, queryInput []schema.Checkout) ([]schema.Checkout, int64, error) {
 	if offset < 0 || limit < 0 {
 		return nil, 0, nil
 	}
@@ -325,7 +331,12 @@ func GetAdminAllCheckoutPagination(offset int, limit int, paymentStatus string, 
 	var total int64
 
 	query := configs.DB.Model(&queryAll).
-		Joins("JOIN medicine_transactions ON checkouts.medicine_transaction_id = medicine_transactions.id")
+		Joins("JOIN medicine_transactions ON checkouts.medicine_transaction_id = medicine_transactions.id").
+		Joins("JOIN users ON medicine_transactions.user_id = users.id")
+
+	if userID != 0 {
+		query = query.Where("users.id = ?", userID)
+	}
 
 	if paymentStatus != "" {
 		query = query.Where("checkouts.payment_status = ?", paymentStatus)
@@ -353,7 +364,7 @@ func GetAdminAllCheckoutPagination(offset int, limit int, paymentStatus string, 
 
 func GetAdminCheckoutByIDController(c echo.Context) error {
 
-	checkoutID, err := strconv.Atoi(c.Param("id"))
+	checkoutID, err := strconv.Atoi(c.Param("checkout_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid checkout id"))
 	}
@@ -366,7 +377,7 @@ func GetAdminCheckoutByIDController(c echo.Context) error {
 		First(&checkout)
 
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"checkout"))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrActionGet+"checkout"))
 	}
 
 	response := response.ConvertToGetCheckoutResponse(&checkout)

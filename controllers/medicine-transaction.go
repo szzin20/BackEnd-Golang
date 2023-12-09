@@ -46,7 +46,7 @@ func CreateMedicineTransaction(c echo.Context) error {
 	for i, md := range medicineTransaction.MedicineDetails {
 		medicine := schema.Medicine{}
 		if err := configs.DB.First(&medicine, md.MedicineID).Error; err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine id"))
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("medicine id "+constanta.ErrNotFound))
 		}
 
 		if medicine.Stock < md.Quantity {
@@ -71,7 +71,7 @@ func CreateMedicineTransaction(c echo.Context) error {
 
 // Get Medicine Transaction by ID
 func GetMedicineTransactionByIDController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+	id, err := strconv.Atoi(c.Param("medtrans_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid medicine transaction id"))
 	}
@@ -84,7 +84,7 @@ func GetMedicineTransactionByIDController(c echo.Context) error {
 	var medicineTransaction schema.MedicineTransaction
 
 	if err := configs.DB.Preload("MedicineDetails").Where("user_id = ?", userID).First(&medicineTransaction, id).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrNotFound))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	response := response.ConvertToMedicineTransactionResponse(&medicineTransaction)
@@ -99,7 +99,7 @@ func DeleteMedicineTransactionController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid user id"))
 	}
 
-	medicineTransactionID, err := strconv.Atoi(c.Param("id"))
+	medicineTransactionID, err := strconv.Atoi(c.Param("medtrans_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidIDParam))
 	}
@@ -143,9 +143,9 @@ func GetMedicineTransactionController(c echo.Context) error {
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("medicines transaction "+constanta.ErrNotFound))
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("medicines transaction "+constanta.ErrNotFound))
 		}
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(err.Error()))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(err.Error()))
 	}
 
 	pagination := helper.Pagination(offset, limit, total)

@@ -7,7 +7,7 @@ import (
 
 func GenerateRandomCode() (string, error) {
 	const charset = "0123456789"
-	codeLength := 6
+	codeLength := 4
 
 	randomBytes := make([]byte, codeLength)
 
@@ -21,5 +21,3 @@ func GenerateRandomCode() (string, error) {
 
 	return string(randomBytes), nil
 }
-
-
