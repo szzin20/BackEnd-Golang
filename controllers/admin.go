@@ -202,7 +202,7 @@ func GetAllDoctorsPaymentsByAdminsController(c echo.Context) error {
 	doctorTransactions = doctorTransactions[start:end]
 
 	if len(doctorTransactions) == 0 {
-		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.ErrNotFound+"doctor transactions", nil))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound+"doctor transactions"))
 	}
 
 	pagination := helper.Pagination(offset, limit, total)
