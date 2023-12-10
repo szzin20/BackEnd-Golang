@@ -106,3 +106,7 @@ type DoctorConsultationResponse struct {
 	Price               int       `json:"price"`
 	CreatedAt           time.Time `json:"created_at"`
 }
+
+type DoctorStatusResponse struct {
+	Status bool `json:"status"`
+}

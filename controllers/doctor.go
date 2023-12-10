@@ -781,3 +781,29 @@ func ResetDoctorPassword(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"doctor's password", nil))
 }
+
+func GetDoctorStatusController(c echo.Context) error {
+	
+	doctorID, ok := c.Get("userID").(int) 
+	if !ok {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor id"))
+	}
+
+	// Mengambil data dokter dari database
+	var doctor schema.Doctor
+	result := configs.DB.Model(&schema.Doctor{}).Where("id = ?", doctorID).First(&doctor)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("doctor's data"+constanta.ErrNotFound))
+		}
+		// Menghandle error lain sesuai kebutuhan
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet +"doctor's data"))
+	}
+
+	response := response.ConvertToDoctorStatusResponse(&doctor)
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"doctor status", response))
+}
+
+
+
