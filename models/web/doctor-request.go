@@ -38,7 +38,7 @@ type UpdateManageUserRequest struct {
 }
 
 type ChangeDoctorStatusRequest struct {
-	Status bool `json:"status" form:"status" validate:"omitempty"`
+	Status bool `json:"status" form:"status" validate:"required"`
 }
 
 type PasswordResetRequest struct {
@@ -46,12 +46,12 @@ type PasswordResetRequest struct {
 }
 
 type OTPVerificationRequest struct {
-	OTP   string `json:"otp" `
+	OTP   string `json:"otp" form:"otp" validate:"required,max=4"`
 	Email string `json:"email" form:"email" validate:"required,email"`
 }
 
 type ResetRequest struct {
-	OTP      string `json:"otp" `
+	OTP      string `json:"otp" form:"otp" validate:"required,max=4"`
 	Email    string `json:"email" form:"email" validate:"required,email" `
 	Password string `json:"password" form:"password" validate:"omitempty,min=10,max=15"`
 }
