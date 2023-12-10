@@ -135,3 +135,9 @@ func ConvertToConsultationResponse(consultation schema.DoctorTransaction, user s
 		CreatedAt:           consultation.CreatedAt,
 	}
 }
+
+func ConvertToDoctorStatusResponse(doctor *schema.Doctor) web.DoctorStatusResponse {
+	return web.DoctorStatusResponse{
+		Status: doctor.Status,
+	}
+}
