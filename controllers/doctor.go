@@ -364,36 +364,79 @@ func UpdateDoctorController(c echo.Context) error {
 
 // Update Doctor by Admin
 func UpdateDoctorByAdminController(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("doctor_id"))
+	doctorID, err := strconv.Atoi(c.Param("doctor_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid doctor id"))
 	}
 
+	// Mengambil data dokter yang sudah ada
+	var existingDoctor schema.Doctor
+	result := configs.DB.First(&existingDoctor, doctorID)
+	if result.Error != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"doctor profile"+constanta.ErrNotFound))
+	}
+
+	// Parse the request body into the DoctorUpdateRequest struct
 	var doctorUpdated web.DoctorUpdateRequest
-
 	if err := c.Bind(&doctorUpdated); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input data"))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
 	}
 
+	// apakah email sudah digunakan oleh dokter lain
+	var existingDoctorEmail schema.Doctor
+	if existingEmail := configs.DB.Where("email = ? AND deleted_at IS NULL", doctorUpdated.Email).First(&existingDoctorEmail).Error; existingEmail == nil {
+		return c.JSON(http.StatusConflict, helper.ErrorResponse(constanta.ErrActionUpdated+"email already exists"))
+	}
+
+	// Validate the request payload
 	if err := helper.ValidateStruct(doctorUpdated); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionUpdated+err.Error()))
 	}
 
+	// Hash the password if provided
 	if doctorUpdated.Password != "" {
 		doctorUpdated.Password = helper.HashPassword(doctorUpdated.Password)
 	}
 
-	var existingDoctor schema.Doctor
-	result := configs.DB.First(&existingDoctor, id)
-	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update data"))
+	err = c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	configs.DB.Model(&existingDoctor).Updates(doctorUpdated)
+	file, fileHeader, err := c.Request().FormFile("profile_picture")
+	if err == nil {
+		defer file.Close()
+
+		allowedExtensions := []string{".jpg", ".jpeg", ".png"}
+		ext := filepath.Ext(fileHeader.Filename)
+		allowed := false
+		for _, validExt := range allowedExtensions {
+			if ext == validExt {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidImageFormat))
+		}
+
+		profilePicture, err := helper.UploadFilesToGCS(c, fileHeader)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+constanta.ErrImageFileRequired))
+		}
+
+		doctorUpdated.ProfilePicture = profilePicture
+	}
+
+	// Update the doctor details
+	if err := configs.DB.Model(&existingDoctor).Updates(doctorUpdated).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+constanta.ErrNotFound))
+	}
+
+	configs.DB.Save(&existingDoctor)
 
 	response := response.ConvertToDoctorUpdateResponse(&existingDoctor)
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse("doctor updated data successful", response))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"doctor profile", response))
 }
 
 // Delete Doctor
