@@ -8,7 +8,6 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/labstack/echo/v4 v4.11.3
 	github.com/sashabaranov/go-openai v1.17.9
-	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.16.0
 	google.golang.org/api v0.152.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
@@ -17,15 +16,12 @@ require (
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/labstack/gommon v0.4.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.opentelemetry.io/otel v1.21.0 // indirect
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect
 	go.opentelemetry.io/otel/trace v1.21.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
