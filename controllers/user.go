@@ -45,7 +45,7 @@ func RegisterUserController(c echo.Context) error {
 	}
 
 	// Send OTP via email
-	err := helper.SendOTPViaEmail(userRequest.Email,"user")
+	err := helper.SendOTPViaEmail(userRequest.Email, "user")
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"OTP via email"))
 	}
@@ -288,6 +288,10 @@ func UpdateUserController(c echo.Context) error {
 	if err == nil {
 		defer file.Close()
 
+		if fileHeader.Size > 10*1024*1024 { // 10 MB limit
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("image file size exceeds the limit (10 MB)"))
+		}
+
 		allowedExtensions := []string{".jpg", ".jpeg", ".png"}
 		ext := filepath.Ext(fileHeader.Filename)
 		allowed := false
@@ -389,7 +393,7 @@ func VerifyOTPRegister(c echo.Context) error {
 	var wg sync.WaitGroup
 	defer wg.Wait() // Pastikan menunggu goroutine selesai sebelum fungsi selesai
 
-	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP,"user"); err != nil {
+	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP, "user"); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP not found"))
 	}
 
@@ -402,7 +406,7 @@ func VerifyOTPRegister(c echo.Context) error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err := helper.SendNotificationEmail(verificationRequest.Email, "", "register", "", "", "", false,1)
+		err := helper.SendNotificationEmail(verificationRequest.Email, "", "register", "", "", "", false, 1)
 		if err != nil {
 		}
 	}()
@@ -411,35 +415,34 @@ func VerifyOTPRegister(c echo.Context) error {
 }
 
 func ResetPasswordUser(c echo.Context) error {
-    var resetRequest web.ResetRequest
-    if err := c.Bind(&resetRequest); err != nil {
-        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid request"))
-    }
+	var resetRequest web.ResetRequest
+	if err := c.Bind(&resetRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid request"))
+	}
 
-    if err := helper.ValidateStruct(resetRequest); err != nil {
-        return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
-    }
+	if err := helper.ValidateStruct(resetRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
 
-    // Verify OTP
-    if err := helper.VerifyOTPByEmail(resetRequest.Email, resetRequest.OTP, "user"); err != nil {
-        return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP verification failed"))
-    }
+	// Verify OTP
+	if err := helper.VerifyOTPByEmail(resetRequest.Email, resetRequest.OTP, "user"); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP verification failed"))
+	}
 
-    hashedPassword := helper.HashPassword(resetRequest.Password)
+	hashedPassword := helper.HashPassword(resetRequest.Password)
 
-    // Update password and mark the user as verified
-    if err := helper.UpdatePasswordAndMarkVerified(configs.DB, "users", resetRequest.Email, hashedPassword, resetRequest.OTP); err != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"update password"))
-    }
+	// Update password and mark the user as verified
+	if err := helper.UpdatePasswordAndMarkVerified(configs.DB, "users", resetRequest.Email, hashedPassword, resetRequest.OTP); err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"update password"))
+	}
 
-    // Delete OTP from the database
-    if err := helper.DeleteOTPFromDatabase(configs.DB, "users", resetRequest.Email); err != nil {
-        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"delete OTP"))
-    }
+	// Delete OTP from the database
+	if err := helper.DeleteOTPFromDatabase(configs.DB, "users", resetRequest.Email); err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"delete OTP"))
+	}
 
-    return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"user's password", nil))
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"user's password", nil))
 }
-
 
 func GetOTPForPasswordUser(c echo.Context) error {
 	var OTPRequest web.PasswordResetRequest
@@ -451,7 +454,7 @@ func GetOTPForPasswordUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	if err := helper.SendOTPViaEmail(OTPRequest.Email,"user"); err != nil {
+	if err := helper.SendOTPViaEmail(OTPRequest.Email, "user"); err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"send OTP"))
 	}
 
@@ -469,7 +472,7 @@ func VerifyOTPUser(c echo.Context) error {
 	}
 
 	// Verify OTP and handle errors
-	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP,"user"); err != nil {
+	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP, "user"); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP not found"))
 	}
 
