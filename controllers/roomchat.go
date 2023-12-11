@@ -80,6 +80,7 @@ func CreateRoomchatController(c echo.Context) error {
 	timeoutDuration := 30 * time.Minute
 	expirationTime := time.Now().Add(timeoutDuration)
 	roomchat.ExpirationTime = &expirationTime
+	roomchat.Status = time.Now().Before(*roomchat.ExpirationTime)
 
 	if err := configs.DB.Create(&roomchat).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to create roomchat"))
