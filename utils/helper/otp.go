@@ -10,8 +10,8 @@ import (
 )
 
 // VerifyOTPByEmail 
-func VerifyOTPByEmail(email, providedOTP string) error {
-	storedOTP, err := getStoredOTP(email)
+func VerifyOTPByEmail(email, providedOTP, userType string) error {
+	storedOTP, err := getStoredOTP(email, userType)
 	if err != nil {
 		return err
 	}
@@ -23,45 +23,69 @@ func VerifyOTPByEmail(email, providedOTP string) error {
 	return nil
 }
 
+
 // SaveOTP 
-func SaveOTP(email, otp string) error {
+func SaveOTP(email, otp string, userType string) error {
 	var user schema.User
 	var doctor schema.Doctor
+	var admin schema.Admin
 
-	userError := configs.DB.Where("email = ?", email).First(&user).Error
-	doctorError := configs.DB.Where("email = ?", email).First(&doctor).Error
+	var model interface{}
 
-	if userError == nil || doctorError == nil {
-		var model interface{}
-		if userError == nil {
-			model = &user
-		} else {
-			model = &doctor
+	switch userType {
+	case "user":
+		if err := configs.DB.Where("email = ?", email).First(&user).Error; err != nil {
+			return errors.New("user not found for the given email")
 		}
-
-		// Update the OTP
-		if err := configs.DB.Model(model).Update("OTP", otp).Error; err != nil {
-			return err
+		model = &user
+	case "doctor":
+		if err := configs.DB.Where("email = ?", email).First(&doctor).Error; err != nil {
+			return errors.New("doctor not found for the given email")
 		}
-
-		return nil
+		model = &doctor
+	case "admin":
+		if err := configs.DB.Where("email = ?", email).First(&admin).Error; err != nil {
+			return errors.New("admin not found for the given email")
+		}
+		model = &admin
+	default:
+		return errors.New("invalid user type")
 	}
 
-	return errors.New("model not found for the given email")
+	// Update the OTP
+	if err := configs.DB.Model(model).Update("OTP", otp).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func getStoredOTP(email string) (string, error) {
+
+func getStoredOTP(email string, userType string) (string, error) {
 	var user schema.User
 	var doctor schema.Doctor
+	var admin schema.Admin
 
-	if configs.DB.Where("email = ?", email).First(&user).Error == nil {
-		return user.OTP, nil
-	} else if configs.DB.Where("email = ?", email).First(&doctor).Error == nil {
-		return doctor.OTP, nil
+	switch userType {
+	case "user":
+		if err := configs.DB.Where("email = ?", email).First(&user).Error; err == nil {
+			return user.OTP, nil
+		}
+	case "doctor":
+		if err := configs.DB.Where("email = ?", email).First(&doctor).Error; err == nil {
+			return doctor.OTP, nil
+		}
+	case "admin":
+		if err := configs.DB.Where("email = ?", email).First(&admin).Error; err == nil {
+			return admin.OTP, nil
+		}
+	default:
+		return "", errors.New("invalid user type")
 	}
 
 	return "", errors.New("model not found for the given email")
 }
+
 
 // DeleteOTPFromDatabase
 func DeleteOTPFromDatabase(db *gorm.DB, tableName, email string) error {
