@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"healthcare/configs"
 	"healthcare/models/schema"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -35,4 +36,14 @@ func UpdateUserVerificationStatus(email string, isVerified bool) error {
 	}
 
 	return nil
+}
+
+func UpdatePasswordAndMarkVerified(db *gorm.DB, tableName, email, hashedPassword, otp string) error {
+	return db.Table(tableName).
+		Where("email = ? AND otp = ?", email, otp).
+		Updates(map[string]interface{}{
+			"password":    hashedPassword,
+			"is_verified": true, 
+			"updated_at":  time.Now(),
+		}).Error
 }
