@@ -38,7 +38,7 @@ type UpdateManageUserRequest struct {
 }
 
 type ChangeDoctorStatusRequest struct {
-	Status bool `json:"status" form:"status" validate:"required"`
+	Status bool `json:"status" form:"status" validate:"eq=true|eq=false"`
 }
 
 type PasswordResetRequest struct {
