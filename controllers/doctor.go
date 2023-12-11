@@ -334,6 +334,10 @@ func UpdateDoctorController(c echo.Context) error {
 	if err == nil {
 		defer file.Close()
 
+		if fileHeader.Size > 10*1024*1024 { // 10 MB limit
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("image file size exceeds the limit (10 MB)"))
+		}
+
 		allowedExtensions := []string{".jpg", ".jpeg", ".png"}
 		ext := filepath.Ext(fileHeader.Filename)
 		allowed := false
@@ -411,6 +415,10 @@ func UpdateDoctorByAdminController(c echo.Context) error {
 	if err == nil {
 		defer file.Close()
 
+		if fileHeader.Size > 10*1024*1024 { // 10 MB limit
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("image file size exceeds the limit (10 MB)"))
+		}
+		
 		allowedExtensions := []string{".jpg", ".jpeg", ".png"}
 		ext := filepath.Ext(fileHeader.Filename)
 		allowed := false
