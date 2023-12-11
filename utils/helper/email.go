@@ -161,7 +161,7 @@ func getButtonHTML(notificationType string, roomNumber int) string {
 
 
 // SendOTPViaEmail sends a one-time password (OTP) via email.
-func SendOTPViaEmail(email string) error {
+func SendOTPViaEmail(email, userType string) error {
 	// Generate OTP
 	otp, err := GenerateRandomCode()
 	if err != nil {
@@ -170,7 +170,7 @@ func SendOTPViaEmail(email string) error {
 	}
 
 	// Save OTP to the database
-	if err := SaveOTP(email, otp); err != nil {
+	if err := SaveOTP(email, otp, userType); err != nil {
 		log.Printf("Failed to save OTP to the database: %v\n", err)
 		return err
 	}
@@ -228,3 +228,4 @@ func SendOTPViaEmail(email string) error {
 
 	return nil
 }
+

@@ -763,7 +763,37 @@ func ChangeDoctorStatusController(c echo.Context) error {
 }
 
 // reset password dan mengirimkan OTP ke email
-func GetOTPForPasswordReset(c echo.Context) error {
+func ResetPasswordDoctor(c echo.Context) error {
+	var resetRequest web.ResetRequest
+	if err := c.Bind(&resetRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid request"))
+	}
+
+	if err := helper.ValidateStruct(resetRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	// Verify OTP
+	if err := helper.VerifyOTPByEmail(resetRequest.Email, resetRequest.OTP, "doctor"); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP verification failed"))
+	}
+
+	hashedPassword := helper.HashPassword(resetRequest.Password)
+
+	// Update password
+	if err := helper.UpdatePasswordInDatabase(configs.DB, "doctors", resetRequest.Email, hashedPassword, resetRequest.OTP); err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"update password"))
+	}
+
+	// Delete OTP from the database
+	if err := helper.DeleteOTPFromDatabase(configs.DB, "doctors", resetRequest.Email); err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"delete OTP"))
+	}
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"doctor's password", nil))
+}
+
+func GetOTPForPasswordDoctor(c echo.Context) error {
 	var OTPRequest web.PasswordResetRequest
 	if err := c.Bind(&OTPRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
@@ -773,14 +803,14 @@ func GetOTPForPasswordReset(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	if err := helper.SendOTPViaEmail(OTPRequest.Email); err != nil {
+	if err := helper.SendOTPViaEmail(OTPRequest.Email,"doctor"); err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"send OTP"))
 	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"OTP", nil))
 }
 
-func VerifyOTP(c echo.Context) error {
+func VerifyOTPDoctor(c echo.Context) error {
 	var verificationRequest web.OTPVerificationRequest
 	if err := c.Bind(&verificationRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid request"))
@@ -791,38 +821,11 @@ func VerifyOTP(c echo.Context) error {
 	}
 
 	// Verify OTP and handle errors
-	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP); err != nil {
+	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP,"doctor"); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP not found"))
 	}
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"OTP verification", nil))
-}
-
-func ResetDoctorPassword(c echo.Context) error {
-	var resetRequest web.ResetRequest
-	if err := c.Bind(&resetRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid request"))
-	}
-
-	if err := helper.ValidateStruct(resetRequest); err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
-	}
-
-	hashedPassword := helper.HashPassword(resetRequest.Password)
-
-	// Update password
-	err := helper.UpdatePasswordInDatabase(configs.DB, "doctors", resetRequest.Email, hashedPassword, resetRequest.OTP)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"update password"))
-	}
-
-	// Delete OTP from the database
-	err = helper.DeleteOTPFromDatabase(configs.DB, "doctors", resetRequest.Email)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"delete OTP"))
-	}
-
-	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"doctor's password", nil))
 }
 
 func GetDoctorStatusController(c echo.Context) error {
