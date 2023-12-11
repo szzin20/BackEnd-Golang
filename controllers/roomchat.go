@@ -18,7 +18,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func GetAllRoomchatPagination(doctorID int, offset int, limit int, username string, queryInput []schema.DoctorTransaction) ([]schema.DoctorTransaction, int64, error) {
+func GetAllRoomchatPagination(doctorID int, offset int, limit int, fullname string, queryInput []schema.DoctorTransaction) ([]schema.DoctorTransaction, int64, error) {
 
 	if offset < 0 || limit < 0 {
 		return nil, 0, nil
@@ -29,8 +29,8 @@ func GetAllRoomchatPagination(doctorID int, offset int, limit int, username stri
 
 	query := configs.DB.Model(&queryAll)
 
-	if username != "" {
-		query = query.Where("name LIKE ?", "%"+username+"%")
+	if fullname != "" {
+		query = query.Joins("JOIN users ON doctor_transactions.user_id = users.id").Where("users.fullname LIKE ?", "%"+fullname+"%")
 	}
 
 	query.Preload("Roomchat.Message").Where("doctor_id = ? AND payment_status = ?", doctorID, "success").Find(&queryAll).Count(&total)
@@ -200,13 +200,13 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
-	username := c.QueryParam("username")
+	fullname := c.QueryParam("fullname")
 
-	if username != "" {
-		
+	if fullname != "" {
+
 		var DoctorTransactions []schema.DoctorTransaction
 
-		existingDoctorTransactions, total, err := GetAllRoomchatPagination(doctorID, offset, limit, username, DoctorTransactions)
+		existingDoctorTransactions, total, err := GetAllRoomchatPagination(doctorID, offset, limit, fullname, DoctorTransactions)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, helper.ErrorResponse("doctor transaction data not found"))
 		}
@@ -261,7 +261,7 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 	// Get All Roomchats
 	var DoctorTransactions []schema.DoctorTransaction
 
-	existingDoctorTransactions, total, err := GetAllRoomchatPagination(doctorID, offset, limit, username, DoctorTransactions)
+	existingDoctorTransactions, total, err := GetAllRoomchatPagination(doctorID, offset, limit, fullname, DoctorTransactions)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse("doctor transaction data not found"))
 	}
