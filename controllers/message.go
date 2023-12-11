@@ -47,70 +47,78 @@ func CreateComplaintMessageController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	err = c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("file size exceeds the maximum allowed size"))
+	if (complaintMessageRequest.Image != "" && complaintMessageRequest.Audio != "") || (complaintMessageRequest.Image != "" && complaintMessageRequest.Message != "") || (complaintMessageRequest.Audio != "" && complaintMessageRequest.Message != "") {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("please choose only one type of message: text, image, or audio"))
 	}
 
-	file, fileHeader, err := c.Request().FormFile("image")
+	if complaintMessageRequest.Image != "" {
 
-	if err == nil {
-		defer file.Close()
-
-		allowedExtensions := []string{".jpg", ".jpeg", ".png"}
-		ext := filepath.Ext(fileHeader.Filename)
-		allowed := false
-		for _, validExt := range allowedExtensions {
-			if ext == validExt {
-				allowed = true
-				break
-			}
-		}
-		if !allowed {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. supported formats: .jpg, .jpeg, .png"))
-		}
-
-		imageURL, err := helper.UploadFilesToGCS(c, fileHeader)
+		err = c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading image to cloud storage"))
-		}
-
-		complaintMessageRequest.Image = imageURL
-	}
-
-	file, fileHeader, err = c.Request().FormFile("audio")
-	
-	if err == nil {
-		defer file.Close()
-
-		maxFileSize := int64(10 * 1024 * 1024) // 10 MB
-
-		if fileHeader.Size > maxFileSize {
 			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("file size exceeds the maximum allowed size"))
 		}
 
-		allowedAudioExtensions := []string{".mp3", ".wav", ".flac"}
-		ext := filepath.Ext(fileHeader.Filename)
-		allowed := false
-		for _, validExt := range allowedAudioExtensions {
-			if ext == validExt {
-				allowed = true
-				break
+		file, fileHeader, err := c.Request().FormFile("image")
+
+		if err == nil {
+			defer file.Close()
+
+			allowedExtensions := []string{".jpg", ".jpeg", ".png"}
+			ext := filepath.Ext(fileHeader.Filename)
+			allowed := false
+			for _, validExt := range allowedExtensions {
+				if ext == validExt {
+					allowed = true
+					break
+				}
 			}
-		}
-		if !allowed {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid audio file format. supported formats: .mp3, .wav, .flac"))
-		}
+			if !allowed {
+				return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. supported formats: .jpg, .jpeg, .png"))
+			}
 
-		
-		audioURL, err := helper.UploadFilesToGCS(c, fileHeader)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading audio to cloud storage"))
-		}
+			imageURL, err := helper.UploadFilesToGCS(c, fileHeader)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading image to cloud storage"))
+			}
 
-		complaintMessageRequest.Audio = audioURL
+			complaintMessageRequest.Image = imageURL
+		}
 	}
 
+	if complaintMessageRequest.Audio != "" {
+
+		file, fileHeader, err := c.Request().FormFile("audio")
+
+		if err == nil {
+			defer file.Close()
+
+			maxFileSize := int64(10 * 1024 * 1024) // 10 MB
+
+			if fileHeader.Size > maxFileSize {
+				return c.JSON(http.StatusBadRequest, helper.ErrorResponse("file size exceeds the maximum allowed size"))
+			}
+
+			allowedAudioExtensions := []string{".mp3", ".wav", ".flac"}
+			ext := filepath.Ext(fileHeader.Filename)
+			allowed := false
+			for _, validExt := range allowedAudioExtensions {
+				if ext == validExt {
+					allowed = true
+					break
+				}
+			}
+			if !allowed {
+				return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid audio file format. supported formats: .mp3, .wav, .flac"))
+			}
+
+			audioURL, err := helper.UploadFilesToGCS(c, fileHeader)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading audio to cloud storage"))
+			}
+
+			complaintMessageRequest.Audio = audioURL
+		}
+	}
 
 	complaint := request.ConvertToCreateComplaintMessageRequest(complaintMessageRequest, uint(roomchatID), uint(userID))
 
@@ -156,68 +164,79 @@ func CreateAdviceMessageController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	err = c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	if (adviceMessageRequest.Image != "" && adviceMessageRequest.Audio != "") || (adviceMessageRequest.Image != "" && adviceMessageRequest.Message != "") || (adviceMessageRequest.Audio != "" && adviceMessageRequest.Message != "") {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("please choose only one type of message: text, image, or audio"))
 	}
 
-	file, fileHeader, err := c.Request().FormFile("image")
+	if adviceMessageRequest.Image != "" {
 
-	if err == nil {
-		defer file.Close()
-
-		allowedExtensions := []string{".jpg", ".jpeg", ".png"}
-		ext := filepath.Ext(fileHeader.Filename)
-		allowed := false
-		for _, validExt := range allowedExtensions {
-			if ext == validExt {
-				allowed = true
-				break
-			}
-		}
-		if !allowed {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. supported formats: .jpg, .jpeg, .png"))
-		}
-
-		imageURL, err := helper.UploadFilesToGCS(c, fileHeader)
+		err = c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading image to cloud storage"))
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 		}
 
-		adviceMessageRequest.Image = imageURL
+		file, fileHeader, err := c.Request().FormFile("image")
+
+		if err == nil {
+			defer file.Close()
+
+			allowedExtensions := []string{".jpg", ".jpeg", ".png"}
+			ext := filepath.Ext(fileHeader.Filename)
+			allowed := false
+			for _, validExt := range allowedExtensions {
+				if ext == validExt {
+					allowed = true
+					break
+				}
+			}
+			if !allowed {
+				return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid image file format. supported formats: .jpg, .jpeg, .png"))
+			}
+
+			imageURL, err := helper.UploadFilesToGCS(c, fileHeader)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading image to cloud storage"))
+			}
+
+			adviceMessageRequest.Image = imageURL
+		}
+
 	}
 
-	file, fileHeader, err = c.Request().FormFile("audio")
-	
-	if err == nil {
-		defer file.Close()
+	if adviceMessageRequest.Audio != "" {
 
-		maxFileSize := int64(10 * 1024 * 1024) // 10 MB
+		file, fileHeader, err := c.Request().FormFile("audio")
 
-		if fileHeader.Size > maxFileSize {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("file size exceeds the maximum allowed size"))
-		}
+		if err == nil {
+			defer file.Close()
 
-		allowedAudioExtensions := []string{".mp3", ".wav", ".flac"}
-		ext := filepath.Ext(fileHeader.Filename)
-		allowed := false
-		for _, validExt := range allowedAudioExtensions {
-			if ext == validExt {
-				allowed = true
-				break
+			maxFileSize := int64(10 * 1024 * 1024) // 10 MB
+
+			if fileHeader.Size > maxFileSize {
+				return c.JSON(http.StatusBadRequest, helper.ErrorResponse("file size exceeds the maximum allowed size"))
 			}
-		}
-		if !allowed {
-			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid audio file format. supported formats: .mp3, .wav, .flac"))
+
+			allowedAudioExtensions := []string{".mp3", ".wav", ".flac"}
+			ext := filepath.Ext(fileHeader.Filename)
+			allowed := false
+			for _, validExt := range allowedAudioExtensions {
+				if ext == validExt {
+					allowed = true
+					break
+				}
+			}
+			if !allowed {
+				return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid audio file format. supported formats: .mp3, .wav, .flac"))
+			}
+
+			audioURL, err := helper.UploadFilesToGCS(c, fileHeader)
+			if err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading audio to cloud storage"))
+			}
+
+			adviceMessageRequest.Audio = audioURL
 		}
 
-		
-		audioURL, err := helper.UploadFilesToGCS(c, fileHeader)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading audio to cloud storage"))
-		}
-
-		adviceMessageRequest.Audio = audioURL
 	}
 
 	advice := request.ConvertToCreateAdviceMessageRequest(adviceMessageRequest, uint(roomchatID), uint(doctorID))
