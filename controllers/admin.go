@@ -231,3 +231,67 @@ func GetDoctorTransactionByIDController(c echo.Context) error {
 	response := response.ConvertToAdminTransactionUsersResponse([]schema.DoctorTransaction{doctorTransaction})
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"doctor transaction by ID", response))
 }
+
+func ResetPasswordAdmin(c echo.Context) error {
+    var resetRequest web.ResetRequest
+    if err := c.Bind(&resetRequest); err != nil {
+        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid request"))
+    }
+
+    if err := helper.ValidateStruct(resetRequest); err != nil {
+        return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+    }
+
+    // Verify OTP
+    if err := helper.VerifyOTPByEmail(resetRequest.Email, resetRequest.OTP, "admin"); err != nil {
+        return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP verification failed"))
+    }
+
+    // Update password without hashing
+    if err := helper.UpdatePasswordInDatabase(configs.DB, "admins", resetRequest.Email, resetRequest.Password, resetRequest.OTP); err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"update password"))
+    }
+
+    // Delete OTP from the database
+    if err := helper.DeleteOTPFromDatabase(configs.DB, "admins", resetRequest.Email); err != nil {
+        return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"delete OTP"))
+    }
+
+    return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"admin's password", nil))
+}
+
+
+func GetOTPForPasswordAdmin(c echo.Context) error {
+	var OTPRequest web.PasswordResetRequest
+	if err := c.Bind(&OTPRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
+	}
+
+	if err := helper.ValidateStruct(OTPRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	if err := helper.SendOTPViaEmail(OTPRequest.Email,"admin"); err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"send OTP"))
+	}
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"OTP", nil))
+}
+
+func VerifyOTPAdmin(c echo.Context) error {
+	var verificationRequest web.OTPVerificationRequest
+	if err := c.Bind(&verificationRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid request"))
+	}
+
+	if err := helper.ValidateStruct(verificationRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	// Verify OTP and handle errors
+	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP,"admin"); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP not found"))
+	}
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"OTP verification", nil))
+}

@@ -45,7 +45,7 @@ func RegisterUserController(c echo.Context) error {
 	}
 
 	// Send OTP via email
-	err := helper.SendOTPViaEmail(userRequest.Email)
+	err := helper.SendOTPViaEmail(userRequest.Email,"user")
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"OTP via email"))
 	}
@@ -376,7 +376,42 @@ func DeleteUserByAdminController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse("user deleted data successful  ", nil))
 }
 
-func ResetPassword(c echo.Context) error {
+// VerifyOTP
+func VerifyOTPRegister(c echo.Context) error {
+	var verificationRequest web.OTPVerificationRequest
+	if err := c.Bind(&verificationRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid request"))
+	}
+
+	if err := helper.ValidateStruct(verificationRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	var wg sync.WaitGroup
+	defer wg.Wait() // Pastikan menunggu goroutine selesai sebelum fungsi selesai
+
+	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP,"user"); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP not found"))
+	}
+
+	// Update user verification status
+	if err := helper.UpdateUserVerificationStatus(verificationRequest.Email, true); err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+" update user verification status"))
+	}
+
+	// Send registration notification email
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err := helper.SendNotificationEmail(verificationRequest.Email, "", "register", "", "", "", false,1)
+		if err != nil {
+		}
+	}()
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"OTP verification", nil))
+}
+
+func ResetPasswordUser(c echo.Context) error {
 	var resetRequest web.ResetRequest
 	if err := c.Bind(&resetRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("Invalid request"))
@@ -384,6 +419,11 @@ func ResetPassword(c echo.Context) error {
 
 	if err := helper.ValidateStruct(resetRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	// Verify OTP
+	if err := helper.VerifyOTPByEmail(resetRequest.Email, resetRequest.OTP, "user"); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP verification failed"))
 	}
 
 	hashedPassword := helper.HashPassword(resetRequest.Password)
@@ -401,8 +441,24 @@ func ResetPassword(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"user's password", nil))
 }
 
-// VerifyOTP
-func VerifyOTPRegister(c echo.Context) error {
+func GetOTPForPasswordUser(c echo.Context) error {
+	var OTPRequest web.PasswordResetRequest
+	if err := c.Bind(&OTPRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
+	}
+
+	if err := helper.ValidateStruct(OTPRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
+	}
+
+	if err := helper.SendOTPViaEmail(OTPRequest.Email,"user"); err != nil {
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"send OTP"))
+	}
+
+	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"OTP", nil))
+}
+
+func VerifyOTPUser(c echo.Context) error {
 	var verificationRequest web.OTPVerificationRequest
 	if err := c.Bind(&verificationRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid request"))
@@ -412,26 +468,10 @@ func VerifyOTPRegister(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	var wg sync.WaitGroup
-	defer wg.Wait() // Pastikan menunggu goroutine selesai sebelum fungsi selesai
-
-	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP); err != nil {
+	// Verify OTP and handle errors
+	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP,"user"); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP not found"))
 	}
-
-	// Update user verification status
-	if err := helper.UpdateUserVerificationStatus(verificationRequest.Email, true); err != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+" update user verification status"))
-	}
-
-	// Send registration notification email
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		err := helper.SendNotificationEmail(verificationRequest.Email, "", "register", "", "", "", false,1)
-		if err != nil {
-		}
-	}()
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"OTP verification", nil))
 }
