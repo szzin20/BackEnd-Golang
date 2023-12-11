@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -30,6 +31,10 @@ func CreateComplaintMessageController(c echo.Context) error {
 	var existingRoomchat schema.Roomchat
 	if err := configs.DB.First(&existingRoomchat, "id = ?", roomchatID).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve roomchat data"))
+	}
+
+	if existingRoomchat.ExpirationTime != nil && time.Now().After(*existingRoomchat.ExpirationTime) {
+		return c.JSON(http.StatusForbidden, helper.ErrorResponse("roomchat expired"))
 	}
 
 	var doctortransaction schema.DoctorTransaction
@@ -147,6 +152,10 @@ func CreateAdviceMessageController(c echo.Context) error {
 	var existingRoomchat schema.Roomchat
 	if err := configs.DB.First(&existingRoomchat, "id = ?", roomchatID).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve roomchat data"))
+	}
+
+	if existingRoomchat.ExpirationTime != nil && time.Now().After(*existingRoomchat.ExpirationTime) {
+		return c.JSON(http.StatusForbidden, helper.ErrorResponse("roomchat expired"))
 	}
 
 	var doctortransaction schema.DoctorTransaction
