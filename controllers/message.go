@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -30,6 +31,10 @@ func CreateComplaintMessageController(c echo.Context) error {
 	var existingRoomchat schema.Roomchat
 	if err := configs.DB.First(&existingRoomchat, "id = ?", roomchatID).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve roomchat data"))
+	}
+
+	if existingRoomchat.ExpirationTime != nil && time.Now().After(*existingRoomchat.ExpirationTime) {
+		return c.JSON(http.StatusForbidden, helper.ErrorResponse("roomchat expired"))
 	}
 
 	var doctortransaction schema.DoctorTransaction
@@ -79,7 +84,7 @@ func CreateComplaintMessageController(c echo.Context) error {
 	}
 
 	file, fileHeader, err = c.Request().FormFile("audio")
-	
+
 	if err == nil {
 		defer file.Close()
 
@@ -102,7 +107,6 @@ func CreateComplaintMessageController(c echo.Context) error {
 			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid audio file format. supported formats: .mp3, .wav, .flac"))
 		}
 
-		
 		audioURL, err := helper.UploadFilesToGCS(c, fileHeader)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading audio to cloud storage"))
@@ -110,7 +114,6 @@ func CreateComplaintMessageController(c echo.Context) error {
 
 		complaintMessageRequest.Audio = audioURL
 	}
-
 
 	complaint := request.ConvertToCreateComplaintMessageRequest(complaintMessageRequest, uint(roomchatID), uint(userID))
 
@@ -139,6 +142,10 @@ func CreateAdviceMessageController(c echo.Context) error {
 	var existingRoomchat schema.Roomchat
 	if err := configs.DB.First(&existingRoomchat, "id = ?", roomchatID).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve roomchat data"))
+	}
+
+	if existingRoomchat.ExpirationTime != nil && time.Now().After(*existingRoomchat.ExpirationTime) {
+		return c.JSON(http.StatusForbidden, helper.ErrorResponse("roomchat expired"))
 	}
 
 	var doctortransaction schema.DoctorTransaction
@@ -188,7 +195,7 @@ func CreateAdviceMessageController(c echo.Context) error {
 	}
 
 	file, fileHeader, err = c.Request().FormFile("audio")
-	
+
 	if err == nil {
 		defer file.Close()
 
@@ -211,7 +218,6 @@ func CreateAdviceMessageController(c echo.Context) error {
 			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid audio file format. supported formats: .mp3, .wav, .flac"))
 		}
 
-		
 		audioURL, err := helper.UploadFilesToGCS(c, fileHeader)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("error uploading audio to cloud storage"))
