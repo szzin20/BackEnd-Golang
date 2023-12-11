@@ -18,7 +18,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func GetAllRoomchatPagination(doctorID int, offset int, limit int, queryInput []schema.DoctorTransaction) ([]schema.DoctorTransaction, int64, error) {
+func GetAllRoomchatPagination(doctorID int, offset int, limit int, username string, queryInput []schema.DoctorTransaction) ([]schema.DoctorTransaction, int64, error) {
 
 	if offset < 0 || limit < 0 {
 		return nil, 0, nil
@@ -28,6 +28,10 @@ func GetAllRoomchatPagination(doctorID int, offset int, limit int, queryInput []
 	var total int64
 
 	query := configs.DB.Model(&queryAll)
+
+	if username != "" {
+		query = query.Where("name LIKE ?", "%"+username+"%")
+	}
 
 	query.Preload("Roomchat.Message").Where("doctor_id = ? AND payment_status = ?", doctorID, "success").Find(&queryAll).Count(&total)
 
@@ -75,7 +79,7 @@ func CreateRoomchatController(c echo.Context) error {
 
 	timeoutDuration := 30 * time.Minute
 	expirationTime := time.Now().Add(timeoutDuration)
-	roomchat.ExpirationTime  = &expirationTime
+	roomchat.ExpirationTime = &expirationTime
 
 	if err := configs.DB.Create(&roomchat).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to create roomchat"))
@@ -196,9 +200,68 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
+	username := c.QueryParam("username")
+
+	if username != "" {
+		
+		var DoctorTransactions []schema.DoctorTransaction
+
+		existingDoctorTransactions, total, err := GetAllRoomchatPagination(doctorID, offset, limit, username, DoctorTransactions)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, helper.ErrorResponse("doctor transaction data not found"))
+		}
+
+		sort.Slice(existingDoctorTransactions, func(i, j int) bool {
+
+			getLastMessageTimestamp := func(transaction schema.DoctorTransaction) time.Time {
+				if len(transaction.Roomchat.Message) > 0 {
+					return transaction.Roomchat.Message[len(transaction.Roomchat.Message)-1].CreatedAt
+				}
+
+				return time.Time{}
+			}
+
+			return getLastMessageTimestamp(existingDoctorTransactions[i]).After(getLastMessageTimestamp(existingDoctorTransactions[j]))
+		})
+
+		var responses []web.RoomchatListResponse
+		for _, doctorTransaction := range existingDoctorTransactions {
+
+			if doctorTransaction.DoctorID != uint(doctorID) {
+				continue
+			}
+
+			if doctorTransaction.Roomchat.ID == 0 {
+				continue
+			}
+
+			if doctorTransaction.PaymentStatus != "success" {
+				continue
+			}
+
+			var user schema.User
+			if err := configs.DB.First(&user, "id = ?", doctorTransaction.UserID).Error; err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
+			}
+
+			var lastMessage schema.Message
+			if len(doctorTransaction.Roomchat.Message) > 0 {
+				lastMessage = doctorTransaction.Roomchat.Message[len(doctorTransaction.Roomchat.Message)-1]
+			}
+
+			response := response.ConvertToGetAllRoomchats(user, doctorTransaction.Roomchat, lastMessage)
+			responses = append(responses, response)
+		}
+
+		pagination := helper.Pagination(offset, limit, total)
+
+		return c.JSON(http.StatusOK, helper.PaginationResponse("roomchat data successfully retrieved", responses, pagination))
+	}
+
+	// Get All Roomchats
 	var DoctorTransactions []schema.DoctorTransaction
 
-	existingDoctorTransactions, total, err := GetAllRoomchatPagination(doctorID, offset, limit, DoctorTransactions)
+	existingDoctorTransactions, total, err := GetAllRoomchatPagination(doctorID, offset, limit, username, DoctorTransactions)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse("doctor transaction data not found"))
 	}
