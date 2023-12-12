@@ -44,8 +44,9 @@ func TestGetSpecializeDoctor(t *testing.T) {
 	}{
 		{"MissingSpecialization", "", http.StatusBadRequest},
 		{"ValidParams", "?specialist=gigi&limit=5&offset=0", http.StatusOK},
-		{"MissingLimit", "?specialist=pediatrics&offset=0", http.StatusBadRequest},
-		{"MissingOffset", "?specialist=dermatology&limit=5", http.StatusBadRequest},
+		{"InvalidValueSpecializationParams", "?specialist=dermathology&limit=5&offset=0", http.StatusNotFound},
+		{"MissingLimit", "?specialist=gigi&offset=0", http.StatusBadRequest},
+		{"MissingOffset", "?specialist=gigi&limit=5", http.StatusBadRequest},
 		{"MissingBoth", "?specialist=gigi", http.StatusBadRequest},
 	}
 
