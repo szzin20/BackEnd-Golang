@@ -113,7 +113,7 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 
 	// Mengirim email pemberitahuan
 	includeCredentials := true
-	err = helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "doctor", doctorRequest.Email, plainPassword, includeCredentials, 0, "")
+	err = helper.SendNotificationEmail(doctorRequest.Email, doctorRequest.Fullname, "register", "doctor", doctorRequest.Email, plainPassword, includeCredentials, 0)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
 	}
@@ -156,7 +156,7 @@ func LoginDoctorController(c echo.Context) error {
 	// Send login notification email
 	if doctor.Email != "" {
 		notificationType := "login"
-		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "Login", "", "", false, 0, ""); err != nil {
+		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "Login", "", "", false, 0); err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send notification email: "+err.Error()))
 		}
 	}

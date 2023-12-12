@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"healthcare/configs"
-	"healthcare/middlewares"
 	"healthcare/models/schema"
 	"healthcare/models/web"
 	"healthcare/utils/helper"
@@ -97,12 +96,7 @@ func CreateRoomchatController(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
 		}
 
-		token, err := middlewares.GenerateToken(doctor.ID, doctor.Email, doctor.Role)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to generate jwt"))
-		}
-
-		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "", "", "", false, roomNumber, token)
+		err = helper.SendNotificationEmail(doctor.Email, doctor.Fullname, "complaints", "", "", "", false, roomNumber)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
 		}
