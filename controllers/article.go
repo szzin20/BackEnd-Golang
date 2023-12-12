@@ -29,16 +29,15 @@ func CreateArticle(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	err := c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
-	}
-
 	file, fileHeader, err := c.Request().FormFile("image")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrImageFileRequired))
 	}
 	defer file.Close()
+
+	if fileHeader.Size > 10*1024*1024 { // 10 MB limit
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("image file size exceeds the limit (10 MB)"))
+	}
 
 	allowedExtensions := []string{".jpg", ".jpeg", ".png"}
 	ext := filepath.Ext(fileHeader.Filename)
@@ -94,11 +93,6 @@ func UpdateArticleById(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	err = c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
-	}
-
 	if file, fileHeader, err := c.Request().FormFile("image"); err == nil {
 		defer file.Close()
 
@@ -113,6 +107,10 @@ func UpdateArticleById(c echo.Context) error {
 		}
 		if !allowed {
 			return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidImageFormat))
+		}
+
+		if fileHeader.Size > 10*1024*1024 { // 10 MB limit
+			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("image file size exceeds the limit (10 MB)"))
 		}
 
 		image, err := helper.UploadFilesToGCS(c, fileHeader)
