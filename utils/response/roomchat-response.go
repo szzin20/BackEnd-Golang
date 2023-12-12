@@ -8,17 +8,21 @@ import (
 
 func ConvertToCreateRoomchatResponse(roomchat *schema.Roomchat) web.CreateRoomchatResponse {
 	return web.CreateRoomchatResponse{
-		ID:            roomchat.ID,
-		TransactionID: roomchat.TransactionID,
-		CreatedAt:     roomchat.CreatedAt,
+		ID:             roomchat.ID,
+		TransactionID:  roomchat.TransactionID,
+		CreatedAt:      roomchat.CreatedAt,
+		Status:         roomchat.Status,
+		ExpirationTime: roomchat.ExpirationTime,
 	}
 }
 
 func ConvertToRoomchatUserResponse(roomchat *schema.Roomchat, doctor *schema.Doctor) web.RoomchatUserDetailsResponse {
 	roomchats := web.RoomchatUserDetailsResponse{
-		ID:            roomchat.ID,
-		TransactionID: roomchat.TransactionID,
-		CreatedAt:     roomchat.CreatedAt,
+		ID:             roomchat.ID,
+		TransactionID:  roomchat.TransactionID,
+		CreatedAt:      roomchat.CreatedAt,
+		Status:         roomchat.Status,
+		ExpirationTime: roomchat.ExpirationTime,
 	}
 
 	var results []web.CreateMessageResponse
@@ -50,9 +54,11 @@ func ConvertToRoomchatUserResponse(roomchat *schema.Roomchat, doctor *schema.Doc
 
 func ConvertToRoomchatDoctorResponse(roomchat *schema.Roomchat, user *schema.User) web.RoomchatDoctorDetailsResponse {
 	roomchats := web.RoomchatDoctorDetailsResponse{
-		ID:            roomchat.ID,
-		TransactionID: roomchat.TransactionID,
-		CreatedAt:     roomchat.CreatedAt,
+		ID:             roomchat.ID,
+		TransactionID:  roomchat.TransactionID,
+		CreatedAt:      roomchat.CreatedAt,
+		Status:         roomchat.Status,
+		ExpirationTime: roomchat.ExpirationTime,
 	}
 
 	var results []web.CreateMessageResponse
@@ -90,5 +96,7 @@ func ConvertToGetAllRoomchats(user schema.User, roomchat schema.Roomchat, lastMe
 		ProfilePicture: user.ProfilePicture,
 		LastMessage:    lastMessageContent,
 		CreatedAt:      lastMessage.CreatedAt,
+		Status:         roomchat.Status,
+		ExpirationTime: roomchat.ExpirationTime,
 	}
 }

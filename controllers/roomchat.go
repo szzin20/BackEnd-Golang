@@ -18,7 +18,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func GetAllRoomchatPagination(doctorID int, offset int, limit int, username string, queryInput []schema.DoctorTransaction) ([]schema.DoctorTransaction, int64, error) {
+func GetAllRoomchatPagination(doctorID int, offset int, limit int, fullname string, queryInput []schema.DoctorTransaction) ([]schema.DoctorTransaction, int64, error) {
 
 	if offset < 0 || limit < 0 {
 		return nil, 0, nil
@@ -29,8 +29,8 @@ func GetAllRoomchatPagination(doctorID int, offset int, limit int, username stri
 
 	query := configs.DB.Model(&queryAll)
 
-	if username != "" {
-		query = query.Where("name LIKE ?", "%"+username+"%")
+	if fullname != "" {
+		query = query.Joins("JOIN users ON doctor_transactions.user_id = users.id").Where("users.fullname LIKE ?", "%"+fullname+"%")
 	}
 
 	query.Preload("Roomchat.Message").Where("doctor_id = ? AND payment_status = ?", doctorID, "success").Find(&queryAll).Count(&total)
@@ -134,6 +134,13 @@ func GetUserRoomchatController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve message data"))
 	}
 
+	if roomchat.ExpirationTime != nil && time.Now().After(*roomchat.ExpirationTime) {
+		roomchat.Status = false
+		if err := configs.DB.Save(&roomchat).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update roomchat status"))
+		}
+	}
+
 	var doctor schema.Doctor
 	if err := configs.DB.Where("id = ?", doctortransaction.DoctorID).First(&doctor).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
@@ -172,6 +179,13 @@ func GetDoctorRoomchatController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve message data"))
 	}
 
+	if roomchat.ExpirationTime != nil && time.Now().After(*roomchat.ExpirationTime) {
+		roomchat.Status = false
+		if err := configs.DB.Save(&roomchat).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update roomchat status"))
+		}
+	}
+
 	var user schema.User
 	if err := configs.DB.Where("id = ?", doctortransaction.UserID).First(&user).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve user data"))
@@ -200,13 +214,13 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
-	username := c.QueryParam("username")
+	fullname := c.QueryParam("fullname")
 
-	if username != "" {
-		
+	if fullname != "" {
+
 		var DoctorTransactions []schema.DoctorTransaction
 
-		existingDoctorTransactions, total, err := GetAllRoomchatPagination(doctorID, offset, limit, username, DoctorTransactions)
+		existingDoctorTransactions, total, err := GetAllRoomchatPagination(doctorID, offset, limit, fullname, DoctorTransactions)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, helper.ErrorResponse("doctor transaction data not found"))
 		}
@@ -226,6 +240,14 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 
 		var responses []web.RoomchatListResponse
 		for _, doctorTransaction := range existingDoctorTransactions {
+
+			roomchat := doctorTransaction.Roomchat
+			if roomchat.ExpirationTime != nil && time.Now().After(*roomchat.ExpirationTime) && roomchat.Status {
+				roomchat.Status = false
+				if err := configs.DB.Save(&roomchat).Error; err != nil {
+					return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update roomchat status"))
+				}
+			}
 
 			if doctorTransaction.DoctorID != uint(doctorID) {
 				continue
@@ -261,7 +283,7 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 	// Get All Roomchats
 	var DoctorTransactions []schema.DoctorTransaction
 
-	existingDoctorTransactions, total, err := GetAllRoomchatPagination(doctorID, offset, limit, username, DoctorTransactions)
+	existingDoctorTransactions, total, err := GetAllRoomchatPagination(doctorID, offset, limit, fullname, DoctorTransactions)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, helper.ErrorResponse("doctor transaction data not found"))
 	}
@@ -281,6 +303,14 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 
 	var responses []web.RoomchatListResponse
 	for _, doctorTransaction := range existingDoctorTransactions {
+
+		roomchat := doctorTransaction.Roomchat
+		if roomchat.ExpirationTime != nil && time.Now().After(*roomchat.ExpirationTime) && roomchat.Status {
+			roomchat.Status = false
+			if err := configs.DB.Save(&roomchat).Error; err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update roomchat status"))
+			}
+		}
 
 		if doctorTransaction.DoctorID != uint(doctorID) {
 			continue
