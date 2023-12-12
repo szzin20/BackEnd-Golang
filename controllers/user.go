@@ -89,7 +89,7 @@ func LoginUserController(c echo.Context) error {
 
 	userLoginResponse.Token = token
 
-	err = helper.SendNotificationEmail(user.Email, user.Fullname, "login", "", "", "", false, 0)
+	err = helper.SendNotificationEmail(user.Email, user.Fullname, "login", "", "", "", false, 0, "")
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
 	}
@@ -406,7 +406,7 @@ func VerifyOTPRegister(c echo.Context) error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err := helper.SendNotificationEmail(verificationRequest.Email, "", "register", "", "", "", false, 1)
+		err := helper.SendNotificationEmail(verificationRequest.Email, "", "register", "", "", "", false, 1, "")
 		if err != nil {
 		}
 	}()
