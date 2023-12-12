@@ -17,38 +17,6 @@ import (
 	"strings"
 )
 
-func GetAll(offset int, limit int, name string, queryInput []schema.Medicine) ([]schema.Medicine, int64, error) {
-
-	if offset < 0 || limit < 0 {
-		return nil, 0, nil
-	}
-
-	queryAll := queryInput
-	var total int64
-
-	query := configs.DB.Model(&queryAll)
-
-	if name != "" {
-		query = query.Where("name LIKE ?", "%"+name+"%")
-	}
-
-	query.Find(&queryAll).Count(&total)
-
-	query = query.Limit(limit).Offset(offset)
-
-	result := query.Find(&queryAll)
-
-	if result.Error != nil {
-		return nil, 0, result.Error
-	}
-
-	if offset >= int(total) {
-		return nil, 0, fmt.Errorf("not found")
-	}
-
-	return queryAll, total, nil
-}
-
 // Create Medicine
 func CreateMedicineController(c echo.Context) error {
 
@@ -129,7 +97,6 @@ func UpdateMedicineController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	// Update data obat di database
 	result = configs.DB.Model(&existingMedicine).Updates(updatedMedicineRequest)
 	if result.Error != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionUpdated+"medicine"))
@@ -266,6 +233,46 @@ func GetImageMedicineController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"image medicine", response))
 }
 
+func GetAll(offset, limit int, merk, code, name string, queryInput []schema.Medicine) ([]schema.Medicine, int64, error) {
+
+	if offset < 0 || limit < 0 {
+		return nil, 0, nil
+	}
+
+	queryAll := queryInput
+	var total int64
+
+	query := configs.DB.Model(&queryAll)
+
+	if name != "" {
+		query = query.Where("name LIKE ?", "%"+name+"%")
+	}
+
+	if merk != "" {
+		query = query.Where("merk LIKE ?", "%"+merk+"%")
+	}
+
+	if code != "" {
+		query = query.Where("code LIKE ?", "%"+code+"%")
+	}
+
+	query.Find(&queryAll).Count(&total)
+
+	query = query.Limit(limit).Offset(offset)
+
+	result := query.Find(&queryAll)
+
+	if result.Error != nil {
+		return nil, 0, result.Error
+	}
+
+	if offset >= int(total) {
+		return nil, 0, fmt.Errorf("not found")
+	}
+
+	return queryAll, total, nil
+}
+
 // Admin Get All Medicines Pagination
 func GetMedicineAdminController(c echo.Context) error {
 	params := c.QueryParams()
@@ -282,10 +289,12 @@ func GetMedicineAdminController(c echo.Context) error {
 	}
 
 	name := params.Get("name")
+	code := params.Get("code")
+	merk := params.Get("merk")
 
 	var medicines []schema.Medicine
 
-	medicine, total, err := GetAll(offset, limit, name, medicines)
+	medicine, total, err := GetAll(offset, limit, merk, code, name, medicines)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
@@ -335,10 +344,12 @@ func GetMedicineUserController(c echo.Context) error {
 	}
 
 	name := params.Get("name")
+	code := params.Get("code")
+	merk := params.Get("merk")
 
 	var medicines []schema.Medicine
 
-	medicine, total, err := GetAll(offset, limit, name, medicines)
+	medicine, total, err := GetAll(offset, limit, merk, code, name, medicines)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
