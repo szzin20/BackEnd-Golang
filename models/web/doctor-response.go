@@ -38,6 +38,7 @@ type DoctorAllResponse struct {
 	Fullname       string `json:"fullname"`
 	Specialist     string `json:"specialist"`
 	Price          int    `json:"price"`
+	Status         bool   `json:"status"`
 }
 
 type DoctorAllResponseByAdmin struct {

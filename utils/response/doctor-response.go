@@ -51,6 +51,7 @@ func ConvertToGetAllDoctorResponse(doctors []schema.Doctor) []web.DoctorAllRespo
 			Fullname:       doctor.Fullname,
 			Price:          doctor.Price,
 			Specialist:     doctor.Specialist,
+			Status:         doctor.Status,
 		}
 
 		results = append(results, doctorResponse)
