@@ -80,7 +80,6 @@ func CreateRoomchatController(c echo.Context) error {
 	timeoutDuration := 30 * time.Minute
 	expirationTime := time.Now().Add(timeoutDuration)
 	roomchat.ExpirationTime = &expirationTime
-	roomchat.Status = time.Now().Before(*roomchat.ExpirationTime)
 
 	if err := configs.DB.Create(&roomchat).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to create roomchat"))
@@ -135,6 +134,13 @@ func GetUserRoomchatController(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve message data"))
 	}
 
+	if roomchat.ExpirationTime != nil && time.Now().After(*roomchat.ExpirationTime) {
+		roomchat.Status = false
+		if err := configs.DB.Save(&roomchat).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update roomchat status"))
+		}
+	}
+
 	var doctor schema.Doctor
 	if err := configs.DB.Where("id = ?", doctortransaction.DoctorID).First(&doctor).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve doctor data"))
@@ -171,6 +177,13 @@ func GetDoctorRoomchatController(c echo.Context) error {
 	var roomchat schema.Roomchat
 	if err := configs.DB.Where("id = ?", roomchatID).Preload("Message").First(&roomchat).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to retrieve message data"))
+	}
+
+	if roomchat.ExpirationTime != nil && time.Now().After(*roomchat.ExpirationTime) {
+		roomchat.Status = false
+		if err := configs.DB.Save(&roomchat).Error; err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update roomchat status"))
+		}
 	}
 
 	var user schema.User
@@ -228,6 +241,14 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 		var responses []web.RoomchatListResponse
 		for _, doctorTransaction := range existingDoctorTransactions {
 
+			roomchat := doctorTransaction.Roomchat
+			if roomchat.ExpirationTime != nil && time.Now().After(*roomchat.ExpirationTime) && roomchat.Status {
+				roomchat.Status = false
+				if err := configs.DB.Save(&roomchat).Error; err != nil {
+					return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update roomchat status"))
+				}
+			}
+
 			if doctorTransaction.DoctorID != uint(doctorID) {
 				continue
 			}
@@ -282,6 +303,14 @@ func GetAllDoctorRoomchatController(c echo.Context) error {
 
 	var responses []web.RoomchatListResponse
 	for _, doctorTransaction := range existingDoctorTransactions {
+
+		roomchat := doctorTransaction.Roomchat
+		if roomchat.ExpirationTime != nil && time.Now().After(*roomchat.ExpirationTime) && roomchat.Status {
+			roomchat.Status = false
+			if err := configs.DB.Save(&roomchat).Error; err != nil {
+				return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to update roomchat status"))
+			}
+		}
 
 		if doctorTransaction.DoctorID != uint(doctorID) {
 			continue
