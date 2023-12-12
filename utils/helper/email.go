@@ -55,24 +55,29 @@ func SendEmail(to, subject, body, htmlBody string) error {
 }
 
 
-func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, userPassword string, includeCredentials bool, roomNumber int) error {
+func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, userPassword string, includeCredentials bool, roomNumber int, token string) error {
 	go func() {
 		var subject, body string
 
 		switch notificationType {
+
 		case "login":
 			subject = "Healthify Notification"
 			body = "Hello, " + fullname + "! You have successfully logged in."
+
 		case "register":
 			subject = "Healthify Notification"
+
 			if userType == "doctor" {
 				body = fmt.Sprintf("Hallo %s,\n\n<br>Selamat! Akun Anda telah berhasil dibuat di platform kami. Sekarang Anda memiliki akses penuh untuk menjelajahi layanan kami yang memudahkan manajemen pasien dan informasi medis.\n<br><br>Dengan akun ini, Anda dapat dengan mudah mengelola konsultasi pasien, melacak riwayat pasien, mengelola artikel kesehatan, dan mengakses obat-obatan yang tersedia untuk dijadikan rekomendasi obat pada pasien.\n<br><br>Langkah berikutnya, silakan masuk dengan email dan password yang terdaftar dibawah ini :\n<br><br>Email : %s\n<br>Password : %s\n<br><br>Email dan password ini bersifat rahasia, jangan berikan kepada siapapun, agar tidak ada penyalah gunaan akun.\n\n<br><br>Terima kasih atas kepercayaan Anda pada layanan kami. Semoga akun baru ini membantu meningkatkan efisiensi dan kualitas layanan medis Anda.", fullname, userEmail, userPassword)
 			} else {
 				body = fmt.Sprintf("Hallo %s,\n<br>Kamu berhasil daftar di aplikasi Healthify Care System!\n<br><br>Kami mengarahkan kamu untuk langsung mulai pada halaman beranda, agar kamu dapat memulai perjalanan menuju hidup sehat bersama Healthify.\n<br><br>Dengan mendaftar, Kamu menyetujui Kebijakan Privasi Kesehatan Healthify.", fullname)
 			}
+
 		case "complaints":
 			subject = "Healthify Notification"
 			body = "Hello, " + fullname + "! You have a new consultation request that requires immediate attention. Please review and attend to it promptly."
+		
 		default:
 			err := errors.New("invalid notification type")
 			log.Println(err)
@@ -128,7 +133,7 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 				</div>
 			</body>
 			</html>
-		`, getButtonColor(notificationType), imageURL, body, getButtonHTML(notificationType, roomNumber))
+		`, getButtonColor(notificationType), imageURL, body, getButtonHTML(notificationType, roomNumber, token))
 
 		err := SendEmail(to, subject, body, htmlBody)
 		if err != nil {
@@ -149,10 +154,10 @@ func getButtonColor(notificationType string) string {
 }
 
 // Update the getButtonHTML function to include the room number
-func getButtonHTML(notificationType string, roomNumber int) string {
+func getButtonHTML(notificationType string, roomNumber int, token string) string {
 	switch notificationType {
 	case "complaints":
-		link := fmt.Sprintf("https://healthify-doctor.vercel.app/chat/user?status=all&room=%d", roomNumber)
+		link := fmt.Sprintf("https://healthify-doctor.vercel.app/chat/user?status=all&room=%d&token=%s", roomNumber, token)
 		return fmt.Sprintf(`<a class="button" href="%s" style="background-color: #20B2AA; text-decoration: none; color: #ffffff; padding: 10px 20px; font-size: 16px; border-radius: 5px; transition: background-color 0.3s;">Attend to Complaints</a>`, link)
 	default:
 		return ""
