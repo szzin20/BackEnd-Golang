@@ -541,41 +541,48 @@ func GetManageUserController(c echo.Context) error {
 	// Parse limit and offset from query parameters
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired+": "+err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit" + constanta.ErrQueryParamRequired + ": " + err.Error()))
 	}
 
 	offset, err := strconv.Atoi(c.QueryParam("offset"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired+": "+err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset" + constanta.ErrQueryParamRequired + ": " + err.Error()))
 	}
 
 	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
 	patientStatus := c.QueryParam("patient_status")
 	fullname := c.QueryParam("fullname")
+	keyword := c.QueryParam("keyword") 
 
 	var manageUser []schema.DoctorTransaction
 	var total int64
 
 	var query *gorm.DB
 
-	if transactionID != 0 {
+	if keyword != "" {
+		// Search by keyword (transactionID, patient_status, or fullname)
+		query = configs.DB.
+			Where("doctor_transactions.doctor_id = ? AND doctor_transactions.payment_status = 'success' AND (doctor_transactions.id LIKE ? OR doctor_transactions.patient_status LIKE ? OR users.fullname LIKE ?)", doctorID, "%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%").
+			Joins("JOIN users ON doctor_transactions.user_id = users.id").
+			Order("doctor_transactions.created_at desc")
+	} else if transactionID != 0 {
 		// Get transaction by ID
-		query = configs.DB.Where("doctor_id = ? AND id = ? AND payment_status = 'success'", doctorID, transactionID)
+		query = configs.DB.Where("doctor_transactions.doctor_id = ? AND doctor_transactions.id = ? AND doctor_transactions.payment_status = 'success'", doctorID, transactionID)
 	} else if patientStatus != "" {
 		// Get transactions by patient status
-		query = configs.DB.Where("doctor_id = ? AND patient_status = ? AND payment_status = 'success'", doctorID, patientStatus).Order("created_at desc")
+		query = configs.DB.Where("doctor_transactions.doctor_id = ? AND doctor_transactions.patient_status LIKE ? AND doctor_transactions.payment_status = 'success'", doctorID, "%"+patientStatus+"%").Order("doctor_transactions.created_at desc")
 	} else if fullname != "" {
 		// Get transactions by fullname
 		query = configs.DB.
 			Joins("JOIN users ON doctor_transactions.user_id = users.id").
-			Where("doctor_transactions.doctor_id = ? AND users.fullname = ? AND doctor_transactions.payment_status = 'success'", doctorID, fullname).Order("created_at desc")
+			Where("doctor_transactions.doctor_id = ? AND users.fullname LIKE ? AND doctor_transactions.payment_status = 'success'", doctorID, "%"+fullname+"%").Order("doctor_transactions.created_at desc")
 	} else {
 		// Get all transactions
-		query = configs.DB.Where("deleted_at IS NULL AND payment_status = 'success'").Where("doctor_id=?", doctorID).Order("created_at desc")
+		query = configs.DB.Where("doctor_transactions.deleted_at IS NULL AND doctor_transactions.payment_status = 'success'").Where("doctor_transactions.doctor_id=?", doctorID).Order("doctor_transactions.created_at desc")
 	}
 
 	// Count total number of records
-	if err := query.Model(&manageUser).Count(&total).Error; err != nil {
+	if err := query.Model(&schema.DoctorTransaction{}).Count(&total).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"count doctor transaction: "+err.Error()))
 	}
 
@@ -610,6 +617,8 @@ func GetManageUserController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"doctor transaction", responses, pagination))
 }
+
+
 
 // Update manage user
 func UpdateManageUserController(c echo.Context) error {
