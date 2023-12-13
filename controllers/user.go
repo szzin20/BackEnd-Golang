@@ -45,13 +45,13 @@ func RegisterUserController(c echo.Context) error {
 	}
 
 	// Send OTP via email
-	err := helper.SendOTPViaEmail(userRequest.Email, "user")
+	err := helper.SendOTPViaEmail(userRequest.Email, "user","register")
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"OTP via email"))
 	}
 
+	// Use the same success response for both cases
 	response := response.ConvertToUserRegisterResponse(userRequest)
-
 	return c.JSON(http.StatusCreated, helper.SuccessResponse(constanta.SuccessActionCreated+"registeredCheck your email for OTP verification", response))
 }
 
@@ -89,7 +89,7 @@ func LoginUserController(c echo.Context) error {
 
 	userLoginResponse.Token = token
 
-	err = helper.SendNotificationEmail(user.Email, user.Fullname, "login", "", "", "", false, 0)
+	err = helper.SendNotificationEmail(user.Email, user.Fullname, "login", "user", "", "", false, 0)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send verification email"))
 	}
@@ -455,10 +455,11 @@ func GetOTPForPasswordUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	if err := helper.SendOTPViaEmail(OTPRequest.Email, "user"); err != nil {
+	if err := helper.SendOTPViaEmail(OTPRequest.Email, "user","reset"); err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"send OTP"))
 	}
 
+	// Use the same success response for both cases
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionCreated+"OTP", nil))
 }
 

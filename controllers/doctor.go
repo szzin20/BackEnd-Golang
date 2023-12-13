@@ -153,10 +153,10 @@ func LoginDoctorController(c echo.Context) error {
 	doctorLoginResponse := response.ConvertToDoctorLoginResponse(&doctor)
 	doctorLoginResponse.Token = token
 
-	// Send login notification email
 	if doctor.Email != "" {
 		notificationType := "login"
-		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, "Login", "", "", false, 0); err != nil {
+		userType := "doctor" // Specify the user type as "doctor"
+		if err := helper.SendNotificationEmail(doctor.Email, doctor.Fullname, notificationType, userType, "", "", false, 0); err != nil {
 			return c.JSON(http.StatusInternalServerError, helper.ErrorResponse("failed to send notification email: "+err.Error()))
 		}
 	}
@@ -815,7 +815,7 @@ func GetOTPForPasswordDoctor(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	if err := helper.SendOTPViaEmail(OTPRequest.Email,"doctor"); err != nil {
+	if err := helper.SendOTPViaEmail(OTPRequest.Email,"doctor","reset"); err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"send OTP"))
 	}
 

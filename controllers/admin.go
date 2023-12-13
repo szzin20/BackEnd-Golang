@@ -271,7 +271,7 @@ func GetOTPForPasswordAdmin(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	if err := helper.SendOTPViaEmail(OTPRequest.Email,"admin"); err != nil {
+	if err := helper.SendOTPViaEmail(OTPRequest.Email,"admin","reset"); err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"send OTP"))
 	}
 
