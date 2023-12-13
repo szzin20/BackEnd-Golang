@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/sashabaranov/go-openai"
@@ -68,14 +69,19 @@ func CustomerService(c echo.Context) error {
 	}
 
 	if strings.Contains(strings.ToLower(request.Request), "pembayaran obat") {
-
+		time.Sleep(10 * time.Second)
 		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"recommendation", prompt.Content1))
 
 	} else if strings.Contains(strings.ToLower(request.Request), "rating dokter") {
-
+		time.Sleep(10 * time.Second)
 		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"recommendation", prompt.Content2))
-	}
 
-	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"recommendation", prompt.Content3))
+	} else if strings.Contains(strings.ToLower(request.Request), "riwayat konsultasi") {
+		time.Sleep(10 * time.Second)
+		return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"recommendation", prompt.Content3))
+	} else {
+		time.Sleep(10 * time.Second)
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponseWithData(constanta.ErrActionGet+"recommendation", "sorry we can't provide answer for your question"))
+	}
 
 }
