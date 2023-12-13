@@ -55,3 +55,17 @@ type ResetRequest struct {
 	Email    string `json:"email" form:"email" validate:"required,email" `
 	Password string `json:"password" form:"password" validate:"omitempty,min=10,max=15"`
 }
+
+type DoctorsUpdateRequest struct {
+	ProfilePicture   string `json:"profile_picture" form:"profile_picture" validate:"omitempty"`
+	Fullname         string `json:"fullname" form:"fullname" validate:"omitempty,min=3"`
+	Gender           string `json:"gender" form:"gender" validate:"omitempty"`
+	Email            string `json:"email" form:"email" validate:"omitempty,email"`
+	Password         string `json:"password" form:"password" validate:"omitempty,min=10,max=15"`
+	Price            int    `json:"price" form:"price" validate:"omitempty,min=0"`
+	Specialist       string `json:"specialist" form:"specialist" validate:"omitempty"`
+	Experience       string `json:"experience" form:"experience" validate:"omitempty"`
+	Alumnus          string `json:"alumnus" form:"alumnus" validate:"omitempty"`
+	NoSTR            int    `json:"no_str" form:"no_str" validate:"omitempty"`
+	LocationPractice string `json:"location_practice" form:"location_practice" validate:"omitempty"`
+}
