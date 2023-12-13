@@ -87,15 +87,16 @@ func ConvertToGetAllDoctorByAdminResponse(doctors []schema.Doctor) []web.DoctorA
 
 func ConvertToGetIDDoctorResponse(doctor *schema.Doctor) web.DoctorIDResponse {
 	return web.DoctorIDResponse{
-		ID:             doctor.ID,
-		ProfilePicture: doctor.ProfilePicture,
-		Fullname:       doctor.Fullname,
-		Status:         doctor.Status,
-		Specialist:     doctor.Specialist,
-		Price:          doctor.Price,
-		Experience:     doctor.Experience,
-		NoSTR:          doctor.NoSTR,
-		Alumnus:        doctor.Alumnus,
+		ID:               doctor.ID,
+		ProfilePicture:   doctor.ProfilePicture,
+		Fullname:         doctor.Fullname,
+		Status:           doctor.Status,
+		Specialist:       doctor.Specialist,
+		Price:            doctor.Price,
+		Experience:       doctor.Experience,
+		NoSTR:            doctor.NoSTR,
+		Alumnus:          doctor.Alumnus,
+		LocationPractice: doctor.LocationPractice,
 	}
 }
 func ConvertToGetDoctorbyAdminResponse(doctor *schema.Doctor) web.DoctorIDResponseByAdmin {
@@ -140,5 +141,20 @@ func ConvertToConsultationResponse(consultation schema.DoctorTransaction, user s
 func ConvertToDoctorStatusResponse(doctor *schema.Doctor) web.DoctorStatusResponse {
 	return web.DoctorStatusResponse{
 		Status: doctor.Status,
+	}
+}
+
+func ConvertToDoctorsUpdateResponse(doctor *schema.Doctor) web.DoctorsUpdateResponse {
+	return web.DoctorsUpdateResponse{
+		ProfilePicture:   doctor.ProfilePicture,
+		Fullname:         doctor.Fullname,
+		Gender:           doctor.Gender,
+		Email:            doctor.Email,
+		Price:            doctor.Price,
+		Specialist:       doctor.Specialist,
+		Experience:       doctor.Experience,
+		Alumnus:          doctor.Alumnus,
+		NoSTR:            doctor.NoSTR,
+		LocationPractice: doctor.LocationPractice,
 	}
 }

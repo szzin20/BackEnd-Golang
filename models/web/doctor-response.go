@@ -69,15 +69,16 @@ type DoctorIDResponseByAdmin struct {
 }
 
 type DoctorIDResponse struct {
-	ID             uint   `json:"id"`
-	ProfilePicture string `json:"profile_picture"`
-	Status         bool   `json:"status"`
-	Fullname       string `json:"fullname"`
-	Specialist     string `json:"specialist"`
-	Price          int    `json:"price"`
-	Alumnus        string `json:"alumnus"`
-	Experience     string `json:"experience"`
-	NoSTR          int    `json:"no_str"`
+	ID               uint   `json:"id"`
+	ProfilePicture   string `json:"profile_picture"`
+	Status           bool   `json:"status"`
+	Fullname         string `json:"fullname"`
+	Specialist       string `json:"specialist"`
+	Price            int    `json:"price"`
+	Alumnus          string `json:"alumnus"`
+	Experience       string `json:"experience"`
+	NoSTR            int    `json:"no_str"`
+	LocationPractice string `json:"location_practice"`
 }
 
 // Manage Patient
@@ -110,4 +111,17 @@ type DoctorConsultationResponse struct {
 
 type DoctorStatusResponse struct {
 	Status bool `json:"status"`
+}
+
+type DoctorsUpdateResponse struct {
+	ProfilePicture   string `json:"profile_picture"`
+	Fullname         string `json:"fullname"`
+	Gender           string `json:"gender"`
+	Email            string `json:"email"`
+	Price            int    `json:"price"`
+	Specialist       string `json:"specialist"`
+	Experience       string `json:"experience"`
+	Alumnus          string `json:"alumnus"`
+	NoSTR            int    `json:"no_str"`
+	LocationPractice string `json:"location_practice"`
 }

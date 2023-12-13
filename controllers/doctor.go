@@ -304,7 +304,7 @@ func UpdateDoctorController(c echo.Context) error {
 	}
 
 	// Parse the request body into the DoctorUpdateRequest struct
-	var doctorUpdated web.DoctorUpdateRequest
+	var doctorUpdated web.DoctorsUpdateRequest
 	if err := c.Bind(&doctorUpdated); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrInvalidBody))
 	}
@@ -366,7 +366,7 @@ func UpdateDoctorController(c echo.Context) error {
 
 	configs.DB.Save(&existingDoctor)
 
-	response := response.ConvertToDoctorUpdateResponse(&existingDoctor)
+	response := response.ConvertToDoctorsUpdateResponse(&existingDoctor)
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionUpdated+"doctor profile", response))
 }
 
