@@ -60,19 +60,24 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 		var subject, body string
 
 		switch notificationType {
+
 		case "login":
 			subject = "Healthify Notification"
 			body = "Hello, " + fullname + "! You have successfully logged in."
+
 		case "register":
 			subject = "Healthify Notification"
+
 			if userType == "doctor" {
 				body = fmt.Sprintf("Hallo %s,\n\n<br>Selamat! Akun Anda telah berhasil dibuat di platform kami. Sekarang Anda memiliki akses penuh untuk menjelajahi layanan kami yang memudahkan manajemen pasien dan informasi medis.\n<br><br>Dengan akun ini, Anda dapat dengan mudah mengelola konsultasi pasien, melacak riwayat pasien, mengelola artikel kesehatan, dan mengakses obat-obatan yang tersedia untuk dijadikan rekomendasi obat pada pasien.\n<br><br>Langkah berikutnya, silakan masuk dengan email dan password yang terdaftar dibawah ini :\n<br><br>Email : %s\n<br>Password : %s\n<br><br>Email dan password ini bersifat rahasia, jangan berikan kepada siapapun, agar tidak ada penyalah gunaan akun.\n\n<br><br>Terima kasih atas kepercayaan Anda pada layanan kami. Semoga akun baru ini membantu meningkatkan efisiensi dan kualitas layanan medis Anda.", fullname, userEmail, userPassword)
 			} else {
 				body = fmt.Sprintf("Hallo %s,\n<br>Kamu berhasil daftar di aplikasi Healthify Care System!\n<br><br>Kami mengarahkan kamu untuk langsung mulai pada halaman beranda, agar kamu dapat memulai perjalanan menuju hidup sehat bersama Healthify.\n<br><br>Dengan mendaftar, Kamu menyetujui Kebijakan Privasi Kesehatan Healthify.", fullname)
 			}
+
 		case "complaints":
 			subject = "Healthify Notification"
 			body = "Hello, " + fullname + "! You have a new consultation request that requires immediate attention. Please review and attend to it promptly."
+		
 		default:
 			err := errors.New("invalid notification type")
 			log.Println(err)

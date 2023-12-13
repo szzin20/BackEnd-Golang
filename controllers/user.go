@@ -408,6 +408,7 @@ func VerifyOTPRegister(c echo.Context) error {
 		defer wg.Done()
 		err := helper.SendNotificationEmail(verificationRequest.Email, "", "register", "", "", "", false, 1)
 		if err != nil {
+			fmt.Println("error sending notification email:", err)
 		}
 	}()
 
