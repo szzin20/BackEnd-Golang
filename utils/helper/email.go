@@ -63,7 +63,12 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 
 		case "login":
 			subject = "Healthify Notification"
-			body = "Hello, " + fullname + "! You have successfully logged in."
+
+			if userType == "doctor" {
+				body = fmt.Sprintf("Hallo %s,\n\nSelamat datang di Healthify Care System!\n\nAnda telah berhasil masuk ke dashboard dokter. Segera kunjungi dashboard kesehatan Anda untuk memberi tanggapan yang tepat pada pasien-pasien Anda.", fullname)
+			} else {
+				body = fmt.Sprintf("Hallo %s,\n\nSelamat datang di Healthify Care System!\n\nKamu berhasil masuk aplikasi Healthify Care System!\n\nMulai jelajahi aplikasi dan dapatkan berbagai kemudahan konsultasi dengan dokter umum dan spesialis, mencari obat, dan membaca artikel kesehatan.", fullname)
+			}
 
 		case "register":
 			subject = "Healthify Notification"
@@ -77,6 +82,7 @@ func SendNotificationEmail(to, fullname, notificationType, userType, userEmail, 
 		case "complaints":
 			subject = "Healthify Notification"
 			body = "Hello, " + fullname + "! You have a new consultation request that requires immediate attention. Please review and attend to it promptly."
+		
 		
 		default:
 			err := errors.New("invalid notification type")
@@ -164,9 +170,7 @@ func getButtonHTML(notificationType string, roomNumber int) string {
 	}
 }
 
-
-// SendOTPViaEmail sends a one-time password (OTP) via email.
-func SendOTPViaEmail(email, userType string) error {
+func SendOTPViaEmail(email, userType, messageType string) error {
 	// Generate OTP
 	otp, err := GenerateRandomCode()
 	if err != nil {
@@ -180,14 +184,24 @@ func SendOTPViaEmail(email, userType string) error {
 		return err
 	}
 
-	go func() {
+	go func(email, userType, otp, messageType string) {
 		// Email body
 		subject := "Your One-Time Password"
-		body := fmt.Sprintf("Your OTP is: %s", otp)
+		var messageContent string
 
+		switch messageType {
+		case "register":
+			messageContent = "Pengguna Baru,<br><br>Harap masukkan Kode berikut ini : <br><br><strong class=\"otp-code\">" + otp + "</strong><br><em>Jangan bagikan kode ini dengan siapa pun karena itu akan membantu mereka mengakses akun helthify Kamu.</em>"
+		case "reset":
+			messageContent = "Harap masukkan Kode berikut ini : <br><br><strong class=\"otp-code\">" + otp + "</strong><br><em>Jangan bagikan kode ini dengan siapa pun karena itu akan membantu mereka mengakses akun helthify Kamu.</em>"
+		default:
+			log.Printf("Unsupported message type: %s\n", messageType)
+			return
+		}
+		imageURL := "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjAfO1adC7X4vJbrrL32Y-50nSyTIRi0X9GZg38xX8Pp7wLQaGhUAActrcIXOflN7mc8Q6vlodQl21TieiybFKuDY1XOrcznX_tDyvwr7vimXxHv80ijlFyTHeiyXmYuYUB77UlBU3PbuvKNsC2FHsdtXH6_W4I-XmtWHThHf4TwMUFjQY2CMbMwxcMK-Fr/s328/Frame%202.png"
 		htmlBody := fmt.Sprintf(`
 			<!DOCTYPE html>
-			<html>
+			<html lang="en">
 			<head>
 				<style>
 					/* CSS styling for email body */
@@ -203,34 +217,53 @@ func SendOTPViaEmail(email, userType string) error {
 					}
 					h1 {
 						color: #007bff;
+						display: none; /* Hide H1 element */
 					}
 					p {
 						color: #333;
 						font-size: 16px;
+						margin-bottom: 10px;
 					}
 					/* Styling for OTP code */
 					.otp-code {
-						color: #ff0000; /* Red color */
-						font-size: 20px; /* Larger font size */
+						color: #000000; 
+						font-size: 20px;
+						font-weight: bold;
+						display: block;
+						margin-bottom: 10px;
+					}
+					/* Styling for additional message */
+					.additional-message {
+						font-style: italic; 
+					}
+					img.email-image {
+						max-width: 100%%;
+						height: auto;
+						margin-top: 20px;
 					}
 				</style>
 			</head>
 			<body>
 				<div class="container">
-					<h1>%s</h1>
-					<p>Your OTP is: <strong class="otp-code">%s</strong></p>
+					<img src="%s" alt="Email Image" class="email-image">
+					<p class="additional-message">%s</p>
 				</div>
 			</body>
 			</html>
-		`, subject, otp)
+		`, imageURL, messageContent)
 
 		// Send email
-		err := SendEmail(email, subject, body, htmlBody)
+		err := SendEmail(email, subject, "", htmlBody)
 		if err != nil {
-			log.Printf("Failed to send OTP email: %v\n", err)
+			log.Printf("Failed to send OTP email to %s: %v\n", email, err)
 		}
-	}()
+	}(email, userType, otp, messageType)
 
 	return nil
 }
+
+
+
+
+
 
