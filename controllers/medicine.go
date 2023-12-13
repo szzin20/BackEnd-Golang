@@ -233,7 +233,7 @@ func GetImageMedicineController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"image medicine", response))
 }
 
-func GetAll(offset, limit int, merk, code, name string, queryInput []schema.Medicine) ([]schema.Medicine, int64, error) {
+func GetAll(offset, limit int, keyword string, queryInput []schema.Medicine) ([]schema.Medicine, int64, error) {
 
 	if offset < 0 || limit < 0 {
 		return nil, 0, nil
@@ -244,16 +244,8 @@ func GetAll(offset, limit int, merk, code, name string, queryInput []schema.Medi
 
 	query := configs.DB.Model(&queryAll)
 
-	if name != "" {
-		query = query.Where("name LIKE ?", "%"+name+"%")
-	}
-
-	if merk != "" {
-		query = query.Where("merk LIKE ?", "%"+merk+"%")
-	}
-
-	if code != "" {
-		query = query.Where("code LIKE ?", "%"+code+"%")
+	if keyword != "" {
+		query = query.Where("name LIKE ? OR merk LIKE ? OR code LIKE ?", "%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%")
 	}
 
 	query.Find(&queryAll).Count(&total)
@@ -288,13 +280,11 @@ func GetMedicineAdminController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
-	name := params.Get("name")
-	code := params.Get("code")
-	merk := params.Get("merk")
+	keyword := params.Get("keyword")
 
 	var medicines []schema.Medicine
 
-	medicine, total, err := GetAll(offset, limit, merk, code, name, medicines)
+	medicine, total, err := GetAll(offset, limit, keyword, medicines)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
@@ -343,13 +333,11 @@ func GetMedicineUserController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
-	name := params.Get("name")
-	code := params.Get("code")
-	merk := params.Get("merk")
+	keyword := params.Get("keyword")
 
 	var medicines []schema.Medicine
 
-	medicine, total, err := GetAll(offset, limit, merk, code, name, medicines)
+	medicine, total, err := GetAll(offset, limit, keyword, medicines)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
