@@ -349,11 +349,8 @@ func GetMedicineUserController(c echo.Context) error {
 	}
 
 	keyword := params.Get("keyword")
-<<<<<<< Updated upstream
-=======
 	price := params.Get("price")
 	category := params.Get("category")
->>>>>>> Stashed changes
 
 	var medicines []schema.Medicine
 
