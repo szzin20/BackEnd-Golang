@@ -1,19 +1,22 @@
 package test
 
 import (
+	"github.com/joho/godotenv"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 )
 
-var AdminToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluc3VwZXJyQG1haWwuY29tIiwiZXhwIjoxNzAyNzk1MjU1LCJpZCI6MSwicm9sZSI6ImFkbWluIn0.VFt7z567Mtkl9ID_Z_B6GTIWRR1BQa_aLHFSmaDEYjY"
-var UserToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBhdGllbnQydGVzdEBnbWFpbC5jb20iLCJleHAiOjE3MDI3OTUxNjksImlkIjoxMzgsInJvbGUiOiJ1c2VyIn0.e5sUfwf2OxlgV-5ClgCum-CIpYw8wouGI-c3tSHeDuM"
-
 func addAdminToken(req *http.Request) {
+	godotenv.Load()
+	var AdminToken = os.Getenv("ADMIN_TOKEN")
 	req.Header.Add("Authorization", "Bearer "+AdminToken)
 }
 
 func addUserToken(req *http.Request) {
+	godotenv.Load()
+	var UserToken = os.Getenv("USER_TOKEN")
 	req.Header.Add("Authorization", "Bearer "+UserToken)
 }
 
@@ -106,17 +109,17 @@ func TestCreateMedicineByAdminWithExampleInput(t *testing.T) {
 		tokenFunc func(req *http.Request)
 		expected  int
 	}{
-		//{"ValidMedicineByAdmin", `{
-		//	"code": "PX1509",
-		//	"name": "Ibuprofen",
-		//	"merk": "Arbupon",
-		//	"category": "Obat antiinflamasi nonsteroid",
-		//	"type": "12345",
-		//	"price": 12000,
-		//	"stock": 100,
-		//	"details": "12345",
-		//	"image": "https://storage.googleapis.com/bucketcobaja/20231213-554909-Free_Test_Data_1MB_JPG.jpg"
-		//}`, addAdminToken, http.StatusCreated},
+		{"ValidMedicineByAdmin", `{
+			"code": "PX1509",
+			"name": "Ibuprofen",
+			"merk": "Arbupon",
+			"category": "Obat antiinflamasi nonsteroid",
+			"type": "12345",
+			"price": 12000,
+			"stock": 100,
+			"details": "12345",
+			"image": "https://storage.googleapis.com/bucketcobaja/20231213-554909-Free_Test_Data_1MB_JPG.jpg"
+		}`, addAdminToken, http.StatusCreated},
 		{"FieldsRequired", `{"invalid_field": "value"}`, addAdminToken, http.StatusBadRequest},
 		{"MissingToken", `{"invalid_field": "value"}`, nil, http.StatusUnauthorized},
 		{"InvalidToken", `{"invalid_field": "value"}`, addUserToken, http.StatusForbidden},

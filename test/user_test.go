@@ -2,12 +2,14 @@ package test
 
 import (
 	"bytes"
+	"github.com/joho/godotenv"
 	"net/http"
 	"os"
 	"testing"
 )
 
 func TestUserLogin(t *testing.T) {
+	godotenv.Load()
 	UserEmail := os.Getenv("TEST_USER_EMAIL")
 	UserPassword := os.Getenv("TEST_USER_PASSWORD")
 
