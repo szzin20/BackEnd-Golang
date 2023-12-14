@@ -334,7 +334,7 @@ func GetMedicineUserController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
-	keyword := params.Get("name")
+	keyword := params.Get("keyword")
 
 	var medicines []schema.Medicine
 
