@@ -72,9 +72,9 @@ func RegisterDoctorByAdminController(c echo.Context) error {
 	}
 	defer file.Close()
 
-	if fileHeader.Size > 10*1024*1024 { // 10 MB limit 
-        return c.JSON(http.StatusBadRequest, helper.ErrorResponse("image file size exceeds the limit (10 MB)")) 
-    }
+	if fileHeader.Size > 10*1024*1024 { // 10 MB limit
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("image file size exceeds the limit (10 MB)"))
+	}
 
 	allowedExtensions := []string{".jpg", ".jpeg", ".png"}
 	ext := filepath.Ext(fileHeader.Filename)
@@ -418,7 +418,7 @@ func UpdateDoctorByAdminController(c echo.Context) error {
 		if fileHeader.Size > 10*1024*1024 { // 10 MB limit
 			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("image file size exceeds the limit (10 MB)"))
 		}
-		
+
 		allowedExtensions := []string{".jpg", ".jpeg", ".png"}
 		ext := filepath.Ext(fileHeader.Filename)
 		allowed := false
@@ -505,7 +505,7 @@ func GetDoctorByIDController(c echo.Context) error {
 	var doctor schema.Doctor
 	result := configs.DB.First(&doctor, doctorID)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor"+constanta.ErrNotFound))
+		return c.JSON(http.StatusNotFound, helper.ErrorResponse(constanta.ErrNotFound))
 	}
 
 	response := response.ConvertToGetIDDoctorResponse(&doctor)
@@ -541,18 +541,18 @@ func GetManageUserController(c echo.Context) error {
 	// Parse limit and offset from query parameters
 	limit, err := strconv.Atoi(c.QueryParam("limit"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit" + constanta.ErrQueryParamRequired + ": " + err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired+": "+err.Error()))
 	}
 
 	offset, err := strconv.Atoi(c.QueryParam("offset"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset" + constanta.ErrQueryParamRequired + ": " + err.Error()))
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired+": "+err.Error()))
 	}
 
 	transactionID, _ := strconv.Atoi(c.QueryParam("transaction_id"))
 	patientStatus := c.QueryParam("patient_status")
 	fullname := c.QueryParam("fullname")
-	keyword := c.QueryParam("keyword") 
+	keyword := c.QueryParam("keyword")
 
 	var manageUser []schema.DoctorTransaction
 	var total int64
@@ -617,8 +617,6 @@ func GetManageUserController(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, helper.PaginationResponse(constanta.SuccessActionGet+"doctor transaction", responses, pagination))
 }
-
-
 
 // Update manage user
 func UpdateManageUserController(c echo.Context) error {
@@ -824,7 +822,7 @@ func GetOTPForPasswordDoctor(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	if err := helper.SendOTPViaEmail(OTPRequest.Email,"doctor","reset"); err != nil {
+	if err := helper.SendOTPViaEmail(OTPRequest.Email, "doctor", "reset"); err != nil {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"send OTP"))
 	}
 
@@ -842,7 +840,7 @@ func VerifyOTPDoctor(c echo.Context) error {
 	}
 
 	// Verify OTP and handle errors
-	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP,"doctor"); err != nil {
+	if err := helper.VerifyOTPByEmail(verificationRequest.Email, verificationRequest.OTP, "doctor"); err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(constanta.ErrActionGet+"OTP not found"))
 	}
 
@@ -850,8 +848,8 @@ func VerifyOTPDoctor(c echo.Context) error {
 }
 
 func GetDoctorStatusController(c echo.Context) error {
-	
-	doctorID, ok := c.Get("userID").(int) 
+
+	doctorID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor id"))
 	}
@@ -864,13 +862,10 @@ func GetDoctorStatusController(c echo.Context) error {
 			return c.JSON(http.StatusNotFound, helper.ErrorResponse("doctor's data"+constanta.ErrNotFound))
 		}
 		// Menghandle error lain sesuai kebutuhan
-		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet +"doctor's data"))
+		return c.JSON(http.StatusInternalServerError, helper.ErrorResponse(constanta.ErrActionGet+"doctor's data"))
 	}
 
 	response := response.ConvertToDoctorStatusResponse(&doctor)
 
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"doctor status", response))
 }
-
-
-

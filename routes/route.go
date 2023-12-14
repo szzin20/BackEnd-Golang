@@ -55,7 +55,7 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.GET("/medicines/:medicine_id", controllers.GetMedicineUserByIDController)
 	gUsers.GET("/doctors/available", controllers.GetAvailableDoctor)
 	gUsers.GET("/doctors", controllers.GetSpecializeDoctor)
-	gUsers.GET("/:doctor_id", controllers.GetDoctorByIDController)
+	gUsers.GET("/doctors/:doctor_id", controllers.GetDoctorByIDController)
 	gUsers.GET("/articles", controllers.GetAllArticles)
 	gUsers.GET("/articles/:article_id", controllers.GetArticleByID)
 	gUsers.GET("/article", controllers.GetAllArticlesByTitle)
