@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4"
 	"healthcare/configs"
 	"healthcare/models/schema"
 	"healthcare/models/web"
@@ -15,6 +14,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/labstack/echo/v4"
 )
 
 // Create Medicine
@@ -333,7 +334,7 @@ func GetMedicineUserController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
 
-	keyword := params.Get("keyword")
+	keyword := params.Get("name")
 
 	var medicines []schema.Medicine
 
