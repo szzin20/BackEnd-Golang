@@ -30,6 +30,7 @@ func TestGetMedicineByUser(t *testing.T) {
 		{"MissingOffset", "?limit=5", http.StatusBadRequest},
 		{"MissingBoth", "", http.StatusBadRequest},
 		{"InvalidID", "/invalid", http.StatusBadRequest},
+		{"NotFoundID", "/0", http.StatusNotFound},
 	}
 
 	for _, tt := range tests {
@@ -53,7 +54,7 @@ func TestGetMedicineByUser(t *testing.T) {
 	}
 }
 
-func TestGetAllMedicineByAdminToken(t *testing.T) {
+func TestGetMedicineByAdminToken(t *testing.T) {
 	tests := []struct {
 		name       string
 		queryParam string
@@ -67,6 +68,7 @@ func TestGetAllMedicineByAdminToken(t *testing.T) {
 		{"MissingOffset", "?limit=5", addAdminToken, http.StatusBadRequest},
 		{"MissingBoth", "", addAdminToken, http.StatusBadRequest},
 		{"InvalidID", "/invalid", addAdminToken, http.StatusBadRequest},
+		{"NotFoundID", "/0", addAdminToken, http.StatusNotFound},
 		{"MissingToken", "?limit=5&offset=0", nil, http.StatusUnauthorized},
 		{"InvalidToken", "?limit=5&offset=0", addUserToken, http.StatusForbidden},
 	}
@@ -87,6 +89,57 @@ func TestGetAllMedicineByAdminToken(t *testing.T) {
 			response, err := http.DefaultClient.Do(req)
 			if err != nil {
 				t.Fatalf("Error making GET request: %s", err)
+			}
+			defer response.Body.Close()
+
+			if response.StatusCode != tt.expected {
+				t.Errorf("Expected status code %d, got %d", tt.expected, response.StatusCode)
+			}
+		})
+	}
+}
+
+func TestCreateMedicineByAdminWithExampleInput(t *testing.T) {
+	tests := []struct {
+		name      string
+		payload   string
+		tokenFunc func(req *http.Request)
+		expected  int
+	}{
+		//{"ValidMedicineByAdmin", `{
+		//	"code": "PX1509",
+		//	"name": "Ibuprofen",
+		//	"merk": "Arbupon",
+		//	"category": "Obat antiinflamasi nonsteroid",
+		//	"type": "12345",
+		//	"price": 12000,
+		//	"stock": 100,
+		//	"details": "12345",
+		//	"image": "https://storage.googleapis.com/bucketcobaja/20231213-554909-Free_Test_Data_1MB_JPG.jpg"
+		//}`, addAdminToken, http.StatusCreated},
+		{"FieldsRequired", `{"invalid_field": "value"}`, addAdminToken, http.StatusBadRequest},
+		{"MissingToken", `{"invalid_field": "value"}`, nil, http.StatusUnauthorized},
+		{"InvalidToken", `{"invalid_field": "value"}`, addUserToken, http.StatusForbidden},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			url := BaseURL + "/admins/medicines"
+
+			req, err := http.NewRequest("POST", url, strings.NewReader(tt.payload))
+			if err != nil {
+				t.Fatalf("Error creating POST request: %s", err)
+			}
+
+			req.Header.Set("Content-Type", "application/json")
+
+			if tt.tokenFunc != nil {
+				tt.tokenFunc(req)
+			}
+
+			response, err := http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatalf("Error making POST request: %s", err)
 			}
 			defer response.Body.Close()
 
