@@ -234,7 +234,7 @@ func GetImageMedicineController(c echo.Context) error {
 	return c.JSON(http.StatusOK, helper.SuccessResponse(constanta.SuccessActionGet+"image medicine", response))
 }
 
-func GetAll(offset, limit int, keyword string, queryInput []schema.Medicine) ([]schema.Medicine, int64, error) {
+func GetAll(offset, limit int, price, category, keyword string, queryInput []schema.Medicine) ([]schema.Medicine, int64, error) {
 
 	if offset < 0 || limit < 0 {
 		return nil, 0, nil
@@ -247,6 +247,18 @@ func GetAll(offset, limit int, keyword string, queryInput []schema.Medicine) ([]
 
 	if keyword != "" {
 		query = query.Where("name LIKE ? OR merk LIKE ? OR code LIKE ?", "%"+keyword+"%", "%"+keyword+"%", "%"+keyword+"%")
+	}
+
+	if price == "low" {
+		query = query.Order("price ASC")
+	}
+
+	if price == "high" {
+		query = query.Order("price DESC")
+	}
+
+	if category != "" {
+		query = query.Where("category LIKE ?", "%"+category+"%")
 	}
 
 	query.Find(&queryAll).Count(&total)
@@ -282,10 +294,12 @@ func GetMedicineAdminController(c echo.Context) error {
 	}
 
 	keyword := params.Get("keyword")
+	price := params.Get("price")
+	category := params.Get("category")
 
 	var medicines []schema.Medicine
 
-	medicine, total, err := GetAll(offset, limit, keyword, medicines)
+	medicine, total, err := GetAll(offset, limit, price, category, keyword, medicines)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
@@ -335,10 +349,15 @@ func GetMedicineUserController(c echo.Context) error {
 	}
 
 	keyword := params.Get("keyword")
+<<<<<<< Updated upstream
+=======
+	price := params.Get("price")
+	category := params.Get("category")
+>>>>>>> Stashed changes
 
 	var medicines []schema.Medicine
 
-	medicine, total, err := GetAll(offset, limit, keyword, medicines)
+	medicine, total, err := GetAll(offset, limit, price, category, keyword, medicines)
 
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
