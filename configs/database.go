@@ -2,12 +2,12 @@ package configs
 
 import (
 	"fmt"
-	"healthcare/models/schema"
-	"log"
-
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"healthcare/models/schema"
+	"log"
 )
 
 var DB *gorm.DB
@@ -51,4 +51,25 @@ func InitialMigration() {
 		&schema.Roomchat{},
 		&schema.Message{},
 	)
+}
+
+func ConnectDBTest() *gorm.DB {
+
+	TDB_Username := "root"
+	TDB_Password := ""
+	TDB_Port := "3306"
+	TDB_Host := "localhost"
+	TDB_Name := "finaldb"
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		TDB_Username, TDB_Password, TDB_Host, TDB_Port, TDB_Name)
+
+	log.Printf("Connection String: %s\n", dsn)
+
+	var errDB error
+	DB, errDB = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if errDB != nil {
+		panic("Failed to Connect Database")
+	}
+	return DB
 }
