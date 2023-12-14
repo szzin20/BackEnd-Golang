@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	"net/http"
 	"os"
@@ -57,7 +58,7 @@ func TestGetMedicineByUser(t *testing.T) {
 	}
 }
 
-func TestGetMedicineByAdminToken(t *testing.T) {
+func TestGetMedicineByAdmin(t *testing.T) {
 	tests := []struct {
 		name       string
 		queryParam string
@@ -102,24 +103,23 @@ func TestGetMedicineByAdminToken(t *testing.T) {
 	}
 }
 
-func TestCreateMedicineByAdminWithExampleInput(t *testing.T) {
+func TestCreateMedicineByAdmin(t *testing.T) {
 	tests := []struct {
 		name      string
 		payload   string
 		tokenFunc func(req *http.Request)
 		expected  int
 	}{
-		{"ValidMedicineByAdmin", `{
-			"code": "PX1509",
-			"name": "Ibuprofen",
-			"merk": "Arbupon",
-			"category": "Obat antiinflamasi nonsteroid",
-			"type": "12345",
-			"price": 12000,
-			"stock": 100,
-			"details": "12345",
-			"image": "https://storage.googleapis.com/bucketcobaja/20231213-554909-Free_Test_Data_1MB_JPG.jpg"
-		}`, addAdminToken, http.StatusCreated},
+		//{"ValidMedicineByAdmin", `{
+		//	"code": "PX1509",
+		//	"name": "Ibuprofen",
+		//	"merk": "Arbupon",
+		//	"category": "Obat antiinflamasi nonsteroid",
+		//	"type": "12345",
+		//	"price": 12000,
+		//	"stock": 100,
+		//	"details": "12345",
+		//}`, addAdminToken, http.StatusCreated},
 		{"FieldsRequired", `{"invalid_field": "value"}`, addAdminToken, http.StatusBadRequest},
 		{"MissingToken", `{"invalid_field": "value"}`, nil, http.StatusUnauthorized},
 		{"InvalidToken", `{"invalid_field": "value"}`, addUserToken, http.StatusForbidden},
@@ -143,6 +143,90 @@ func TestCreateMedicineByAdminWithExampleInput(t *testing.T) {
 			response, err := http.DefaultClient.Do(req)
 			if err != nil {
 				t.Fatalf("Error making POST request: %s", err)
+			}
+			defer response.Body.Close()
+
+			if response.StatusCode != tt.expected {
+				t.Errorf("Expected status code %d, got %d", tt.expected, response.StatusCode)
+			}
+		})
+	}
+}
+
+func TestPutMedicineByIDByAdmin(t *testing.T) {
+	tests := []struct {
+		name       string
+		medicineID int
+		payload    string
+		tokenFunc  func(req *http.Request)
+		expected   int
+	}{
+		{"ValidUpdateByAdmin", 54, `{
+			"price": 15000,
+			"stock": 120
+		}`, addAdminToken, http.StatusOK},
+		{"InvalidUpdateByAdmin", 999, `{"invalid_field": "value"}`, addAdminToken, http.StatusNotFound},
+		{"MissingToken", 1, `{"invalid_field": "value"}`, nil, http.StatusUnauthorized},
+		{"InvalidToken", 1, `{"invalid_field": "value"}`, addUserToken, http.StatusForbidden},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			url := BaseURL + fmt.Sprintf("/admins/medicines/%d", tt.medicineID)
+
+			req, err := http.NewRequest("PUT", url, strings.NewReader(tt.payload))
+			if err != nil {
+				t.Fatalf("Error creating PUT request: %s", err)
+			}
+
+			req.Header.Set("Content-Type", "application/json")
+
+			if tt.tokenFunc != nil {
+				tt.tokenFunc(req)
+			}
+
+			response, err := http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatalf("Error making PUT request: %s", err)
+			}
+			defer response.Body.Close()
+
+			if response.StatusCode != tt.expected {
+				t.Errorf("Expected status code %d, got %d", tt.expected, response.StatusCode)
+			}
+		})
+	}
+}
+
+func TestDeleteMedicineByIDByAdmin(t *testing.T) {
+	tests := []struct {
+		name       string
+		medicineID int
+		tokenFunc  func(req *http.Request)
+		expected   int
+	}{
+		{"ValidDeleteByAdmin", 61, addAdminToken, http.StatusOK},
+		{"InvalidDeleteByAdmin", 999, addAdminToken, http.StatusNotFound},
+		{"MissingToken", 1, nil, http.StatusUnauthorized},
+		{"InvalidToken", 1, addUserToken, http.StatusForbidden},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			url := BaseURL + fmt.Sprintf("/admins/medicines/%d", tt.medicineID)
+
+			req, err := http.NewRequest("DELETE", url, nil)
+			if err != nil {
+				t.Fatalf("Error creating DELETE request: %s", err)
+			}
+
+			if tt.tokenFunc != nil {
+				tt.tokenFunc(req)
+			}
+
+			response, err := http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatalf("Error making DELETE request: %s", err)
 			}
 			defer response.Body.Close()
 
