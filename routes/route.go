@@ -98,6 +98,7 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.POST("/get-otp", controllers.GetOTPForPasswordDoctor)
 	gDoctors.POST("/verify-otp", controllers.VerifyOTPDoctor)
 	gDoctors.POST("/change-password", controllers.ResetPasswordDoctor)
+	gDoctors.GET("/medicines", controllers.GetMedicineUserController)
 
 	e.POST("/chatbot", controllers.Chatbot)
 	e.POST("/customerservice", controllers.CustomerService)
