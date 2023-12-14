@@ -11,13 +11,13 @@ import (
 
 func addAdminToken(req *http.Request) {
 	godotenv.Load()
-	var AdminToken = os.Getenv("ADMIN_TOKEN")
+	var AdminToken = os.Getenv("TADMIN_TOKEN")
 	req.Header.Add("Authorization", "Bearer "+AdminToken)
 }
 
 func addUserToken(req *http.Request) {
 	godotenv.Load()
-	var UserToken = os.Getenv("USER_TOKEN")
+	var UserToken = os.Getenv("TUSER_TOKEN")
 	req.Header.Add("Authorization", "Bearer "+UserToken)
 }
 

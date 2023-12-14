@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"healthcare/configs"
 	"healthcare/models/web"
-	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -19,6 +19,7 @@ import (
 
 func InitTestDB() *echo.Echo {
 	e := echo.New()
+	godotenv.Load(".env")
 	configs.ConnectDBTest()
 	return e
 }
@@ -130,7 +131,8 @@ func TestGetMedicineAdminControllerValid(t *testing.T) {
 	url := fmt.Sprintf("/admins/medicines?offset=%d&limit=%d", offset, limit)
 	req := httptest.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	fmt.Println(rec.Code)
@@ -146,6 +148,8 @@ func TestGetMedicineAdminControllerNotFound(t *testing.T) {
 	url := fmt.Sprintf("/admins/medicines?offset=%d&limit=%d", offset, limit)
 	req := httptest.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	fmt.Println(rec.Code)
@@ -160,6 +164,8 @@ func TestGetMedicineAdminControllerInvalidOffset(t *testing.T) {
 	url := fmt.Sprintf("/admins/medicines?limit=%d", limit)
 	req := httptest.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	fmt.Println(rec.Code)
@@ -174,6 +180,8 @@ func TestGetMedicineAdminControllerInvalidLimit(t *testing.T) {
 	url := fmt.Sprintf("/admins/medicines?offset=%d", offset)
 	req := httptest.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	fmt.Println(rec.Code)
@@ -186,7 +194,8 @@ func TestGetMedicineAdminByIDControllerValid(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodGet, "/admins/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
@@ -201,7 +210,8 @@ func TestGetMedicineAdminByIDControllerInvalidID(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodGet, "/admins/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
@@ -216,7 +226,8 @@ func TestGetMedicineAdminByIDControllerNotFound(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodGet, "/admins/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
@@ -241,24 +252,12 @@ func TestCreateMedicineControllerBadRequest(t *testing.T) {
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 
-	imageFile, err := os.Open("../image/paracetamol.jpg")
-	assert.NoError(t, err)
-	defer imageFile.Close()
-
-	part, err := writer.CreateFormFile("image", "paracetamol.jpg")
-	assert.NoError(t, err)
-	_, err = io.Copy(part, imageFile)
-	assert.NoError(t, err)
-
-	err = writer.Close()
-	assert.NoError(t, err)
-
 	url := "/admins/medicines"
 
 	req := httptest.NewRequest(http.MethodPost, url, body)
 	req.Header.Set(echo.HeaderContentType, writer.FormDataContentType())
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
-
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetRequest(req)
@@ -276,7 +275,8 @@ func TestUpdateMedicineAdminControllerValid(t *testing.T) {
 	}
 	req := httptest.NewRequest(http.MethodPut, "/admins/medicines", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	body, err := json.Marshal(updateData)
 	req.Body = ioutil.NopCloser(bytes.NewReader(body))
 	rec := httptest.NewRecorder()
@@ -296,7 +296,8 @@ func TestUpdateMedicineAdminControllerInvalidID(t *testing.T) {
 	}
 	req := httptest.NewRequest(http.MethodPut, "/admins/medicines", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	body, err := json.Marshal(updateData)
 	req.Body = ioutil.NopCloser(bytes.NewReader(body))
 	rec := httptest.NewRecorder()
@@ -316,7 +317,8 @@ func TestUpdateMedicineAdminControllerNotFound(t *testing.T) {
 	}
 	req := httptest.NewRequest(http.MethodPut, "/admins/medicines", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	body, err := json.Marshal(updateData)
 	req.Body = ioutil.NopCloser(bytes.NewReader(body))
 	rec := httptest.NewRecorder()
@@ -336,7 +338,8 @@ func TestUpdateImageMedicineAdminControllerInvalidID(t *testing.T) {
 	}
 	req := httptest.NewRequest(http.MethodPut, "/admins/:medicine_id/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	body, err := json.Marshal(updateData)
 	req.Body = ioutil.NopCloser(bytes.NewReader(body))
 	rec := httptest.NewRecorder()
@@ -356,7 +359,8 @@ func TestUpdateImageMedicineAdminControllerNotFound(t *testing.T) {
 	}
 	req := httptest.NewRequest(http.MethodPut, "/admins/:medicine_id/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	body, err := json.Marshal(updateData)
 	req.Body = ioutil.NopCloser(bytes.NewReader(body))
 	rec := httptest.NewRecorder()
@@ -369,11 +373,28 @@ func TestUpdateImageMedicineAdminControllerNotFound(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 
+func TestDeleteImageMedicineAdminByIDControllerInternalServerError(t *testing.T) {
+	e := InitTestDB()
+	req := httptest.NewRequest(http.MethodDelete, "/admins/:medicine_id/medicines/", nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetPath("/:medicine_id/")
+	c.SetParamNames("medicine_id")
+	c.SetParamValues("7")
+	err := DeleteImageMedicineController(c)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+}
+
 func TestDeleteMedicineAdminControllerValid(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodDelete, "/admins/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
@@ -388,7 +409,8 @@ func TestDeleteMedicineAdminControllerInvalidID(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodDelete, "/admins/:medicine_id/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
@@ -403,7 +425,8 @@ func TestDeleteMedicineAdminControllerNotFound(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodDelete, "/admins/:medicine_id/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
@@ -418,7 +441,8 @@ func TestDeleteImageMedicineAdminControllerInvalidID(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodDelete, "/admins/:medicine_id/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
@@ -433,7 +457,8 @@ func TestDeleteImageMedicineAdminControllerNotFound(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodDelete, "/admins/:medicine_id/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
@@ -444,31 +469,17 @@ func TestDeleteImageMedicineAdminControllerNotFound(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
 
-func TestDeleteImageMedicineAdminByIDControllerInternalServerError(t *testing.T) {
-	e := InitTestDB()
-	req := httptest.NewRequest(http.MethodDelete, "/admins/:medicine_id/medicines/", nil)
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-	c.SetPath("/:medicine_id/")
-	c.SetParamNames("medicine_id")
-	c.SetParamValues("7")
-	err := DeleteImageMedicineController(c)
-	assert.NoError(t, err)
-	assert.Equal(t, http.StatusInternalServerError, rec.Code)
-}
-
 func TestGetImageMedicineAdminByIDControllerValid(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodGet, "/admins/:medicine_id/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
 	c.SetParamNames("medicine_id")
-	c.SetParamValues("7")
+	c.SetParamValues("1")
 	err := GetImageMedicineController(c)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
@@ -478,7 +489,8 @@ func TestGetImageMedicineAdminByIDControllerInvalidID(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodGet, "/admins/:medicine_id/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
@@ -493,7 +505,8 @@ func TestGetImageMedicineAdminByIDControllerNotFound(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodGet, "/admins/:medicine_id/medicines/", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	req.Header.Set("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluMTIzQGdtYWlsLmNvbSIsImV4cCI6MTcwMjgzMTAzMiwiaWQiOjEsInJvbGUiOiJhZG1pbiJ9.AbfCi12gYEE88p_bsM3vdfU_v6RRjXawVBPnTsc5z5I")
+	AdminToken := os.Getenv("ADMIN_TOKEN")
+	req.Header.Set("Authorization", AdminToken)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
