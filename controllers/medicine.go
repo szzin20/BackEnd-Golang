@@ -323,13 +323,11 @@ func GetMedicineAdminByIDController(c echo.Context) error {
 func GetMedicineUserController(c echo.Context) error {
 	params := c.QueryParams()
 	limit, err := strconv.Atoi(params.Get("limit"))
-
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("limit"+constanta.ErrQueryParamRequired))
 	}
 
 	offset, err := strconv.Atoi(params.Get("offset"))
-
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("offset"+constanta.ErrQueryParamRequired))
 	}
