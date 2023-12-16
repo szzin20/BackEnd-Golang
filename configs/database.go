@@ -64,7 +64,7 @@ func ConnectDBTest() *gorm.DB {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		TDB_Username, TDB_Password, TDB_Host, TDB_Port, TDB_Name)
 
-	log.Printf("Connection String: %s\n", dsn)
+	// log.Printf("Connection String: %s\n", dsn)
 
 	var errDB error
 	DB, errDB = gorm.Open(mysql.Open(dsn), &gorm.Config{})
