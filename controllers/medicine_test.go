@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/joho/godotenv"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"healthcare/configs"
 	"healthcare/models/web"
 	"io/ioutil"
@@ -15,6 +12,10 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/joho/godotenv"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 func InitTestDB() *echo.Echo {
@@ -90,7 +91,7 @@ func TestGetMedicineByIDControllerValid(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
 	c.SetParamNames("medicine_id")
-	c.SetParamValues("3")
+	c.SetParamValues("8")
 	err := GetMedicineUserByIDController(c)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
@@ -200,7 +201,7 @@ func TestGetMedicineAdminByIDControllerValid(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
 	c.SetParamNames("medicine_id")
-	c.SetParamValues("1")
+	c.SetParamValues("2")
 	err := GetMedicineAdminByIDController(c)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
@@ -283,7 +284,7 @@ func TestUpdateMedicineAdminControllerValid(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
 	c.SetParamNames("medicine_id")
-	c.SetParamValues("1")
+	c.SetParamValues("2")
 	err = UpdateMedicineController(c)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
@@ -383,7 +384,7 @@ func TestDeleteImageMedicineAdminByIDControllerInternalServerError(t *testing.T)
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
 	c.SetParamNames("medicine_id")
-	c.SetParamValues("7")
+	c.SetParamValues("22")
 	err := DeleteImageMedicineController(c)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, rec.Code)
@@ -399,8 +400,11 @@ func TestDeleteMedicineAdminControllerValid(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
 	c.SetParamNames("medicine_id")
-	c.SetParamValues("7")
+	c.SetParamValues("8")
 	err := DeleteMedicineController(c)
+	if err != nil {
+		t.Logf("Error in DeleteMedicineController: %v", err)
+	}
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
@@ -479,7 +483,7 @@ func TestGetImageMedicineAdminByIDControllerValid(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medicine_id/")
 	c.SetParamNames("medicine_id")
-	c.SetParamValues("1")
+	c.SetParamValues("16")
 	err := GetImageMedicineController(c)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)

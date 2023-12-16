@@ -2,13 +2,14 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetUserCheckoutControllerValid(t *testing.T) {
@@ -20,7 +21,7 @@ func TestGetUserCheckoutControllerValid(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -38,7 +39,7 @@ func TestGetUserCheckoutControllerInvalidOffset(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -56,7 +57,7 @@ func TestGetUserCheckoutControllerInvalidLimit(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -94,7 +95,7 @@ func TestGetUserCheckoutControllerNotFound(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 5
+	userID := 112
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -114,7 +115,7 @@ func TestGetUserCheckoutControllerNotFoundStatus(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -130,7 +131,7 @@ func TestGetUserCheckoutByIDControllerValid(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -148,7 +149,7 @@ func TestGetUserCheckoutByIDControllerInvalidID(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -166,7 +167,7 @@ func TestGetUserCheckoutByIDControllerInvalidUserID(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := "4"
+	userID := "1"
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -184,7 +185,7 @@ func TestGetUserCheckoutByIDControllerNotFound(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 112
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -285,7 +286,7 @@ func TestGetAdminCheckoutControllerNotFoundByUserID(t *testing.T) {
 	e := InitTestDB()
 	offset := 0
 	limit := 10
-	user_id := 6
+	user_id := 112
 	url := fmt.Sprintf("/admins/medicines-payments/checkout?offset=%d&limit=%d&user_id=%d", offset, limit, user_id)
 	req := httptest.NewRequest(http.MethodGet, url, nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -358,7 +359,7 @@ func TestUpdateCheckoutControllerValid(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/:checkout_id/")
 	c.SetParamNames("checkout_id")
-	c.SetParamValues("1")
+	c.SetParamValues("9")
 	err := UpdateCheckoutController(c)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
@@ -426,7 +427,7 @@ func TestUpdateCheckoutControllerInvalidStock(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/:checkout_id/")
 	c.SetParamNames("checkout_id")
-	c.SetParamValues("18")
+	c.SetParamValues("1")
 	err := UpdateCheckoutController(c)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
@@ -481,42 +482,42 @@ func TestCreateCheckoutControllerInvalidBind(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
 
-//func TestCreateCheckoutControllerValid(t *testing.T) {
-//
-//	e := InitTestDB()
-//	userID := 4
-//	medicineTransactionID := 18
-//	imagePath := "../image/paracetamol.jpg"
-//	UserToken := os.Getenv("USER_TOKEN")
-//
-//	file, err := os.Open(imagePath)
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//	defer file.Close()
-//
-//	body := new(bytes.Buffer)
-//	writer := multipart.NewWriter(body)
-//
-//	part, err := writer.CreateFormFile("payment_confirmation", filepath.Base(imagePath))
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//	_, err = io.Copy(part, file)
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	writer.Close()
-//
-//	req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/users/medicines-payments/checkout?medicine_transaction_id=%d", medicineTransactionID), body)
-//	req.Header.Set(echo.HeaderContentType, writer.FormDataContentType())
-//	req.Header.Set("Authorization", UserToken)
-//
-//	rec := httptest.NewRecorder()
-//	c := e.NewContext(req, rec)
-//	c.Set("userID", userID)
-//	err = CreateCheckoutController(c)
-//	assert.NoError(t, err)
-//	assert.Equal(t, http.StatusCreated, rec.Code)
-//}
+// func TestCreateCheckoutControllerValid(t *testing.T) {
+
+// 	e := InitTestDB()
+// 	userID := 3
+// 	medicineTransactionID := 58
+// 	imagePath := "../image/gambar.jpg"
+// 	UserToken := os.Getenv("USER_TOKEN")
+
+// 	file, err := os.Open(imagePath)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	defer file.Close()
+
+// 	body := new(bytes.Buffer)
+// 	writer := multipart.NewWriter(body)
+
+// 	part, err := writer.CreateFormFile("payment_confirmation", filepath.Base(imagePath))
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	_, err = io.Copy(part, file)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+
+// 	writer.Close()
+
+// 	req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/users/medicines-payments/checkout?medicine_transaction_id=%d", medicineTransactionID), body)
+// 	req.Header.Set(echo.HeaderContentType, writer.FormDataContentType())
+// 	req.Header.Set("Authorization", UserToken)
+
+// 	rec := httptest.NewRecorder()
+// 	c := e.NewContext(req, rec)
+// 	c.Set("userID", userID)
+// 	err = CreateCheckoutController(c)
+// 	assert.NoError(t, err)
+// 	assert.Equal(t, http.StatusCreated, rec.Code)
+// }

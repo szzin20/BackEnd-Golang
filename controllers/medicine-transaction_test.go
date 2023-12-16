@@ -2,14 +2,15 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetMedicineTransactionControllerValid(t *testing.T) {
@@ -21,7 +22,7 @@ func TestGetMedicineTransactionControllerValid(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -57,7 +58,7 @@ func TestGetMedicineTransactionControllerInvalidLimit(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -79,7 +80,7 @@ func TestGetMedicineTransactionControllerNotFound(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -135,12 +136,12 @@ func TestGetMedicineTransactionByIDControllerValid(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 3
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medtrans_id/")
 	c.SetParamNames("medtrans_id")
-	c.SetParamValues("16")
+	c.SetParamValues("9")
 	c.Set("userID", userID)
 	err := GetMedicineTransactionByIDController(c)
 	assert.NoError(t, err)
@@ -153,7 +154,7 @@ func TestGetMedicineTransactionByIDControllerInvalidID(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 41
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medtrans_id/")
@@ -207,12 +208,12 @@ func TestDeleteMedicineTransactionControllerValid(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 3
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medtrans_id/")
 	c.SetParamNames("medtrans_id")
-	c.SetParamValues("17")
+	c.SetParamValues("10")
 	c.Set("userID", userID)
 	err := DeleteMedicineTransactionController(c)
 	assert.NoError(t, err)
@@ -225,7 +226,7 @@ func TestDeleteMedicineTransactionControllerDenied(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 1
+	userID := 2
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetPath("/:medtrans_id/")
@@ -258,19 +259,19 @@ func TestDeleteMedicineTransactionControllerInvalidID(t *testing.T) {
 func TestCreateMedicineTransactionControllerValid(t *testing.T) {
 	e := InitTestDB()
 	requestBody := `{
-            "name": "nathan",
+            "name": "Hanisah Fildza Annafisah",
             "address": "cengkareng",
             "hp": "08123",
             "payment_method": "manual transfer bca",
             "medicine_details": [{
-                    "medicine_id": 1,
+                    "medicine_id": 2,
                     "quantity": 1
                 }]}`
 	req := httptest.NewRequest(http.MethodPost, "/users/medicines-payments", strings.NewReader(requestBody))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -283,7 +284,7 @@ func TestCreateMedicineTransactionControllerValid(t *testing.T) {
 func TestCreateMedicineTransactionControllerRequiredFields(t *testing.T) {
 	e := InitTestDB()
 	requestBody := `{
-            "name": "nathan",
+            "name": "Hanisah Fildza Annafisah",
             "address": "cengkareng",
             "hp": "08123",
             "payment_method": "manual transfer bca"}`
@@ -304,13 +305,13 @@ func TestCreateMedicineTransactionControllerRequiredFields(t *testing.T) {
 func TestCreateMedicineTransactionControllerBind(t *testing.T) {
 	e := InitTestDB()
 	requestBody := `{
-            "name": "nathan"
+            "name": "Hanisah Fildza Annafisah"
             "address": "cengkareng"}`
 	req := httptest.NewRequest(http.MethodPost, "/users/medicines-payments", strings.NewReader(requestBody))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -323,7 +324,7 @@ func TestCreateMedicineTransactionControllerBind(t *testing.T) {
 func TestCreateMedicineTransactionControllerMedicineIDNil(t *testing.T) {
 	e := InitTestDB()
 	requestBody := `{
-            "name": "nathan",
+            "name": "Hanisah Fildza Annafisah",
             "address": "cengkareng",
             "hp": "08123",
             "payment_method": "manual transfer bca",
@@ -335,7 +336,7 @@ func TestCreateMedicineTransactionControllerMedicineIDNil(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -348,7 +349,7 @@ func TestCreateMedicineTransactionControllerMedicineIDNil(t *testing.T) {
 func TestCreateMedicineTransactionControllerValidQuantityNil(t *testing.T) {
 	e := InitTestDB()
 	requestBody := `{
-            "name": "nathan",
+            "name": "Hanisah Fildza Annafisah",
             "address": "cengkareng",
             "hp": "08123",
             "payment_method": "manual transfer bca",
@@ -360,7 +361,7 @@ func TestCreateMedicineTransactionControllerValidQuantityNil(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	UserToken := os.Getenv("USER_TOKEN")
 	req.Header.Set("Authorization", UserToken)
-	userID := 4
+	userID := 1
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.Set("userID", userID)
@@ -398,7 +399,7 @@ func TestCreateMedicineTransactionControllerMedicineNotFound(t *testing.T) {
 func TestCreateMedicineTransactionControllerInvalidUserID(t *testing.T) {
 	e := InitTestDB()
 	requestBody := `{
-            "name": "nathan",
+            "name": "Hanisah Fildza Annafisah",
             "address": "cengkareng",
             "hp": "08123",
             "payment_method": "manual transfer bca",
