@@ -29,7 +29,6 @@ func TestLoginDoctorControllerValid(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
-
 func TestLoginDoctorControllerInvalid(t *testing.T) {
 	e := InitTestDB()
 	requestBody := `{
@@ -45,7 +44,6 @@ func TestLoginDoctorControllerInvalid(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 }
-
 func TestLoginDoctorControllerInvalidInput(t *testing.T) {
 	e := InitTestDB()
 
@@ -62,7 +60,6 @@ func TestLoginDoctorControllerInvalidInput(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
-
 func TestLoginDoctorControllerInvalidEmailFormat(t *testing.T) {
 	e := InitTestDB()
 
@@ -80,7 +77,6 @@ func TestLoginDoctorControllerInvalidEmailFormat(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
-
 func TestLoginDoctorControllerInvalidPassword(t *testing.T) {
 	e := InitTestDB()
 	// Membuat password yang tidak valid
@@ -97,7 +93,6 @@ func TestLoginDoctorControllerInvalidPassword(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
-
 func TestGetAvailableDoctorControllervalid(t *testing.T) {
 	e := InitTestDB()
 	offset := 0
@@ -114,7 +109,6 @@ func TestGetAvailableDoctorControllervalid(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
-
 func TestGetAvailableDoctorControllerInvalidOffset(t *testing.T) {
 	e := InitTestDB()
 	invalidOffset := -1
@@ -143,7 +137,6 @@ func TestGetAvailableDoctorControllerInvalidLimit(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
-
 func TestGetSpecializeDoctorControllerValid(t *testing.T) {
 	e := InitTestDB()
 	validSpecialist := "Bedah"
@@ -159,7 +152,6 @@ func TestGetSpecializeDoctorControllerValid(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
-
 func TestGetSpecializeDoctorControllerMissingSpecialist(t *testing.T) {
 	e := InitTestDB()
 	validOffset := 0
@@ -174,7 +166,6 @@ func TestGetSpecializeDoctorControllerMissingSpecialist(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
-
 func TestGetSpecializeDoctorControllerInvalidLimit(t *testing.T) {
 	e := InitTestDB()
 	validSpecialist := "Bedah"
@@ -190,7 +181,6 @@ func TestGetSpecializeDoctorControllerInvalidLimit(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
-
 func TestGetSpecializeDoctorControllerInvalidOffset(t *testing.T) {
 	e := InitTestDB()
 	validSpecialist := "Bedah"
@@ -208,7 +198,6 @@ func TestGetSpecializeDoctorControllerInvalidOffset(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
-
 func TestGetDoctorProfileControllerValid(t *testing.T) {
 	e := InitTestDB()
 
@@ -226,7 +215,6 @@ func TestGetDoctorProfileControllerValid(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
-
 func TestGetDoctorProfileControllerInvalidUserIDType(t *testing.T) {
 	e := InitTestDB()
 	invalidUserID := "invalid"
@@ -249,7 +237,6 @@ func TestGetDoctorProfileControllerMissingUserID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, rec.Code)
 }
-
 func TestGetAllDoctorByAdminControllerValid(t *testing.T) {
 	e := InitTestDB()
 	validOffset := 0
@@ -265,7 +252,6 @@ func TestGetAllDoctorByAdminControllerValid(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
-
 func TestGetAllDoctorByAdminControllerInvalidOffset(t *testing.T) {
 	e := InitTestDB()
 	invalidOffset := -1
@@ -281,7 +267,6 @@ func TestGetAllDoctorByAdminControllerInvalidOffset(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
-
 func TestGetAllDoctorByAdminControllerInvalidLimit(t *testing.T) {
 	e := InitTestDB()
 	invalidLimit := 0
@@ -297,7 +282,6 @@ func TestGetAllDoctorByAdminControllerInvalidLimit(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
-
 func TestDeleteDoctorControllerValid(t *testing.T) {
 	e := InitTestDB()
 	userID := 1
@@ -311,7 +295,6 @@ func TestDeleteDoctorControllerValid(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
-
 func TestDeleteDoctorControllerMissingUserID(t *testing.T) {
 	e := InitTestDB()
 
@@ -324,7 +307,6 @@ func TestDeleteDoctorControllerMissingUserID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, rec.Code) // Assuming a 500 status for missing userID
 }
-
 func TestGetDoctorByIDControllerValid(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodGet, "/users/doctors/", nil)
@@ -341,7 +323,6 @@ func TestGetDoctorByIDControllerValid(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
 }
-
 func TestGetDoctorByIDControllerInvalidIDParam(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodGet, "/users/doctors/", nil)
@@ -358,7 +339,6 @@ func TestGetDoctorByIDControllerInvalidIDParam(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
-
 func TestGetDoctorByIDControllerNotFound(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodGet, "/users/doctors/", nil)
@@ -375,7 +355,6 @@ func TestGetDoctorByIDControllerNotFound(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusNotFound, rec.Code)
 }
-
 func TestGetDoctorByIDControllerInvalidIDFormat(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodGet, "/users/doctors/", nil)
@@ -392,7 +371,6 @@ func TestGetDoctorByIDControllerInvalidIDFormat(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
-
 func TestGetDoctorByIDControllerMissingIDParam(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodGet, "/users/doctors/", nil)
@@ -410,7 +388,6 @@ func TestGetDoctorByIDControllerMissingIDParam(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
-
 func TestDeleteDoctorByAdminControllerValid(t *testing.T) {
 	e := InitTestDB()
 
@@ -529,14 +506,13 @@ func TestGetDoctorIDbyAdminControllerDatabaseError(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusInternalServerError, rec.Code)
 }
-
 func TestGetManageUserControllerValid(t *testing.T) {
 	e := InitTestDB()
 
 	req := httptest.NewRequest(http.MethodGet, "/doctors/manage-user", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	AdminToken := os.Getenv("ADMIN_TOKEN")
-	req.Header.Set("Authorization", AdminToken)
+	doctorToken := os.Getenv("DOCTOR_TOKEN")
+	req.Header.Set("Authorization", doctorToken)
 
 	q := req.URL.Query()
 	q.Add("limit", "10")
@@ -558,8 +534,8 @@ func TestGetManageUserControllerInvalidLimit(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/doctors/manage-user", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	AdminToken := os.Getenv("ADMIN_TOKEN")
-	req.Header.Set("Authorization", AdminToken)
+	doctorToken := os.Getenv("DOCTOR_TOKEN")
+	req.Header.Set("Authorization", doctorToken)
 
 	q := req.URL.Query()
 	q.Add("limit", "invalid_limit")
@@ -580,8 +556,8 @@ func TestGetManageUserControllerInvalidOffset(t *testing.T) {
 	// Set up a request with an invalid offset parameter
 	req := httptest.NewRequest(http.MethodGet, "/doctors/manage-user", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	AdminToken := os.Getenv("ADMIN_TOKEN")
-	req.Header.Set("Authorization", AdminToken)
+	doctorToken := os.Getenv("DOCTOR_TOKEN")
+	req.Header.Set("Authorization", doctorToken)
 
 	q := req.URL.Query()
 	q.Add("limit", "10")
@@ -602,8 +578,8 @@ func TestGetManageUserControllerNoResults(t *testing.T) {
 	e := InitTestDB()
 	req := httptest.NewRequest(http.MethodGet, "/doctors/manage-user", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	AdminToken := os.Getenv("ADMIN_TOKEN")
-	req.Header.Set("Authorization", AdminToken)
+	doctorToken := os.Getenv("DOCTOR_TOKEN")
+	req.Header.Set("Authorization", doctorToken)
 
 	q := req.URL.Query()
 	q.Add("limit", "10")
@@ -624,8 +600,8 @@ func TestGetManageUserControllerNonExistentFullname(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/doctors/manage-user", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	AdminToken := os.Getenv("ADMIN_TOKEN")
-	req.Header.Set("Authorization", AdminToken)
+	doctorToken := os.Getenv("DOCTOR_TOKEN")
+	req.Header.Set("Authorization", doctorToken)
 
 	q := req.URL.Query()
 	q.Add("limit", "10")
@@ -647,8 +623,8 @@ func TestGetManageUserControllerInvalidPatientStatus(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/doctors/manage-user", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	AdminToken := os.Getenv("ADMIN_TOKEN")
-	req.Header.Set("Authorization", AdminToken)
+	doctorToken := os.Getenv("DOCTOR_TOKEN")
+	req.Header.Set("Authorization", doctorToken)
 
 	q := req.URL.Query()
 	q.Add("limit", "10")
@@ -671,8 +647,8 @@ func TestGetManageUserControllerInvalidFullname(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/doctors/manage-user", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	AdminToken := os.Getenv("ADMIN_TOKEN")
-	req.Header.Set("Authorization", AdminToken)
+	doctorToken := os.Getenv("DOCTOR_TOKEN")
+	req.Header.Set("Authorization", doctorToken)
 
 	q := req.URL.Query()
 	q.Add("limit", "10")
@@ -693,8 +669,8 @@ func TestGetManageUserControllerInvalidKeyword(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/doctors/manage-user", nil)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	AdminToken := os.Getenv("ADMIN_TOKEN")
-	req.Header.Set("Authorization", AdminToken)
+	doctorToken := os.Getenv("DOCTOR_TOKEN")
+	req.Header.Set("Authorization", doctorToken)
 
 	q := req.URL.Query()
 	q.Add("limit", "10")
@@ -741,10 +717,10 @@ func TestGetOTPForPasswordDoctorInvalidMissingBody(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
 func TestGetOTPForPasswordDoctorInvalidInvalidEmail(t *testing.T) {
-	
+
 	e := InitTestDB()
 	otpRequest := web.PasswordResetRequest{
-		Email: "invalidemail", 
+		Email: "invalidemail",
 	}
 
 	// Convert struct to JSON string
@@ -760,9 +736,9 @@ func TestGetOTPForPasswordDoctorInvalidInvalidEmail(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
 func TestGetOTPForPasswordDoctorInvalidMissingEmail(t *testing.T) {
-	
+
 	e := InitTestDB()
-	otpRequest := web.PasswordResetRequest{} 
+	otpRequest := web.PasswordResetRequest{}
 	otpRequestJSON, err := json.Marshal(otpRequest)
 	assert.NoError(t, err)
 
@@ -778,7 +754,7 @@ func TestGetOTPForPasswordDoctorInvalidEmptyEmail(t *testing.T) {
 
 	e := InitTestDB()
 	otpRequest := web.PasswordResetRequest{
-		Email: "", 
+		Email: "",
 	}
 	otpRequestJSON, err := json.Marshal(otpRequest)
 	assert.NoError(t, err)
@@ -802,12 +778,13 @@ func TestGetOTPForPasswordDoctorInvalidEmptyRequestBody(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
+
 func TestVerifyOTPDoctorValid(t *testing.T) {
 
 	e := InitTestDB()
 	verificationRequest := web.OTPVerificationRequest{
 		Email: "mutiakhoirunniza@gmail.com",
-		OTP:   "6695", 
+		OTP:   "5023",
 	}
 
 	// Convert struct to JSON string
@@ -827,7 +804,7 @@ func TestVerifyOTPDoctorInvalidInvalidOTP(t *testing.T) {
 	e := InitTestDB()
 	verificationRequest := web.OTPVerificationRequest{
 		Email: "mutiakhoirunniza@gmail.com",
-		OTP:   "invalid_otp", 
+		OTP:   "invalid_otp",
 	}
 
 	// Convert struct to JSON string
@@ -846,7 +823,7 @@ func TestVerifyOTPDoctorInvalidMissingEmail(t *testing.T) {
 	e := InitTestDB()
 	verificationRequest := web.OTPVerificationRequest{
 		// Missing Email field
-		OTP: "1256",
+		OTP: "5023",
 	}
 	verificationRequestJSON, err := json.Marshal(verificationRequest)
 	assert.NoError(t, err)
@@ -883,7 +860,7 @@ func TestVerifyOTPDoctorInvalidEmptyEmail(t *testing.T) {
 	e := InitTestDB()
 	verificationRequest := web.OTPVerificationRequest{
 		Email: "", // Empty Email field
-		OTP:   "6695",
+		OTP:   "5023",
 	}
 	verificationRequestJSON, err := json.Marshal(verificationRequest)
 	assert.NoError(t, err)
@@ -901,7 +878,7 @@ func TestResetPasswordDoctorValid(t *testing.T) {
 
 	resetRequest := web.ResetRequest{
 		Email:    "mutiakhoirunniza@gmail.com",
-		OTP:      "6695",
+		OTP:      "5023",
 		Password: "newpassword123",
 	}
 
@@ -945,7 +922,7 @@ func TestResetPasswordDoctorInvalidMissingEmail(t *testing.T) {
 
 	resetRequest := web.ResetRequest{
 		// Missing Email field
-		OTP:      "1256",
+		OTP:      "5023",
 		Password: "newpassword123",
 	}
 
@@ -966,7 +943,7 @@ func TestResetPasswordDoctorInvalidMissingOTP(t *testing.T) {
 	e := InitTestDB()
 
 	resetRequest := web.ResetRequest{
-		Email:    "mutiakhoirunniza@gmail.com",
+		Email: "mutiakhoirunniza@gmail.com",
 		// Missing OTP field
 		Password: "newpassword123",
 	}
@@ -989,7 +966,7 @@ func TestResetPasswordDoctorInvalidInvalidPassword(t *testing.T) {
 
 	resetRequest := web.ResetRequest{
 		Email:    "mutiakhoirunniza@gmail.com",
-		OTP:      "6695",
+		OTP:      "5023",
 		Password: "short",
 	}
 
@@ -1011,7 +988,7 @@ func TestResetPasswordDoctorInvalidEmptyEmail(t *testing.T) {
 
 	resetRequest := web.ResetRequest{
 		Email:    "", // Empty Email field
-		OTP:      "6695",
+		OTP:      "5023",
 		Password: "newpassword123",
 	}
 
@@ -1029,3 +1006,20 @@ func TestResetPasswordDoctorInvalidEmptyEmail(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
 
+func TestChangeDoctorStatusControllerValid(t *testing.T) {
+	e := InitTestDB()
+	doctorToken := os.Getenv("DOCTOR_TOKEN")
+
+	requestBody := `{"status": true}`
+	req := httptest.NewRequest(http.MethodPut, "/doctors/status", strings.NewReader(requestBody))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	req.Header.Set("Authorization", doctorToken)
+	doctorID := 4
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.Set("userID", doctorID)
+
+	err := ChangeDoctorStatusController(c)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
