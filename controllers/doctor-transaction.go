@@ -185,8 +185,8 @@ func GetAllDoctorTransactionsController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input payment status data ('pending', 'success', 'cancelled')"))
 	}
 
-	// Get All Doctor Transactions
-	if paymentStatus == "" {
+	// // Get Doctor Transactions by Status
+	if paymentStatus != "" {
 
 		var doctorTransaction []schema.DoctorTransaction
 
@@ -221,8 +221,7 @@ func GetAllDoctorTransactionsController(c echo.Context) error {
 		return c.JSON(http.StatusOK, helper.PaginationResponse("doctor transaction data successfully retrieved", responses, pagination))
 	}
 
-	// Get Doctor Transactions by Status
-
+	// Get All Doctor Transactions
 	var doctorTransaction []schema.DoctorTransaction
 
 	doctorTransactions, total, err := GetAllDoctorTransactionPagination(userID, offset, limit, paymentStatus, doctorTransaction)
