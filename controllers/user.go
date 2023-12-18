@@ -313,11 +313,13 @@ func UpdateUserController(c echo.Context) error {
 		userUpdated.ProfilePicture = profilePicture
 	}
 
-	userUpdated.Password = helper.HashPassword(userUpdated.Password)
+	if userUpdated.Password != "" {
+		userUpdated.Password = helper.HashPassword(userUpdated.Password)
+	}
 	gender := strings.ToLower(userUpdated.Gender)
 	bloodType := strings.ToUpper(userUpdated.BloodType)
 	birthdate := userUpdated.Birthdate
-
+	
 	if !helper.GenderIsValid(gender) {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input gender data ('male', 'female')"))
 	}
