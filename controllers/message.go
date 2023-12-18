@@ -52,7 +52,7 @@ func CreateComplaintMessageController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	err = c.Request().ParseMultipartForm(10 << 20) 
+	err = c.Request().ParseMultipartForm(10 << 20)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("please provide exactly one type of message: message, image, or audio"))
 	}
@@ -64,7 +64,7 @@ func CreateComplaintMessageController(c echo.Context) error {
 
 		maxFileSize := int64(10 * 1024 * 1024) // 10 MB
 
-		if fileHeader.Size > maxFileSize { 
+		if fileHeader.Size > maxFileSize {
 			return c.JSON(http.StatusBadRequest, helper.ErrorResponse("image file size exceeds the maximum allowed size (10 MB)"))
 		}
 
@@ -129,6 +129,10 @@ func CreateComplaintMessageController(c echo.Context) error {
 		}
 	}
 
+	if complaintMessageRequest.Message == "" && complaintMessageRequest.Audio == "" && complaintMessageRequest.Image == "" {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input message data"))
+	}
+
 	complaint := request.ConvertToCreateComplaintMessageRequest(complaintMessageRequest, uint(roomchatID), uint(userID))
 
 	if err := configs.DB.Create(&complaint).Error; err != nil {
@@ -177,11 +181,10 @@ func CreateAdviceMessageController(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse(err.Error()))
 	}
 
-	err = c.Request().ParseMultipartForm(10 << 20) 
+	err = c.Request().ParseMultipartForm(10 << 20)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("please provide exactly one type of message: message, image, or audio"))
 	}
-
 
 	file, fileHeader, err := c.Request().FormFile("image")
 
@@ -253,6 +256,10 @@ func CreateAdviceMessageController(c echo.Context) error {
 		}
 	}
 
+	if adviceMessageRequest.Message == "" && adviceMessageRequest.Audio == "" && adviceMessageRequest.Image == "" {
+		return c.JSON(http.StatusBadRequest, helper.ErrorResponse("invalid input message data"))
+	}
+	
 	advice := request.ConvertToCreateAdviceMessageRequest(adviceMessageRequest, uint(roomchatID), uint(doctorID))
 
 	if err := configs.DB.Create(&advice).Error; err != nil {
