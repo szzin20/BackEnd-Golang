@@ -13,7 +13,7 @@ func SetupRoutes(e *echo.Echo) {
 	UserJWT := middlewares.UserIDRoleAuth
 	DoctorJWT := middlewares.DoctorIDRoleAuth
 
-	gAdmins := e.Group("/admins")
+	gAdmins := e.Group("/api/v1/admins")
 	gAdmins.POST("/login", controllers.LoginAdminController)
 	gAdmins.GET("/profile", controllers.GetAdminProfileController, AdminJWT)
 	gAdmins.PUT("/profile", controllers.UpdateAdminController, AdminJWT)
@@ -44,7 +44,7 @@ func SetupRoutes(e *echo.Echo) {
 	gAdmins.POST("/verify-otp", controllers.VerifyOTPAdmin)
 	gAdmins.POST("/change-password", controllers.ResetPasswordAdmin)
 
-	gUsers := e.Group("/users")
+	gUsers := e.Group("/api/v1/users")
 	gUsers.POST("/register", controllers.RegisterUserController)
 	gUsers.POST("/login", controllers.LoginUserController)
 	gUsers.POST("/OTP-verification", controllers.VerifyOTPRegister)
@@ -75,8 +75,9 @@ func SetupRoutes(e *echo.Echo) {
 	gUsers.POST("/get-otp", controllers.GetOTPForPasswordUser)
 	gUsers.POST("/verify-otp", controllers.VerifyOTPUser)
 	gUsers.POST("/change-password", controllers.ResetPasswordUser)
+	gUsers.POST("/customer-service", controllers.CustomerService)
 
-	gDoctors := e.Group("/doctors")
+	gDoctors := e.Group("/api/v1/doctors")
 	gDoctors.POST("/login", controllers.LoginDoctorController)
 	gDoctors.GET("/profile", controllers.GetDoctorProfileController, DoctorJWT)
 	gDoctors.GET("/:doctor_id", controllers.GetDoctorByIDController)
@@ -101,6 +102,5 @@ func SetupRoutes(e *echo.Echo) {
 	gDoctors.GET("/medicines", controllers.GetMedicineUserController)
 
 	e.POST("/chatbot", controllers.Chatbot)
-	e.POST("/customerservice", controllers.CustomerService)
 
 }
